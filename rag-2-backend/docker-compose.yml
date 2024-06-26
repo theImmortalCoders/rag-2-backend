@@ -1,0 +1,6 @@
+﻿services:
+  rag-2-backend:
+    image: rag-2-backend
+    build:
+      context: .
+      dockerfile: Dockerfile

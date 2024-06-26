@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="../build/rag-2-backend.props" />
+</Project>

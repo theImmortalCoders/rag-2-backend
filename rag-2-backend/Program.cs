@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.data;
+using rag_2_backend.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,5 +20,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapControllers();
 app.Run();

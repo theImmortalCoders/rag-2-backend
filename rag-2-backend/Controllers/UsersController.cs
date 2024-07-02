@@ -19,7 +19,7 @@ public class UsersController(DatabaseContext context) : ControllerBase
     public async Task<ActionResult<User>> GetUser(int id)
     {
         var user =  await context.Users.FindAsync(id);
-        if (user == null) throw new Exception("user not found");
+        if (user == null) throw new KeyNotFoundException("user not found");
 
         return user;
     }

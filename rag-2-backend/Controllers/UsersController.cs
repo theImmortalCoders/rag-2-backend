@@ -7,11 +7,20 @@ namespace rag_2_backend.controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UsersController(UserContext context) : ControllerBase
+public class UsersController(DatabaseContext context) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<User>>> GetUsers()
     {
         return await context.Users.ToListAsync();
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<User>> GetUser(int id)
+    {
+        var user =  await context.Users.FindAsync(id);
+        if (user == null) throw new Exception("user not found");
+
+        return user;
     }
 }

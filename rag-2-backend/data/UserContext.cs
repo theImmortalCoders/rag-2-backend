@@ -1,10 +1,9 @@
-namespace rag_2_backend.data;
-using models;
 using Microsoft.EntityFrameworkCore;
+using rag_2_backend.models;
 
-public class UserContext:DbContext
+namespace rag_2_backend.data;
+
+public class UserContext(DbContextOptions<UserContext> options) : DbContext(options)
 {
-    public UserContext(DbContextOptions<UserContext> options) : base(options)
-    {}
-    public DbSet<User> Users { get; set; }
+    public DbSet<User> Users { get; init; }
 }

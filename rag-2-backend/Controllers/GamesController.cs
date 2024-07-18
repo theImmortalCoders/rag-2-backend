@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.data;
-using rag_2_backend.models;
+using rag_2_backend.DTO;
+using rag_2_backend.models.entity;
 
 namespace rag_2_backend.controllers;
 
@@ -10,17 +11,25 @@ namespace rag_2_backend.controllers;
 public class GamesController(DatabaseContext context) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+    public async Task<ActionResult<IEnumerable<Game>>> GetGames()
     {
-        return await context.Users.ToListAsync();
+        return await context.Games.ToListAsync();
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<User>> GetUser(int id)
+    [HttpPost]
+    public void AddGameRecord(int gameId, [FromBody] RecordedGameRequest request)
     {
-        var user =  await context.Users.FindAsync(id);
-        if (user == null) return NotFound();
-
-        return user;
+        var game = context.Games.Find(gameId);
+        if(game == null)
+        {
+            throw new ArgumentException("Game not found");
+        }
+        var recordedGame = new RecordedGame
+        {
+            Game = game,
+            Value = request.Value
+        };
+        context.RecordedGames.Add(recordedGame);
+        context.SaveChanges();
     }
 }

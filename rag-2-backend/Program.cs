@@ -1,11 +1,15 @@
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 using rag_2_backend.data;
 using rag_2_backend.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<DatabaseContext>(options =>

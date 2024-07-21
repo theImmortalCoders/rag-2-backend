@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.data;
@@ -27,13 +28,10 @@ public class GameRecordController(DatabaseContext context) : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public void AddGameRecord(int gameId, [FromBody] RecordedGameRequest request)
     {
-        var game = context.Games.Find(gameId);
-        if (game == null)
-        {
-            throw new KeyNotFoundException("Game not found");
-        }
+        var game = context.Games.Find(gameId) ?? throw new KeyNotFoundException("Game not found");
         var recordedGame = new RecordedGame
         {
             Game = game,

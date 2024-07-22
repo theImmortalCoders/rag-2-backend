@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -39,5 +40,8 @@ public class GameRecordController(DatabaseContext context) : ControllerBase
         };
         context.RecordedGames.Add(recordedGame);
         context.SaveChanges();
+
+        // var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
     }
 }

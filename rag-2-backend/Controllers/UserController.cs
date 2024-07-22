@@ -1,35 +1,25 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using rag_2_backend.Utils;
 
 namespace rag_2_backend.controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UserController(IConfiguration config)
+public class UserController(JwtUtil jwtUtil) : ControllerBase
 {
-    private IConfiguration _config = config;
 
-    [HttpPost("login")]
-    public ActionResult<string> Post([FromBody] LoginRequest loginRequest)
-    {
-        //your logic for login process
-        //If login usrename and password are correct then proceed to generate token
+	[HttpPost]
+	public ActionResult<string> Post([FromBody] LoginRequest loginRequest)
+	{
+		//login logic
 
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+		return jwtUtil.GenerateToken("marcin", "admin");
+	}
 
-        var Sectoken = new JwtSecurityToken(_config["Jwt:Issuer"],
-          _config["Jwt:Issuer"],
-          null,
-          expires: DateTime.Now.AddMinutes(120),
-          signingCredentials: credentials);
-
-        var token = new JwtSecurityTokenHandler().WriteToken(Sectoken);
-
-        return token;
-    }
+	[HttpPost("logout")]
+	public void Logout()
+	{
+		Console.WriteLine("xd");
+	}
 }

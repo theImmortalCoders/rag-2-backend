@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using rag_2_backend.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Jwt configuration starts here
+//Jwt configuration
 var jwtIssuer = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
 var jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
 
@@ -18,16 +19,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
  {
      options.TokenValidationParameters = new TokenValidationParameters
      {
-         ValidateIssuer = true,
-         ValidateAudience = true,
-         ValidateLifetime = true,
          ValidateIssuerSigningKey = true,
          ValidIssuer = jwtIssuer,
          ValidAudience = jwtIssuer,
-         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+
+         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? ""))
      };
  });
-//Jwt configuration ends here
+//Jwt configuration
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -68,6 +67,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<JwtUtil>();
 
 var app = builder.Build();
 

@@ -1,0 +1,1 @@
+INSERT INTO games ("Name", "GameType") VALUES ('Pong', 1)

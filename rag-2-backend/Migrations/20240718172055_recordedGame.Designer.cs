@@ -11,8 +11,8 @@ using rag_2_backend.data;
 namespace rag_2_backend.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240702192018_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20240718172055_recordedGame")]
+    partial class recordedGame
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,24 +24,28 @@ namespace rag_2_backend.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("rag_2_backend.models.User", b =>
+            modelBuilder.Entity("rag_2_backend.models.entity.Game", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("GameType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("name");
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("users");
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("games");
                 });
 #pragma warning restore 612, 618
         }

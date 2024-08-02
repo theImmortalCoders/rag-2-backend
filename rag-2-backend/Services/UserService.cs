@@ -19,7 +19,7 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil)
 
     public string LoginUser(string username, string password)
     {
-        return jwtUtil.GenerateToken("marcin", "admin");
+        return jwtUtil.GenerateToken("marcinbator.ofc@gmail.com", "admin");
     }
 
     public void LogoutUser()

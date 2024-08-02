@@ -69,6 +69,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<GameRecordService>();
 builder.Services.AddScoped<JwtUtil>();
 
 var app = builder.Build();

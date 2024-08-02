@@ -4,7 +4,6 @@ using rag_2_backend.data;
 using rag_2_backend.DTO;
 using rag_2_backend.DTO.Mapper;
 using rag_2_backend.models.entity;
-using rag_2_backend.Models.Entity;
 
 namespace rag_2_backend.Services;
 
@@ -21,8 +20,9 @@ public class GameRecordService(DatabaseContext context)
         return records.Select(RecordedGameMapper.Map).ToList();
     }
 
-    public void AddGameRecord([FromBody] RecordedGameRequest request, User user)
+    public void AddGameRecord([FromBody] RecordedGameRequest request, string email)
     {
+        var user = context.Users.SingleOrDefault(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
         var game = context.Games.Find(request.GameId) ?? throw new KeyNotFoundException("Game not found");
         var recordedGame = new RecordedGame
         {

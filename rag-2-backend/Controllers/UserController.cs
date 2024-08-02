@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using rag_2_backend.DTO;
 using rag_2_backend.Services;
-using rag_2_backend.Utils;
 
 namespace rag_2_backend.controllers;
 
@@ -21,22 +20,23 @@ public class UserController(UserService userService) : ControllerBase
 	[HttpPost("auth/login")]
 	public ActionResult<string> Post([FromBody] LoginRequest loginRequest)
 	{
-		//login logic
-
 		return userService.LoginUser(loginRequest.Email, loginRequest.Password);
 	}
 
 	[HttpPost("auth/logout")]
 	public void Logout()
 	{
-		//add jwt to blacklist
+		var email = (User.FindFirst(ClaimTypes.Email)?.Value) ?? throw new UnauthorizedAccessException("Unauthorized");
+
+		userService.LogoutUser(email);
 	}
 
 	[HttpGet("me")]
 	[Authorize]
-	public ActionResult<string> Me()
+	public UserResponse Me()
 	{
 		var email = (User.FindFirst(ClaimTypes.Email)?.Value) ?? throw new UnauthorizedAccessException("Unauthorized");
-		return email;
+
+		return userService.GetMe(email);
 	}
 }

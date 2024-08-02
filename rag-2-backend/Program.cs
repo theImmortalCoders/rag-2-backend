@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using rag_2_backend.Utils;
+using rag_2_backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
          ValidateIssuerSigningKey = true,
          ValidIssuer = jwtIssuer,
          ValidAudience = jwtIssuer,
+         ValidateLifetime = true,
+         ClockSkew = TimeSpan.Zero,
 
          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? ""))
      };
@@ -67,6 +70,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<GameRecordService>();
 builder.Services.AddScoped<JwtUtil>();
 
 var app = builder.Build();

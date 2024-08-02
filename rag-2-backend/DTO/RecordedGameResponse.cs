@@ -1,8 +1,8 @@
-namespace rag_2_backend.DTO
+namespace rag_2_backend.DTO;
+public class RecordedGameResponse
 {
-    public class RecordedGameResponse{
-        public int Id { get; init; }
-        public required int GameId { get; init; }
-        public required string Value { get; init; }
-    }
+    public int Id { get; set; }
+    public required UserResponse UserResponse { get; set; }
+    public required GameResponse GameResponse { get; set; }
+    public required string Value { get; set; }
 }

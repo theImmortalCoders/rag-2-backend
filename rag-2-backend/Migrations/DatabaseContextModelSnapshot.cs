@@ -21,6 +21,30 @@ namespace rag_2_backend.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("rag_2_backend.Models.Entity.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("users");
+                });
+
             modelBuilder.Entity("rag_2_backend.models.entity.Game", b =>
                 {
                     b.Property<int>("Id")
@@ -56,6 +80,9 @@ namespace rag_2_backend.Migrations
                     b.Property<int>("GameId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Value")
                         .IsRequired()
                         .HasColumnType("text");
@@ -63,6 +90,8 @@ namespace rag_2_backend.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GameId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("recorded_games");
                 });
@@ -75,7 +104,15 @@ namespace rag_2_backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("rag_2_backend.Models.Entity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Game");
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

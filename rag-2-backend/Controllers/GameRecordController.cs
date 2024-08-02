@@ -23,8 +23,8 @@ public class GameRecordController(DatabaseContext context) : ControllerBase
         return records.Select(r => new RecordedGameResponse
         {
             Id = r.Id,
-            GameId = r.Game.Id,
-            Value = r.Value
+            Name = r.Game.Name,
+            GameType = r.Game.GameType
         }).ToList();
     }
 
@@ -36,12 +36,10 @@ public class GameRecordController(DatabaseContext context) : ControllerBase
         var recordedGame = new RecordedGame
         {
             Game = game,
-            Value = request.Value
+            Value = request.Value,
+            User = null
         };
         context.RecordedGames.Add(recordedGame);
         context.SaveChanges();
-
-        // var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        // var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
     }
 }

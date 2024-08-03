@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.data;
 using rag_2_backend.DTO;
@@ -20,16 +19,20 @@ public class GameRecordService(DatabaseContext context)
         return records.Select(RecordedGameMapper.Map).ToList();
     }
 
-    public void AddGameRecord([FromBody] RecordedGameRequest request, string email)
+    public void AddGameRecord(RecordedGameRequest request, string email)
     {
-        var user = context.Users.SingleOrDefault(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
-        var game = context.Games.Find(request.GameId) ?? throw new KeyNotFoundException("Game not found");
+        var user = context.Users.SingleOrDefault(u => u.Email == email)
+            ?? throw new KeyNotFoundException("User not found");
+        var game = context.Games.SingleOrDefault(g => g.Id == request.GameId)
+            ?? throw new KeyNotFoundException("Game not found");
+
         var recordedGame = new RecordedGame
         {
             Game = game,
             Value = request.Value,
             User = user
         };
+
         context.RecordedGames.Add(recordedGame);
         context.SaveChanges();
     }

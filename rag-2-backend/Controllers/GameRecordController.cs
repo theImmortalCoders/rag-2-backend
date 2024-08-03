@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,14 +12,14 @@ namespace rag_2_backend.controllers;
 public class GameRecordController(GameRecordService gameRecordService) : ControllerBase
 {
     [HttpGet]
-    public IEnumerable<RecordedGameResponse> GetRecordsByGame(int gameId)
+    public IEnumerable<RecordedGameResponse> GetRecordsByGame([Required] int gameId)
     {
         return gameRecordService.GetRecordsByGame(gameId);
     }
 
     [HttpPost]
     [Authorize]
-    public void AddGameRecord([FromBody] RecordedGameRequest request)
+    public void AddGameRecord([FromBody][Required] RecordedGameRequest request)
     {
         var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new KeyNotFoundException("User not found");
 

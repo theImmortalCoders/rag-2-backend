@@ -9,7 +9,7 @@ namespace rag_2_backend.Services;
 
 public class GameRecordService(DatabaseContext context)
 {
-    public IEnumerable<RecordedGameResponse> GetRecordsByGame(int gameId)
+    public List<RecordedGameResponse> GetRecordsByGame(int gameId)
     {
         var games = context.RecordedGames.ToArray();
         var records = context.RecordedGames

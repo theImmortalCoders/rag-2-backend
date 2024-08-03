@@ -8,7 +8,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
 {
     public required DbSet<Game> Games { get; init; }
 
-    public required DbSet<RecordedGame> RecordedGames { get; init; }
+    public virtual required DbSet<RecordedGame> RecordedGames { get; init; }
 
     public required DbSet<User> Users { get; init; }
 }

@@ -20,6 +20,8 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+    - name: Go to working dir
+      run: cd rag-2-backend/
     - name: Restore dependencies
       run: dotnet restore
     - name: Build

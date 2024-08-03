@@ -6,9 +6,9 @@ namespace rag_2_backend.data;
 
 public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbContext(options)
 {
-    public required DbSet<Game> Games { get; init; }
+    public virtual required DbSet<Game> Games { get; init; }
 
-    public required DbSet<RecordedGame> RecordedGames { get; init; }
+    public virtual required DbSet<RecordedGame> RecordedGames { get; init; }
 
-    public required DbSet<User> Users { get; init; }
+    public virtual required DbSet<User> Users { get; init; }
 }

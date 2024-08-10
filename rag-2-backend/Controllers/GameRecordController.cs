@@ -12,11 +12,14 @@ namespace rag_2_backend.controllers;
 public class GameRecordController(GameRecordService gameRecordService) : ControllerBase
 {
     [HttpGet]
-    public IEnumerable<RecordedGameResponse> GetRecordsByGame([Required] int gameId)
+    public async Task<IEnumerable<RecordedGameResponse>> GetRecordsByGame([Required] int gameId)
     {
-        return gameRecordService.GetRecordsByGame(gameId);
+        return await gameRecordService.GetRecordsByGame(gameId);
     }
 
+    /// <summary>
+    /// (Authenticated)
+    /// </summary>
     [HttpPost]
     [Authorize]
     public void AddGameRecord([FromBody][Required] RecordedGameRequest request)

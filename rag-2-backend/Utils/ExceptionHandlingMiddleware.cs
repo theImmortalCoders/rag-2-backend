@@ -33,7 +33,7 @@ public class ExceptionHandlingMiddleware
 
         ExceptionResponse response = exception switch
         {
-            BadHttpRequestException _ => new ExceptionResponse(HttpStatusCode.BadRequest, "Application exception occurred."),
+            BadHttpRequestException _ => new ExceptionResponse(HttpStatusCode.BadRequest, "Bad request."),
             KeyNotFoundException _ => new ExceptionResponse(HttpStatusCode.NotFound, "The request key not found."),
             UnauthorizedAccessException _ => new ExceptionResponse(HttpStatusCode.Unauthorized, "Unauthorized."),
             _ => new ExceptionResponse(HttpStatusCode.InternalServerError, "Internal server error. Please retry later.")

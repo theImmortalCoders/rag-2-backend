@@ -8,9 +8,9 @@ namespace rag_2_backend.Services;
 
 public class GameRecordService(DatabaseContext context)
 {
-    public List<RecordedGameResponse> GetRecordsByGame(int gameId)
+    public async Task<List<RecordedGameResponse>> GetRecordsByGame(int gameId)
     {
-        var games = context.RecordedGames.ToArray();
+        var games = await context.RecordedGames.ToArrayAsync();
         var records = context.RecordedGames
             .Include(r => r.Game) //include nullable reference
             .Include(r => r.User)
@@ -33,7 +33,7 @@ public class GameRecordService(DatabaseContext context)
             User = user
         };
 
-        context.RecordedGames.Add(recordedGame);
-        context.SaveChanges();
+        context.RecordedGames.AddAsync(recordedGame);
+        context.SaveChangesAsync();
     }
 }

@@ -8,13 +8,13 @@ namespace rag_2_backend.Services;
 
 public class GameRecordService(DatabaseContext context)
 {
-    public List<RecordedGameResponse> GetRecordsByGame(int gameId)
+    public async Task<List<RecordedGameResponse>> GetRecordsByGame(int gameId)
     {
-        var games = context.RecordedGames.ToArray();
+        var games = await context.RecordedGames.ToArrayAsync();
         var records = context.RecordedGames
             .Include(r => r.Game) //include nullable reference
             .Include(r => r.User)
-            .Where(r => r.Game != null && r.Game.Id == gameId)
+            .Where(r => r.Game.Id == gameId)
             .ToList();
         return records.Select(RecordedGameMapper.Map).ToList();
     }

@@ -62,7 +62,11 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(s =>
+{
+    var filePath = Path.Combine(AppContext.BaseDirectory, "rag-2-backend.xml");
+    s.IncludeXmlComments(filePath);
+});
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder => builder.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
@@ -73,6 +77,7 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<GameRecordService>();
 builder.Services.AddScoped<JwtUtil>();
+builder.Services.AddScoped<GameService>();
 
 var app = builder.Build();
 

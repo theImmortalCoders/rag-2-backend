@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using rag_2_backend.data;
 using rag_2_backend.DTO;
 using rag_2_backend.DTO.Mapper;
@@ -8,7 +9,7 @@ namespace rag_2_backend.Services;
 
 public class UserService(DatabaseContext context, JwtUtil jwtUtil)
 {
-    public void RegisterUser(UserRequest userRequest)
+    public async void RegisterUser(UserRequest userRequest)
     {
         if (context.Users.Any(u => u.Email == userRequest.Email))
             throw new ArgumentException("User already exists");
@@ -20,20 +21,20 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil)
             Password = HashUtil.HashPassword(userRequest.Password)
         };
 
-        context.Users.Add(user);
-        context.SaveChanges();
+        await context.Users.AddAsync(user);
+        await context.SaveChangesAsync();
     }
 
-    public UserResponse GetMe(string email)
+    public async Task<UserResponse> GetMe(string email)
     {
-        User user = context.Users.FirstOrDefault(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
 
         return UserMapper.Map(user);
     }
 
-    public string LoginUser(string email, string password)
+    public async Task<string> LoginUser(string email, string password)
     {
-        User user = context.Users.FirstOrDefault(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
 
         if (!HashUtil.VerifyPassword(password, user.Password))
             throw new UnauthorizedAccessException("Invalid password");

@@ -18,9 +18,9 @@ public class UserController(UserService userService) : ControllerBase
 	}
 
 	[HttpPost("auth/login")]
-	public ActionResult<string> Login([FromBody][Required] UserRequest loginRequest)
+	public async Task<string> Login([FromBody][Required] UserRequest loginRequest)
 	{
-		return userService.LoginUser(loginRequest.Email, loginRequest.Password);
+		return await userService.LoginUser(loginRequest.Email, loginRequest.Password);
 	}
 
 	[HttpPost("auth/logout")]
@@ -31,12 +31,15 @@ public class UserController(UserService userService) : ControllerBase
 		userService.LogoutUser(email);
 	}
 
+	/// <summary>
+	/// (Autneticated)
+	/// </summary>
 	[HttpGet("me")]
 	[Authorize]
-	public UserResponse Me()
+	public async Task<UserResponse> Me()
 	{
 		var email = (User.FindFirst(ClaimTypes.Email)?.Value) ?? throw new UnauthorizedAccessException("Unauthorized");
 
-		return userService.GetMe(email);
+		return await userService.GetMe(email);
 	}
 }

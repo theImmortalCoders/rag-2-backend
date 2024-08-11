@@ -55,9 +55,9 @@ public class GameRecordServiceTest
     }
 
     [Fact]
-    public void GetRecordsByGameTest()
+    public async void GetRecordsByGameTest()
     {
-        var actualRecords = _gameRecordService.GetRecordsByGame(1);
+        var actualRecords = await _gameRecordService.GetRecordsByGame(1);
         List<RecordedGameResponse> expectedRecords = [
             new() {
                 Id = 1,

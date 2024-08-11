@@ -10,6 +10,6 @@ namespace rag_2_backend.models.entity;
 public class Game
 {
     [Key] public int Id { get; init; }
-    [MaxLength(100)] public required string Name { get; init; }
-    public GameType GameType { get; init; }
+    [MaxLength(100)] public required string Name { get; set; }
+    public GameType GameType { get; set; }
 }

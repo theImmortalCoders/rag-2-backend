@@ -14,13 +14,4 @@ public class GameMapper
             GameType = game.GameType
         };
     }
-
-    public static Game Map(GameResponse gameResponse)
-    {
-        return new Game
-        {
-            Name = gameResponse.Name,
-            GameType = gameResponse.GameType
-        };
-    }
 }

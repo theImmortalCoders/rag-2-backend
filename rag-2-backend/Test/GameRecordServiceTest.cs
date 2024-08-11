@@ -80,6 +80,6 @@ public class GameRecordServiceTest
         var request = new RecordedGameRequest { GameId = 1, Value = "10" };
         _gameRecordService.AddGameRecord(request, "email");
 
-        _contextMock.Verify(c => c.RecordedGames.AddAsync(It.IsAny<RecordedGame>(), default), Times.Once);
+        _contextMock.Verify(c => c.RecordedGames.Add(It.IsAny<RecordedGame>()), Times.Once);
     }
 }

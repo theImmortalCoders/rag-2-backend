@@ -25,4 +25,24 @@ public class GameController(GameService gameService) : ControllerBase
     {
         gameService.AddGame(request);
     }
+
+    /// <summary>
+    /// (Admin)
+    /// </summary>
+    [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin")]
+    public void Edit([FromBody][Required] GameRequest request, int id)
+    {
+        gameService.EditGame(request, id);
+    }
+
+    /// <summary>
+    /// (Admin) only if no record is connected
+    /// </summary>
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
+    public void Remove(int id)
+    {
+        gameService.RemoveGame(id);
+    }
 }

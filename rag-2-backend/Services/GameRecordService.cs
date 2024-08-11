@@ -14,7 +14,7 @@ public class GameRecordService(DatabaseContext context)
         var records = context.RecordedGames
             .Include(r => r.Game) //include nullable reference
             .Include(r => r.User)
-            .Where(r => r.Game != null && r.Game.Id == gameId)
+            .Where(r => r.Game.Id == gameId)
             .ToList();
         return records.Select(RecordedGameMapper.Map).ToList();
     }
@@ -33,7 +33,7 @@ public class GameRecordService(DatabaseContext context)
             User = user
         };
 
-        context.RecordedGames.AddAsync(recordedGame);
-        context.SaveChangesAsync();
+        context.RecordedGames.Add(recordedGame);
+        context.SaveChanges();
     }
 }

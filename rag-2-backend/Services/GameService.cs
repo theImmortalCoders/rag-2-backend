@@ -6,11 +6,11 @@ using rag_2_backend.models.entity;
 
 namespace rag_2_backend.Services;
 
-public class GameService(DatabaseContext _context)
+public class GameService(DatabaseContext context)
 {
     public async Task<IEnumerable<GameResponse>> GetGames()
     {
-        var games = await _context.Games.ToListAsync();
+        var games = await context.Games.ToListAsync();
 
         return games.Select(g => new GameResponse
         {
@@ -22,7 +22,7 @@ public class GameService(DatabaseContext _context)
 
     public void AddGame(GameRequest request)
     {
-        if (_context.Games.Any(g => g.Name == request.Name))
+        if (context.Games.Any(g => g.Name == request.Name))
             throw new Microsoft.AspNetCore.Http.BadHttpRequestException("Game already exists");
 
         var game = new Game
@@ -31,7 +31,7 @@ public class GameService(DatabaseContext _context)
             GameType = request.GameType
         };
 
-        _context.Games.Add(game);
-        _context.SaveChanges();
+        context.Games.Add(game);
+        context.SaveChanges();
     }
 }

@@ -8,12 +8,12 @@ namespace rag_2_backend.controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class GameController(GameService _gameService) : ControllerBase
+public class GameController(GameService gameService) : ControllerBase
 {
     [HttpGet]
     public async Task<IEnumerable<GameResponse>> GetGames()
     {
-        return await _gameService.GetGames();
+        return await gameService.GetGames();
     }
 
     /// <summary>
@@ -23,6 +23,6 @@ public class GameController(GameService _gameService) : ControllerBase
     [Authorize(Roles = "Admin")]
     public void Add([FromBody][Required] GameRequest request)
     {
-        _gameService.AddGame(request);
+        gameService.AddGame(request);
     }
 }

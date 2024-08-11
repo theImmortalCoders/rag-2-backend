@@ -1,4 +1,5 @@
-namespace rag_2_backend.Models.Entity;
+namespace rag_2_backend.Models;
+
 public enum Role
 {
     Student,

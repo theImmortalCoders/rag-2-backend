@@ -27,14 +27,14 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil)
 
     public async Task<UserResponse> GetMe(string email)
     {
-        User user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
 
         return UserMapper.Map(user);
     }
 
     public async Task<string> LoginUser(string email, string password)
     {
-        User user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
 
         if (!HashUtil.VerifyPassword(password, user.Password))
             throw new UnauthorizedAccessException("Invalid password");

@@ -17,17 +17,21 @@ public class GameRecordServiceTest
     private readonly Mock<DatabaseContext> _contextMock = new(
         new DbContextOptionsBuilder<DatabaseContext>().Options
     );
+
     private readonly GameRecordService _gameRecordService;
+
     private readonly User _user = new("email@prz.edu.pl")
     {
         Id = 1,
         Password = "password",
     };
+
     private readonly Game _game = new()
     {
         Id = 1,
         Name = "Game1",
     };
+
     private readonly List<RecordedGame> _recordedGames = [];
 
     public GameRecordServiceTest()
@@ -57,12 +61,14 @@ public class GameRecordServiceTest
     public async void GetRecordsByGameTest()
     {
         var actualRecords = await _gameRecordService.GetRecordsByGame(1);
-        List<RecordedGameResponse> expectedRecords = [
-            new() {
+        List<RecordedGameResponse> expectedRecords =
+        [
+            new()
+            {
                 Id = 1,
                 Value = "10",
-                GameResponse = new GameResponse { Id = 1 , Name = "Game1", GameType = GameType.EventGame },
-                UserResponse = new UserResponse { Id = 1,  Email = "email@prz.edu.pl", Role = Role.Teacher },
+                GameResponse = new GameResponse { Id = 1, Name = "Game1", GameType = GameType.EventGame },
+                UserResponse = new UserResponse { Id = 1, Email = "email@prz.edu.pl", Role = Role.Teacher },
             },
         ];
 

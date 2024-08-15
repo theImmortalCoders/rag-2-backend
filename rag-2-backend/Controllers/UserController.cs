@@ -11,41 +11,41 @@ namespace rag_2_backend.controllers;
 [Route("api/[controller]")]
 public class UserController(UserService userService) : ControllerBase
 {
-	[HttpPost("auth/register")]
-	public void Register([FromBody][Required] UserRequest userRequest)
-	{
-		userService.RegisterUser(userRequest);
-	}
+    [HttpPost("auth/register")]
+    public void Register([FromBody] [Required] UserRequest userRequest)
+    {
+        userService.RegisterUser(userRequest);
+    }
 
-	[HttpPost("auth/login")]
-	public async Task<string> Login([FromBody][Required] UserRequest loginRequest)
-	{
-		return await userService.LoginUser(loginRequest.Email, loginRequest.Password);
-	}
+    [HttpPost("auth/login")]
+    public async Task<string> Login([FromBody] [Required] UserRequest loginRequest)
+    {
+        return await userService.LoginUser(loginRequest.Email, loginRequest.Password);
+    }
 
-	[HttpPost("auth/logout")]
-	public void Logout()
-	{
-		var email = (User.FindFirst(ClaimTypes.Email)?.Value) ?? throw new UnauthorizedAccessException("Unauthorized");
+    [HttpPost("auth/logout")]
+    public void Logout()
+    {
+        var email = (User.FindFirst(ClaimTypes.Email)?.Value) ?? throw new UnauthorizedAccessException("Unauthorized");
 
-		userService.LogoutUser(email);
-	}
+        userService.LogoutUser(email);
+    }
 
-	[HttpPost("auth/confirm")]
-	public void ConfirmAccount([Required] string token)
-	{
-		userService.ConfirmAccount(token);
-	}
+    [HttpPost("auth/confirm")]
+    public void ConfirmAccount([Required] string token)
+    {
+        userService.ConfirmAccount(token);
+    }
 
-	/// <summary>
-	/// (Autneticated)
-	/// </summary>
-	[HttpGet("me")]
-	[Authorize]
-	public async Task<UserResponse> Me()
-	{
-		var email = (User.FindFirst(ClaimTypes.Email)?.Value) ?? throw new UnauthorizedAccessException("Unauthorized");
+    /// <summary>
+    /// (Autneticated)
+    /// </summary>
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<UserResponse> Me()
+    {
+        var email = (User.FindFirst(ClaimTypes.Email)?.Value) ?? throw new UnauthorizedAccessException("Unauthorized");
 
-		return await userService.GetMe(email);
-	}
+        return await userService.GetMe(email);
+    }
 }

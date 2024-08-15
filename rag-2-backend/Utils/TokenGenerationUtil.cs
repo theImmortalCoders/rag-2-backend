@@ -13,6 +13,7 @@ public class TokenGenerationUtil
         {
             res.Append(valid[rnd.Next(valid.Length)]);
         }
+
         return res.ToString();
     }
 }

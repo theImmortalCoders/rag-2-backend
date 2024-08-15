@@ -52,7 +52,7 @@ public class GameService(DatabaseContext context)
 
     public void RemoveGame(int id)
     {
-        var game = context.Games.SingleOrDefault(g=>g.Id == id) ?? throw new KeyNotFoundException("Game not found");
+        var game = context.Games.SingleOrDefault(g => g.Id == id) ?? throw new KeyNotFoundException("Game not found");
 
         var records = context.RecordedGames.Where(g => g.Game.Id == id).ToList();
         if (records.Count > 0) throw new BadHttpRequestException("Game has records");

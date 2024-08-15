@@ -21,7 +21,7 @@ public class GameController(GameService gameService) : ControllerBase
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public void Add([FromBody][Required] GameRequest request)
+    public void Add([FromBody] [Required] GameRequest request)
     {
         gameService.AddGame(request);
     }
@@ -31,7 +31,7 @@ public class GameController(GameService gameService) : ControllerBase
     /// </summary>
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Admin")]
-    public void Edit([FromBody][Required] GameRequest request, int id)
+    public void Edit([FromBody] [Required] GameRequest request, int id)
     {
         gameService.EditGame(request, id);
     }

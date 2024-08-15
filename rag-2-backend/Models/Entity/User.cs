@@ -14,7 +14,8 @@ public class User
     public bool Confirmed { get; set; } = false;
 
     public User() //for ef
-    {}
+    {
+    }
 
     public User(string email)
     {

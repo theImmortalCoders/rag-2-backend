@@ -22,7 +22,7 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     /// </summary>
     [HttpPost]
     [Authorize]
-    public void AddGameRecord([FromBody][Required] RecordedGameRequest request)
+    public void AddGameRecord([FromBody] [Required] RecordedGameRequest request)
     {
         var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new KeyNotFoundException("User not found");
 

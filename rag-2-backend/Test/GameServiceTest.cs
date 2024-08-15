@@ -18,7 +18,9 @@ public class GameServiceTest
     private readonly Mock<DatabaseContext> _contextMock = new(
         new DbContextOptionsBuilder<DatabaseContext>().Options
     );
+
     private readonly GameService _gameService;
+
     private readonly List<Game> _games =
     [
         new() { Id = 1, Name = "Game1", GameType = GameType.EventGame },
@@ -29,7 +31,8 @@ public class GameServiceTest
     {
         _gameService = new GameService(_contextMock.Object);
         _contextMock.Setup(c => c.Games).Returns(_games.AsQueryable().BuildMockDbSet().Object);
-        _contextMock.Setup(c => c.RecordedGames).Returns(new List<RecordedGame>().AsQueryable().BuildMockDbSet().Object);
+        _contextMock.Setup(c => c.RecordedGames)
+            .Returns(new List<RecordedGame>().AsQueryable().BuildMockDbSet().Object);
     }
 
     [Fact]
@@ -37,7 +40,8 @@ public class GameServiceTest
     {
         var actualGames = _gameService.GetGames().Result;
 
-        Assert.Equal(JsonConvert.SerializeObject(_games.Select(GameMapper.Map)), JsonConvert.SerializeObject(actualGames));
+        Assert.Equal(JsonConvert.SerializeObject(_games.Select(GameMapper.Map)),
+            JsonConvert.SerializeObject(actualGames));
     }
 
     [Fact]
@@ -51,7 +55,9 @@ public class GameServiceTest
 
         _gameService.AddGame(gameRequest);
 
-        _contextMock.Verify(c => c.Games.Add(It.Is<Game>(g => g.Name == gameRequest.Name && g.GameType == gameRequest.GameType)), Times.Once);
+        _contextMock.Verify(
+            c => c.Games.Add(It.Is<Game>(g => g.Name == gameRequest.Name && g.GameType == gameRequest.GameType)),
+            Times.Once);
     }
 
     [Fact]
@@ -71,7 +77,7 @@ public class GameServiceTest
     {
         _gameService.RemoveGame(1);
 
-        _contextMock.Verify(c=> c.Games.Remove(It.Is<Game>(g=>g.Id == 1)), Times.Once);
+        _contextMock.Verify(c => c.Games.Remove(It.Is<Game>(g => g.Id == 1)), Times.Once);
     }
 
     [Fact]
@@ -83,15 +89,18 @@ public class GameServiceTest
     [Fact]
     public void ShouldThrowBadRequestIfGameHasRecords()
     {
-        List<RecordedGame> records = [new RecordedGame
-        {
-            Game = _games[0],
-            User = new User("email@prz.edu.pl")
+        List<RecordedGame> records =
+        [
+            new RecordedGame
             {
-                Password = "pass"
-            },
-            Value = "value"
-        }];
+                Game = _games[0],
+                User = new User("email@prz.edu.pl")
+                {
+                    Password = "pass"
+                },
+                Value = "value"
+            }
+        ];
         _contextMock.Setup(c => c.RecordedGames).Returns(records.AsQueryable().BuildMockDbSet().Object);
 
         Assert.Throws<BadHttpRequestException>(() => _gameService.RemoveGame(1));
@@ -108,7 +117,9 @@ public class GameServiceTest
 
         _gameService.EditGame(gameRequest, 1);
 
-        _contextMock.Verify(c => c.Games.Update(It.Is<Game>(g => g.Name == gameRequest.Name && g.GameType == gameRequest.GameType)), Times.Once);
+        _contextMock.Verify(
+            c => c.Games.Update(It.Is<Game>(g => g.Name == gameRequest.Name && g.GameType == gameRequest.GameType)),
+            Times.Once);
     }
 
     [Fact]

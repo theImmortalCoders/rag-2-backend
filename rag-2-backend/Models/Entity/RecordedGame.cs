@@ -9,6 +9,6 @@ public class RecordedGame
 {
     [Key] public int Id { get; init; }
     public required Game Game { get; init; }
-    [MaxLength(100)] public required string Value { get; init; }
+    public required string Value { get; init; }
     public required User User { get; init; }
 }

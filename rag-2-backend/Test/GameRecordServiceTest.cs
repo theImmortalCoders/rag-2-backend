@@ -18,10 +18,9 @@ public class GameRecordServiceTest
         new DbContextOptionsBuilder<DatabaseContext>().Options
     );
     private readonly GameRecordService _gameRecordService;
-    private readonly User _user = new()
+    private readonly User _user = new("email@prz.edu.pl")
     {
         Id = 1,
-        Email = "email",
         Password = "password",
     };
     private readonly Game _game = new()
@@ -63,7 +62,7 @@ public class GameRecordServiceTest
                 Id = 1,
                 Value = "10",
                 GameResponse = new GameResponse { Id = 1 , Name = "Game1", GameType = GameType.EventGame },
-                UserResponse = new UserResponse { Id = 1,  Email = "email", Role = Role.Student },
+                UserResponse = new UserResponse { Id = 1,  Email = "email@prz.edu.pl", Role = Role.Teacher },
             },
         ];
 
@@ -78,7 +77,7 @@ public class GameRecordServiceTest
     public void AddGameRecordTest()
     {
         var request = new RecordedGameRequest { GameId = 1, Value = "10" };
-        _gameRecordService.AddGameRecord(request, "email");
+        _gameRecordService.AddGameRecord(request, "email@prz.edu.pl");
 
         _contextMock.Verify(c => c.RecordedGames.Add(It.IsAny<RecordedGame>()), Times.Once);
     }

@@ -8,7 +8,7 @@ namespace rag_2_backend.Utils;
 public class JwtUtil(IConfiguration config)
 
 {
-    public string GenerateToken(string email, string role)
+    public virtual string GenerateToken(string email, string role)
     {
         var jwtKey = config["Jwt:Key"];
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? ""));

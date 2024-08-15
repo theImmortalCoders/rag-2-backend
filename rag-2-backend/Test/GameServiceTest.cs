@@ -86,9 +86,8 @@ public class GameServiceTest
         List<RecordedGame> records = [new RecordedGame
         {
             Game = _games[0],
-            User = new User
+            User = new User("email@prz.edu.pl")
             {
-                Email = "email",
                 Password = "pass"
             },
             Value = "value"

@@ -71,6 +71,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder => builder.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
 });
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -78,6 +79,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<GameRecordService>();
 builder.Services.AddScoped<JwtUtil>();
 builder.Services.AddScoped<GameService>();
+builder.Services.AddScoped<EmailSendingUtil>();
 
 var app = builder.Build();
 

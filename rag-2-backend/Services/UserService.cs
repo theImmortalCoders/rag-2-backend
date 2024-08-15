@@ -7,22 +7,34 @@ using rag_2_backend.Utils;
 
 namespace rag_2_backend.Services;
 
-public class UserService(DatabaseContext context, JwtUtil jwtUtil)
+public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailSendingUtil emailSendingUtil)
 {
-    public async void RegisterUser(UserRequest userRequest)
+    public void RegisterUser(UserRequest userRequest)
     {
         if (context.Users.Any(u => u.Email == userRequest.Email))
-            throw new ArgumentException("User already exists");
+            throw new BadHttpRequestException("User already exists");
 
-
-        User user = new()
+        User user = new(userRequest.Email)
         {
-            Email = userRequest.Email,
             Password = HashUtil.HashPassword(userRequest.Password)
         };
 
-        await context.Users.AddAsync(user);
-        await context.SaveChangesAsync();
+        context.Users.Add(user);
+        context.SaveChanges();
+
+        emailSendingUtil.SendMail("marcinbator.ofc@gmail.com", "Marcinbator Ofc", user.Email);
+    }
+
+    public async Task<string> LoginUser(string email, string password)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
+
+        if (!HashUtil.VerifyPassword(password, user.Password))
+            throw new UnauthorizedAccessException("Invalid password");
+        if (!user.Confirmed)
+            throw new UnauthorizedAccessException("Confirm email");
+
+        return jwtUtil.GenerateToken(user.Email, user.Role.ToString());
     }
 
     public async Task<UserResponse> GetMe(string email)
@@ -32,19 +44,9 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil)
         return UserMapper.Map(user);
     }
 
-    public async Task<string> LoginUser(string email, string password)
-    {
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
-
-        if (!HashUtil.VerifyPassword(password, user.Password))
-            throw new UnauthorizedAccessException("Invalid password");
-
-        return jwtUtil.GenerateToken(user.Email, user.Role.ToString());
-    }
-
     public void LogoutUser(string email)
     {
-        // Redis queueing of blackisted tokens
+        // Redis queueing of blacklisted tokens
     }
 }
 

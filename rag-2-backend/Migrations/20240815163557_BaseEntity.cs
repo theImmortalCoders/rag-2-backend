@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -42,6 +43,25 @@ namespace rag_2_backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "account_confirmation_token",
+                columns: table => new
+                {
+                    Token = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Expiration = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_account_confirmation_token", x => x.Token);
+                    table.ForeignKey(
+                        name: "FK_account_confirmation_token_users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "recorded_games",
                 columns: table => new
                 {
@@ -69,6 +89,11 @@ namespace rag_2_backend.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_account_confirmation_token_UserId",
+                table: "account_confirmation_token",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_games_Name",
                 table: "games",
                 column: "Name",
@@ -88,6 +113,9 @@ namespace rag_2_backend.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "account_confirmation_token");
+
             migrationBuilder.DropTable(
                 name: "recorded_games");
 

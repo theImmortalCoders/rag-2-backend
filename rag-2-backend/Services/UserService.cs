@@ -20,7 +20,7 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailService 
         };
         var token = new AccountConfirmationToken()
         {
-            Token = HashUtil.HashPassword(user.Email + user.Password + DateTime.Now),
+            Token = TokenGenerationUtil.CreatePassword(15),
             User = user,
             Expiration = DateTime.Now.AddDays(7)
         };
@@ -30,6 +30,22 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailService 
         context.SaveChanges();
 
         emailService.SendConfirmationEmail(user.Email, token.Token);
+    }
+
+    public void ConfirmAccount(string tokenValue)
+    {
+        var token = context.AccountConfirmationTokens
+                        .Include(t => t.User)
+                        .SingleOrDefault(t => t.Token == tokenValue)
+                    ?? throw new BadHttpRequestException("Invalid token");
+        if (token.Expiration < DateTime.Now) throw new BadHttpRequestException("Invalid token");
+
+        var user = context.Users.SingleOrDefault(u => u.Email == token.User.Email) ??
+                   throw new KeyNotFoundException("User not found");
+        user.Confirmed = true;
+
+        context.AccountConfirmationTokens.Remove(token);
+        context.SaveChanges();
     }
 
     public async Task<string> LoginUser(string email, string password)

@@ -12,8 +12,8 @@ using rag_2_backend.data;
 namespace rag_2_backend.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240815162641_AccountConfirmationToken")]
-    partial class AccountConfirmationToken
+    [Migration("20240815163557_BaseEntity")]
+    partial class BaseEntity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,7 +32,7 @@ namespace rag_2_backend.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<DateTime>("Expiration")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -41,7 +41,7 @@ namespace rag_2_backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AccountConfirmationTokens");
+                    b.ToTable("account_confirmation_token");
                 });
 
             modelBuilder.Entity("rag_2_backend.Models.Entity.User", b =>

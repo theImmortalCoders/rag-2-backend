@@ -15,6 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 var jwtIssuer = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
 var jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
  .AddJwtBearer(options =>
  {
@@ -80,6 +82,7 @@ builder.Services.AddScoped<GameRecordService>();
 builder.Services.AddScoped<JwtUtil>();
 builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<EmailSendingUtil>();
+builder.Services.AddScoped<EmailService>();
 
 var app = builder.Build();
 

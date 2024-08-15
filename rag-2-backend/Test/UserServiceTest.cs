@@ -16,7 +16,7 @@ public class UserServiceTest
         new DbContextOptionsBuilder<DatabaseContext>().Options
     );
     private readonly Mock<JwtUtil> _jwtUtilMock = new(null);
-    private readonly Mock<EmailSendingUtil> _emailSendingUtil = new(null);
+    private readonly Mock<EmailService> _emailService = new(null);
     private readonly UserService _userService;
     private readonly User _user = new("email@prz.edu.pl")
     {
@@ -26,7 +26,7 @@ public class UserServiceTest
 
     public UserServiceTest()
     {
-        _userService = new UserService(_contextMock.Object, _jwtUtilMock.Object, _emailSendingUtil.Object);
+        _userService = new UserService(_contextMock.Object, _jwtUtilMock.Object, _emailService.Object);
 
         _contextMock.Setup(c => c.Users).Returns(() => new List<User> { _user }
             .AsQueryable().BuildMockDbSet().Object);

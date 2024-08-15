@@ -11,4 +11,5 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     public virtual required DbSet<RecordedGame> RecordedGames { get; init; }
 
     public virtual required DbSet<User> Users { get; init; }
+    public virtual required DbSet<AccountConfirmationToken> AccountConfirmationTokens { get; init; }
 }

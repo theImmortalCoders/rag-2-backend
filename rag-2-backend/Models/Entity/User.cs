@@ -8,15 +8,13 @@ namespace rag_2_backend.Models.Entity;
 public class User
 {
     [Key] public int Id { get; init; }
-    [MaxLength(100)] public string Email { get; set;  }
+    [MaxLength(100)] public string Email { get; set; } = "";
     [MaxLength(100)] public required string Password { get; init; }
     public Role Role { get; set; }
     public bool Confirmed { get; set; } = false;
 
-    public User()
-    {
-        Email = "";
-    }
+    public User() //for ef
+    {}
 
     public User(string email)
     {

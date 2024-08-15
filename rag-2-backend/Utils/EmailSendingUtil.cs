@@ -20,7 +20,7 @@ public class EmailSendingUtil(IOptions<MailSettings> options)
             emailMessage.Subject = subject;
             var emailBodyBuilder = new BodyBuilder
             {
-                TextBody = body
+                HtmlBody = body
             };
             emailMessage.Body = emailBodyBuilder.ToMessageBody();
 

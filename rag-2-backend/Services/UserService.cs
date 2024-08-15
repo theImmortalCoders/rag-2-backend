@@ -7,7 +7,7 @@ using rag_2_backend.Utils;
 
 namespace rag_2_backend.Services;
 
-public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailSendingUtil emailSendingUtil)
+public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailService emailService)
 {
     public void RegisterUser(UserRequest userRequest)
     {
@@ -18,12 +18,18 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailSendingU
         {
             Password = HashUtil.HashPassword(userRequest.Password)
         };
+        var token = new AccountConfirmationToken()
+        {
+            Token = HashUtil.HashPassword(user.Email + user.Password + DateTime.Now),
+            User = user,
+            Expiration = DateTime.Now.AddDays(7)
+        };
 
         context.Users.Add(user);
+        context.AccountConfirmationTokens.Add(token);
         context.SaveChanges();
 
-        Task.Run(async () =>
-            await emailSendingUtil.SendMail("marcinbator.ofc@gmail.com", "Marcinbator Ofc", user.Email));
+        emailService.SendConfirmationEmail(user.Email, token.Token);
     }
 
     public async Task<string> LoginUser(string email, string password)

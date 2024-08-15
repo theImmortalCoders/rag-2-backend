@@ -22,12 +22,14 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailSendingU
         context.Users.Add(user);
         context.SaveChanges();
 
-        emailSendingUtil.SendMail("marcinbator.ofc@gmail.com", "Marcinbator Ofc", user.Email);
+        Task.Run(async () =>
+            await emailSendingUtil.SendMail("marcinbator.ofc@gmail.com", "Marcinbator Ofc", user.Email));
     }
 
     public async Task<string> LoginUser(string email, string password)
     {
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ??
+                   throw new KeyNotFoundException("User not found");
 
         if (!HashUtil.VerifyPassword(password, user.Password))
             throw new UnauthorizedAccessException("Invalid password");
@@ -39,7 +41,8 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailSendingU
 
     public async Task<UserResponse> GetMe(string email)
     {
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ??
+                   throw new KeyNotFoundException("User not found");
 
         return UserMapper.Map(user);
     }
@@ -49,4 +52,3 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailSendingU
         // Redis queueing of blacklisted tokens
     }
 }
-

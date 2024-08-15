@@ -8,7 +8,7 @@ public class EmailSendingUtil(IOptions<MailSettings> options)
 {
     private readonly MailSettings _mailSettings = options.Value;
 
-    public bool SendMail(string to, string subject, string body)
+    public async Task<bool> SendMail(string to, string subject, string body)
     {
         try
         {
@@ -18,19 +18,21 @@ public class EmailSendingUtil(IOptions<MailSettings> options)
             var emailTo = new MailboxAddress(to, to);
             emailMessage.To.Add(emailTo);
             emailMessage.Subject = subject;
-            var emailBodyBuilder = new BodyBuilder();
-            emailBodyBuilder.TextBody = body;
+            var emailBodyBuilder = new BodyBuilder
+            {
+                TextBody = body
+            };
             emailMessage.Body = emailBodyBuilder.ToMessageBody();
 
-            var mailClient = new SmtpClient();
-            mailClient.Connect(_mailSettings.Host, _mailSettings.Port, _mailSettings.UseSSL);
-            mailClient.Authenticate(_mailSettings.EmailId, _mailSettings.Password);
-            mailClient.Send(emailMessage);
-            mailClient.Disconnect(true);
-            mailClient.Dispose();
+            using var mailClient = new SmtpClient();
+            await mailClient.ConnectAsync(_mailSettings.Host, _mailSettings.Port, _mailSettings.UseSSL);
+            await mailClient.AuthenticateAsync(_mailSettings.EmailId, _mailSettings.Password);
+            await mailClient.SendAsync(emailMessage);
+            await mailClient.DisconnectAsync(true);
+
             return true;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return false;
         }

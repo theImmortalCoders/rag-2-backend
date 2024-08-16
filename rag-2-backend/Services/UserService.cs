@@ -18,18 +18,27 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailService 
         {
             Password = HashUtil.HashPassword(userRequest.Password)
         };
-        var token = new AccountConfirmationToken()
-        {
-            Token = TokenGenerationUtil.CreatePassword(15),
-            User = user,
-            Expiration = DateTime.Now.AddDays(7)
-        };
-
         context.Users.Add(user);
-        context.AccountConfirmationTokens.Add(token);
-        context.SaveChanges();
 
-        emailService.SendConfirmationEmail(user.Email, token.Token);
+        GenerateAccountTokenAndSendConfirmationMail(user);
+
+        context.SaveChanges();
+    }
+
+    public void ResendConfirmationEmail(string email)
+    {
+        var user = context.Users.SingleOrDefault(u => u.Email == email) ??
+                   throw new KeyNotFoundException("User not found");
+
+        if(user.Confirmed) throw new BadHttpRequestException("User is already confirmed");
+        
+        context.AccountConfirmationTokens.RemoveRange(
+            context.AccountConfirmationTokens.Where(a=>a.User.Email == user.Email)
+        );
+        
+        GenerateAccountTokenAndSendConfirmationMail(user);
+
+        context.SaveChanges();
     }
 
     public void ConfirmAccount(string tokenValue)
@@ -72,5 +81,19 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailService 
     public void LogoutUser(string email)
     {
         // Redis queueing of blacklisted tokens
+    }
+
+    //
+    
+    private void GenerateAccountTokenAndSendConfirmationMail(User user)
+    {
+        var token = new AccountConfirmationToken
+        {
+            Token = TokenGenerationUtil.CreatePassword(15),
+            User = user,
+            Expiration = DateTime.Now.AddDays(7)
+        };
+        context.AccountConfirmationTokens.Add(token);
+        emailService.SendConfirmationEmail(user.Email, token.Token);
     }
 }

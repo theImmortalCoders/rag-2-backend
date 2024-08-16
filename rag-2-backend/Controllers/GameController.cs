@@ -37,7 +37,7 @@ public class GameController(GameService gameService) : ControllerBase
     }
 
     /// <summary>
-    /// (Admin) only if no record is connected
+    /// (Admin)
     /// </summary>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "Admin")]

@@ -31,11 +31,19 @@ public class UserController(UserService userService) : ControllerBase
         userService.LogoutUser(email);
     }
 
-    [HttpPost("auth/confirm")]
+    [HttpPost("auth/resend-confirmation-email")]
+    public void ResendConfirmationEmail([Required] string email)
+    {
+        userService.ResendConfirmationEmail(email);
+    }
+
+    [HttpPost("auth/confirm-account")]
     public void ConfirmAccount([Required] string token)
     {
         userService.ConfirmAccount(token);
     }
+
+
 
     /// <summary>
     /// (Autneticated)

@@ -81,29 +81,9 @@ public class GameServiceTest
     }
 
     [Fact]
-    public void ShouldNotRemoveGameIfGameAlreadyExists()
+    public void ShouldNotRemoveGameIfGameNotExists()
     {
         Assert.Throws<KeyNotFoundException>(() => _gameService.RemoveGame(4));
-    }
-
-    [Fact]
-    public void ShouldThrowBadRequestIfGameHasRecords()
-    {
-        List<RecordedGame> records =
-        [
-            new RecordedGame
-            {
-                Game = _games[0],
-                User = new User("email@prz.edu.pl")
-                {
-                    Password = "pass"
-                },
-                Value = "value"
-            }
-        ];
-        _contextMock.Setup(c => c.RecordedGames).Returns(records.AsQueryable().BuildMockDbSet().Object);
-
-        Assert.Throws<BadHttpRequestException>(() => _gameService.RemoveGame(1));
     }
 
     [Fact]

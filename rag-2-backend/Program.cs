@@ -84,6 +84,7 @@ builder.Services.AddScoped<JwtUtil>();
 builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<EmailSendingUtil>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddHostedService<BackgroundServiceImpl>();
 
 var app = builder.Build();
 

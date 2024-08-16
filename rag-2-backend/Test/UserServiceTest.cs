@@ -61,6 +61,18 @@ public class UserServiceTest
     }
 
     [Fact]
+    public void ShouldResendConfirmationMail()
+    {
+        _userService.ResendConfirmationEmail("email@prz.edu.pl");
+
+        _contextMock.Verify(c => c.AccountConfirmationTokens.Add(It.IsAny<AccountConfirmationToken>()), Times.Once);
+        _emailService.Verify(e => e.SendConfirmationEmail(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+
+        _user.Confirmed = true;
+        Assert.Throws<BadHttpRequestException>(()=>_userService.ResendConfirmationEmail("email@prz.edu.pl"));
+    }
+
+    [Fact]
     public void ShouldConfirmAccount()
     {
         _userService.ConfirmAccount(_token.Token);

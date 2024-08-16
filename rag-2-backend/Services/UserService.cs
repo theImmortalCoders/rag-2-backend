@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using rag_2_backend.data;
 using rag_2_backend.DTO;
 using rag_2_backend.DTO.Mapper;
+using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Utils;
 
@@ -21,8 +22,15 @@ public class UserService(
 
         User user = new(userRequest.Email)
         {
-            Password = HashUtil.HashPassword(userRequest.Password)
+            Password = HashUtil.HashPassword(userRequest.Password),
+            StudyCycleYearA = userRequest.StudyCycleYearA,
+            StudyCycleYearB = userRequest.StudyCycleYearB,
         };
+        if (user.Role == Role.Student)
+        {
+            if(userRequest.StudyCycleYearA == 0 || userRequest.StudyCycleYearB == 0 || userRequest.StudyCycleYearB - userRequest.StudyCycleYearA != 1)
+                throw new BadHttpRequestException("Wrong study cycle year");
+        }
         context.Users.Add(user);
 
         GenerateAccountTokenAndSendConfirmationMail(user);

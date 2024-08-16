@@ -20,7 +20,7 @@ public class UserController(UserService userService) : ControllerBase
     }
 
     [HttpPost("auth/login")]
-    public async Task<string> Login([FromBody] [Required] UserRequest loginRequest)
+    public async Task<string> Login([FromBody] [Required] UserLoginRequest loginRequest)
     {
         return await userService.LoginUser(loginRequest.Email, loginRequest.Password);
     }

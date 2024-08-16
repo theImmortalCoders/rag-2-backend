@@ -29,6 +29,8 @@ public class UserServiceTest
     {
         Id = 1,
         Password = HashUtil.HashPassword("password"),
+        StudyCycleYearA = 2022,
+        StudyCycleYearB = 2023
     };
 
     private readonly AccountConfirmationToken _token;
@@ -59,7 +61,7 @@ public class UserServiceTest
     public void ShouldRegisterUser()
     {
         _userService.RegisterUser(new UserRequest
-            { Email = "email1@prz.edu.pl", Password = "pass" }
+            { Email = "email1@prz.edu.pl", Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023}
         );
 
         _contextMock.Verify(c => c.Users.Add(It.IsAny<User>()), Times.Once);
@@ -122,6 +124,8 @@ public class UserServiceTest
             Id = 1,
             Email = "email@prz.edu.pl",
             Role = Role.Teacher,
+            StudyCycleYearA = 2022,
+            StudyCycleYearB = 2023
         };
 
         Assert.Equal(JsonConvert.SerializeObject(userResponse),

@@ -55,7 +55,7 @@ public class GameService(DatabaseContext context)
         var game = context.Games.SingleOrDefault(g => g.Id == id) ?? throw new KeyNotFoundException("Game not found");
 
         var records = context.RecordedGames.Where(g => g.Game.Id == id).ToList();
-        foreach(var record in records)
+        foreach (var record in records)
         {
             context.RecordedGames.Remove(record);
         }

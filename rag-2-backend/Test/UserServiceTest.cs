@@ -1,9 +1,11 @@
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
 using Newtonsoft.Json;
 using rag_2_backend.data;
 using rag_2_backend.DTO;
+using rag_2_backend.Migrations;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Services;
@@ -18,7 +20,8 @@ public class UserServiceTest
         new DbContextOptionsBuilder<DatabaseContext>().Options
     );
 
-    private readonly Mock<JwtUtil> _jwtUtilMock = new(null);
+    private readonly Mock<JwtUtil> _jwtUtilMock = new(null, null);
+    private readonly Mock<JwtSecurityTokenHandler> _jwtSecurityTokenHandlerMock = new();
     private readonly Mock<EmailService> _emailService = new(null, null);
     private readonly UserService _userService;
 
@@ -38,14 +41,18 @@ public class UserServiceTest
             Expiration = DateTime.Now.AddDays(7),
             Token = HashUtil.HashPassword("password"),
         };
-        _userService = new UserService(_contextMock.Object, _jwtUtilMock.Object, _emailService.Object);
+        _userService = new UserService(_contextMock.Object, _jwtUtilMock.Object, _emailService.Object,
+            _jwtSecurityTokenHandlerMock.Object);
 
         _contextMock.Setup(c => c.Users).Returns(() => new List<User> { _user }
             .AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.AccountConfirmationTokens)
-            .Returns(() => new List<AccountConfirmationToken>() { _token }.AsQueryable().BuildMockDbSet().Object);
+            .Returns(() => new List<AccountConfirmationToken> { _token }.AsQueryable().BuildMockDbSet().Object);
+        _contextMock.Setup(c => c.BlacklistedJwts)
+            .Returns(() => new List<BlacklistedJwt>().AsQueryable().BuildMockDbSet().Object);
         _jwtUtilMock.Setup(j => j.GenerateToken(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         _emailService.Setup(e => e.SendConfirmationEmail(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
+        _jwtSecurityTokenHandlerMock.Setup(e => e.ReadToken(It.IsAny<string>())).Returns(() => new JwtSecurityToken());
     }
 
     [Fact]
@@ -69,7 +76,7 @@ public class UserServiceTest
         _emailService.Verify(e => e.SendConfirmationEmail(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
 
         _user.Confirmed = true;
-        Assert.Throws<BadHttpRequestException>(()=>_userService.ResendConfirmationEmail("email@prz.edu.pl"));
+        Assert.Throws<BadHttpRequestException>(() => _userService.ResendConfirmationEmail("email@prz.edu.pl"));
     }
 
     [Fact]
@@ -97,6 +104,14 @@ public class UserServiceTest
         _user.Confirmed = true;
         await _userService.LoginUser("email@prz.edu.pl", "password");
         _jwtUtilMock.Verify(j => j.GenerateToken(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public void ShouldLogoutUser()
+    {
+        _userService.LogoutUser("Bearer header");
+
+        _contextMock.Verify(c => c.BlacklistedJwts.Add(It.IsAny<BlacklistedJwt>()), Times.Once);
     }
 
     [Fact]

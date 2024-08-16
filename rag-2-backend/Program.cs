@@ -27,10 +27,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = jwtIssuer,
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero,
-
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? ""))
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = async context =>
+            {
+                var tokenBlacklistService = context.HttpContext.RequestServices.GetRequiredService<JwtUtil>();
+                var header = context.HttpContext.Request.Headers.Authorization.FirstOrDefault();
+                if (header == null) return;
+                var token = header["Bearer ".Length..].Trim();
+
+                if (!string.IsNullOrEmpty(token) && await tokenBlacklistService.IsTokenBlacklistedAsync(token))
+                {
+                    throw new UnauthorizedAccessException("Token is not valid");
+                }
+            }
+        };
     });
+
 //Jwt configuration
 
 builder.Services.AddSwaggerGen(options =>

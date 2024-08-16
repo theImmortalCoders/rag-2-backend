@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.data;
 using rag_2_backend.DTO;
@@ -7,7 +8,11 @@ using rag_2_backend.Utils;
 
 namespace rag_2_backend.Services;
 
-public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailService emailService)
+public class UserService(
+    DatabaseContext context,
+    JwtUtil jwtUtil,
+    EmailService emailService,
+    JwtSecurityTokenHandler jwtSecurityTokenHandler)
 {
     public void RegisterUser(UserRequest userRequest)
     {
@@ -30,12 +35,12 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailService 
         var user = context.Users.SingleOrDefault(u => u.Email == email) ??
                    throw new KeyNotFoundException("User not found");
 
-        if(user.Confirmed) throw new BadHttpRequestException("User is already confirmed");
-        
+        if (user.Confirmed) throw new BadHttpRequestException("User is already confirmed");
+
         context.AccountConfirmationTokens.RemoveRange(
-            context.AccountConfirmationTokens.Where(a=>a.User.Email == user.Email)
+            context.AccountConfirmationTokens.Where(a => a.User.Email == user.Email)
         );
-        
+
         GenerateAccountTokenAndSendConfirmationMail(user);
 
         context.SaveChanges();
@@ -78,13 +83,21 @@ public class UserService(DatabaseContext context, JwtUtil jwtUtil, EmailService 
         return UserMapper.Map(user);
     }
 
-    public void LogoutUser(string email)
+    public void LogoutUser(string header)
     {
-        // Redis queueing of blacklisted tokens
+        var tokenValue = header["Bearer ".Length..].Trim();
+
+        var jwtToken = jwtSecurityTokenHandler.ReadToken(tokenValue) as JwtSecurityToken ??
+                       throw new UnauthorizedAccessException("Unauthorized");
+
+        var expiryDate = jwtToken.ValidTo;
+        context.BlacklistedJwts.Add(new BlacklistedJwt { Token = tokenValue, Expiration = expiryDate });
+
+        context.SaveChanges();
     }
 
     //
-    
+
     private void GenerateAccountTokenAndSendConfirmationMail(User user)
     {
         var token = new AccountConfirmationToken

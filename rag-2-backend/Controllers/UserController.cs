@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rag_2_backend.DTO;
 using rag_2_backend.Services;
+using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace rag_2_backend.controllers;
 
@@ -24,11 +26,13 @@ public class UserController(UserService userService) : ControllerBase
     }
 
     [HttpPost("auth/logout")]
+    [Authorize]
     public void Logout()
     {
-        var email = (User.FindFirst(ClaimTypes.Email)?.Value) ?? throw new UnauthorizedAccessException("Unauthorized");
+        var header = HttpContext.Request.Headers.Authorization.FirstOrDefault() ??
+                     throw new UnauthorizedAccessException("Unauthorized");
 
-        userService.LogoutUser(email);
+        userService.LogoutUser(header);
     }
 
     [HttpPost("auth/resend-confirmation-email")]
@@ -43,16 +47,14 @@ public class UserController(UserService userService) : ControllerBase
         userService.ConfirmAccount(token);
     }
 
-
-
     /// <summary>
-    /// (Autneticated)
+    /// (Auth)
     /// </summary>
     [HttpGet("me")]
     [Authorize]
     public async Task<UserResponse> Me()
     {
-        var email = (User.FindFirst(ClaimTypes.Email)?.Value) ?? throw new UnauthorizedAccessException("Unauthorized");
+        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedAccessException("Unauthorized");
 
         return await userService.GetMe(email);
     }

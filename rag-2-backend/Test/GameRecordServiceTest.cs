@@ -24,6 +24,8 @@ public class GameRecordServiceTest
     {
         Id = 1,
         Password = "password",
+        StudyCycleYearA = 2022,
+        StudyCycleYearB = 2023
     };
 
     private readonly Game _game = new()
@@ -68,7 +70,7 @@ public class GameRecordServiceTest
                 Id = 1,
                 Value = "10",
                 GameResponse = new GameResponse { Id = 1, Name = "Game1", GameType = GameType.EventGame },
-                UserResponse = new UserResponse { Id = 1, Email = "email@prz.edu.pl", Role = Role.Teacher },
+                UserResponse = new UserResponse { Id = 1, Email = "email@prz.edu.pl", Role = Role.Teacher, StudyCycleYearA = 2022, StudyCycleYearB = 2023},
             },
         ];
 

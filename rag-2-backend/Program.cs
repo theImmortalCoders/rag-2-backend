@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using rag_2_backend.data;
@@ -101,6 +102,7 @@ builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<EmailSendingUtil>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddHostedService<BackgroundServiceImpl>();
+builder.Services.AddScoped<JwtSecurityTokenHandler>();
 
 var app = builder.Build();
 

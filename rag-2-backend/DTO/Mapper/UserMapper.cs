@@ -11,7 +11,9 @@ public class UserMapper
         {
             Id = user.Id,
             Email = user.Email,
-            Role = user.Role
+            Role = user.Role,
+            StudyCycleYearA = user.StudyCycleYearA,
+            StudyCycleYearB = user.StudyCycleYearB,
         };
     }
 }

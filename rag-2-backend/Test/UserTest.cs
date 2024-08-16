@@ -11,14 +11,14 @@ public class UserTest
     {
         Assert.Equal(
             Role.Student,
-            new User("index@stud.prz.edu.pl") { Password = "pass" }.Role
+            new User("index@stud.prz.edu.pl") { Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023}.Role
         );
         Assert.Equal(
             Role.Teacher,
-            new User("index@prz.edu.pl") { Password = "pass" }.Role
+            new User("index@prz.edu.pl") { Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023}.Role
         );
         Assert.Throws<BadHttpRequestException>(
-            () => new User("index@gmail.com") { Password = "pass" }
+            () => new User("index@gmail.com") { Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023}
         );
     }
 }

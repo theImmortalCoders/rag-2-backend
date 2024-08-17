@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using rag_2_backend.data;
 using rag_2_backend.DTO;
 using rag_2_backend.Models;
+using rag_2_backend.models.entity;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Services;
 using rag_2_backend.Utils;
@@ -58,11 +59,13 @@ public class UserServiceTest
             .Returns(() => new List<AccountConfirmationToken> { _accountToken }.AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.BlacklistedJwts)
             .Returns(() => new List<BlacklistedJwt>().AsQueryable().BuildMockDbSet().Object);
+        _contextMock.Setup(c => c.RecordedGames)
+            .Returns(() => new List<RecordedGame>().AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.PasswordResetTokens)
-            .Returns(() => new List<PasswordResetToken>(){_passwordToken}.AsQueryable().BuildMockDbSet().Object);
+            .Returns(() => new List<PasswordResetToken>() { _passwordToken }.AsQueryable().BuildMockDbSet().Object);
         _jwtUtilMock.Setup(j => j.GenerateToken(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         _emailService.Setup(e => e.SendConfirmationEmail(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
-        _emailService.Setup(e=>e.SendPasswordResetMail(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
+        _emailService.Setup(e => e.SendPasswordResetMail(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         _jwtSecurityTokenHandlerMock.Setup(e => e.ReadToken(It.IsAny<string>())).Returns(() => new JwtSecurityToken());
     }
 
@@ -70,7 +73,7 @@ public class UserServiceTest
     public void ShouldRegisterUser()
     {
         _userService.RegisterUser(new UserRequest
-            { Email = "email1@prz.edu.pl", Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023}
+            { Email = "email1@prz.edu.pl", Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023 }
         );
 
         _contextMock.Verify(c => c.Users.Add(It.IsAny<User>()), Times.Once);
@@ -78,8 +81,8 @@ public class UserServiceTest
         _emailService.Verify(e => e.SendConfirmationEmail(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
 
         Assert.Throws<BadHttpRequestException>(
-            ()=>_userService.RegisterUser(new UserRequest
-                { Email = "email1@stud.prz.edu.pl", Password = "pass", StudyCycleYearA = 2020, StudyCycleYearB = 2023}
+            () => _userService.RegisterUser(new UserRequest
+                { Email = "email1@stud.prz.edu.pl", Password = "pass", StudyCycleYearA = 2020, StudyCycleYearB = 2023 }
             )
         );
     }
@@ -164,6 +167,23 @@ public class UserServiceTest
 
         Assert.Throws<BadHttpRequestException>(() => _userService.ResetPassword("token1", "pass")); //wrong token
         _passwordToken.Expiration = DateTime.Now.AddDays(-7);
-        Assert.Throws<BadHttpRequestException>(() => _userService.ResetPassword(_passwordToken.Token, "pass")); //invalid date
+        Assert.Throws<BadHttpRequestException>(() =>
+            _userService.ResetPassword(_passwordToken.Token, "pass")); //invalid date
+    }
+
+    [Fact]
+    public void ShouldChangePassword()
+    {
+        _userService.ChangePassword("email@prz.edu.pl", "password", "pass2");
+
+        Assert.Throws<BadHttpRequestException>(() => _userService.ChangePassword("email@prz.edu.pl", "pa4ss2", "pas2"));
+    }
+
+    [Fact]
+    public void ShouldDeleteAccount()
+    {
+        _userService.DeleteAccount("email@prz.edu.pl", "Bearer header");
+
+        _contextMock.Verify(c => c.Users.Remove(It.IsAny<User>()), Times.Once);
     }
 }

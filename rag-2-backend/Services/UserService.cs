@@ -28,9 +28,11 @@ public class UserService(
         };
         if (user.Role == Role.Student)
         {
-            if(userRequest.StudyCycleYearA == 0 || userRequest.StudyCycleYearB == 0 || userRequest.StudyCycleYearB - userRequest.StudyCycleYearA != 1)
+            if (userRequest.StudyCycleYearA == 0 || userRequest.StudyCycleYearB == 0 ||
+                userRequest.StudyCycleYearB - userRequest.StudyCycleYearA != 1)
                 throw new BadHttpRequestException("Wrong study cycle year");
         }
+
         context.Users.Add(user);
 
         GenerateAccountTokenAndSendConfirmationMail(user);
@@ -132,6 +134,44 @@ public class UserService(
 
         context.PasswordResetTokens.Remove(token);
         context.SaveChanges();
+    }
+
+    public void ChangePassword(string email, string oldPassword, string newPassword)
+    {
+        var user = context.Users.SingleOrDefault(u => u.Email == email) ??
+                   throw new KeyNotFoundException("User not found");
+
+        if (!HashUtil.VerifyPassword(oldPassword, user.Password))
+            throw new BadHttpRequestException("Invalid old password");
+        if (user.Password == HashUtil.HashPassword(newPassword))
+            throw new BadHttpRequestException("Password cannot be same");
+
+        user.Password = HashUtil.HashPassword(newPassword);
+        context.SaveChanges();
+    }
+
+    public void DeleteAccount(string email, string header)
+    {
+        var user = context.Users.SingleOrDefault(u => u.Email == email) ??
+                   throw new KeyNotFoundException("User not found");
+
+        context.PasswordResetTokens.RemoveRange(context.PasswordResetTokens
+            .Include(p => p.User)
+            .Where(a => a.User.Email == email)
+        );
+        context.AccountConfirmationTokens.RemoveRange(context.AccountConfirmationTokens
+            .Include(p => p.User)
+            .Where(a => a.User.Email == email)
+        );
+        context.RecordedGames.RemoveRange(context.RecordedGames
+            .Include(p => p.User)
+            .Where(a => a.User.Email == email)
+        );
+
+        context.Users.Remove(user);
+        context.SaveChanges();
+
+        LogoutUser(header);
     }
 
     //

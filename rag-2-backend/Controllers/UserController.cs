@@ -70,4 +70,24 @@ public class UserController(UserService userService) : ControllerBase
     {
         userService.ResetPassword(tokenValue, newPassword);
     }
+
+    [HttpPost("auth/change-password")]
+    [Authorize]
+    public void ChangePassword([Required] string oldPassword, [Required] string newPassword)
+    {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedAccessException("Unauthorized");
+
+        userService.ChangePassword(email, oldPassword, newPassword);
+    }
+
+    [HttpPost("auth/delete-account")]
+    [Authorize]
+    public void DeleteAccount()
+    {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedAccessException("Unauthorized");
+        var header = HttpContext.Request.Headers.Authorization.FirstOrDefault() ??
+                     throw new UnauthorizedAccessException("Unauthorized");
+
+        userService.DeleteAccount(email, header);
+    }
 }

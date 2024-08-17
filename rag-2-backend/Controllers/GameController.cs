@@ -17,27 +17,27 @@ public class GameController(GameService gameService) : ControllerBase
     }
 
     /// <summary>
-    /// (Admin)
+    ///     (Admin)
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public void Add([FromBody][Required] GameRequest request)
+    public void Add([FromBody] [Required] GameRequest request)
     {
         gameService.AddGame(request);
     }
 
     /// <summary>
-    /// (Admin)
+    ///     (Admin)
     /// </summary>
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Admin")]
-    public void Edit([FromBody][Required] GameRequest request, int id)
+    public void Edit([FromBody] [Required] GameRequest request, int id)
     {
         gameService.EditGame(request, id);
     }
 
     /// <summary>
-    /// (Admin) only if no record is connected
+    ///     (Admin)
     /// </summary>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "Admin")]

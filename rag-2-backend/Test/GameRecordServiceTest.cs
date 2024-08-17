@@ -1,14 +1,14 @@
-using Moq;
+using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
+using Moq;
 using rag_2_backend.data;
 using rag_2_backend.DTO;
-using rag_2_backend.models.entity;
 using rag_2_backend.Models;
+using rag_2_backend.models.entity;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Services;
 using Xunit;
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
 
 namespace rag_2_backend.Test;
 
@@ -17,19 +17,24 @@ public class GameRecordServiceTest
     private readonly Mock<DatabaseContext> _contextMock = new(
         new DbContextOptionsBuilder<DatabaseContext>().Options
     );
-    private readonly GameRecordService _gameRecordService;
-    private readonly User _user = new()
-    {
-        Id = 1,
-        Email = "email",
-        Password = "password",
-    };
+
     private readonly Game _game = new()
     {
         Id = 1,
-        Name = "Game1",
+        Name = "Game1"
     };
+
+    private readonly GameRecordService _gameRecordService;
+
     private readonly List<RecordedGame> _recordedGames = [];
+
+    private readonly User _user = new("email@prz.edu.pl")
+    {
+        Id = 1,
+        Password = "password",
+        StudyCycleYearA = 2022,
+        StudyCycleYearB = 2023
+    };
 
     public GameRecordServiceTest()
     {
@@ -50,21 +55,27 @@ public class GameRecordServiceTest
             Id = 1,
             Game = _game,
             Value = "10",
-            User = _user,
+            User = _user
         });
     }
 
     [Fact]
     public async void GetRecordsByGameTest()
     {
-        var actualRecords = await _gameRecordService.GetRecordsByGame(1);
-        List<RecordedGameResponse> expectedRecords = [
-            new() {
+        var actualRecords = _gameRecordService.GetRecordsByGame(1);
+        List<RecordedGameResponse> expectedRecords =
+        [
+            new RecordedGameResponse
+            {
                 Id = 1,
                 Value = "10",
-                GameResponse = new GameResponse { Id = 1 , Name = "Game1", GameType = GameType.EventGame },
-                UserResponse = new UserResponse { Id = 1,  Email = "email", Role = Role.Student },
-            },
+                GameResponse = new GameResponse { Id = 1, Name = "Game1", GameType = GameType.EventGame },
+                UserResponse = new UserResponse
+                {
+                    Id = 1, Email = "email@prz.edu.pl", Role = Role.Teacher, StudyCycleYearA = 2022,
+                    StudyCycleYearB = 2023
+                }
+            }
         ];
 
         Assert.Equal(expectedRecords.Count, actualRecords.Count);
@@ -78,7 +89,7 @@ public class GameRecordServiceTest
     public void AddGameRecordTest()
     {
         var request = new RecordedGameRequest { GameId = 1, Value = "10" };
-        _gameRecordService.AddGameRecord(request, "email");
+        _gameRecordService.AddGameRecord(request, "email@prz.edu.pl");
 
         _contextMock.Verify(c => c.RecordedGames.Add(It.IsAny<RecordedGame>()), Times.Once);
     }

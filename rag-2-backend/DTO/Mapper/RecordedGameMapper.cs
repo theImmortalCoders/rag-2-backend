@@ -1,9 +1,8 @@
-namespace rag_2_backend.DTO.Mapper;
-
-using rag_2_backend.DTO;
 using rag_2_backend.models.entity;
 
-public class RecordedGameMapper
+namespace rag_2_backend.DTO.Mapper;
+
+public abstract class RecordedGameMapper
 {
     public static RecordedGameResponse Map(RecordedGame recordedGame)
     {

@@ -1,14 +1,16 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using rag_2_backend.data;
 
 namespace rag_2_backend.Utils;
 
-public class JwtUtil(IConfiguration config)
+public class JwtUtil(IConfiguration config, DatabaseContext context)
 
 {
-    public string GenerateToken(string email, string role)
+    public virtual string GenerateToken(string email, string role)
     {
         var jwtKey = config["Jwt:Key"];
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? ""));
@@ -21,9 +23,9 @@ public class JwtUtil(IConfiguration config)
         ];
 
         var token = new JwtSecurityToken(
-            issuer: config["Jwt:Issuer"],
-            audience: config["Jwt:Issuer"],
-            claims: claims,
+            config["Jwt:Issuer"],
+            config["Jwt:Issuer"],
+            claims,
             expires: DateTime.Now.AddMinutes(double.Parse(config["Jwt:ExpireMinutes"] ?? "60")),
             signingCredentials: credentials
         );
@@ -31,4 +33,8 @@ public class JwtUtil(IConfiguration config)
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    public async Task<bool> IsTokenBlacklistedAsync(string token)
+    {
+        return await context.BlacklistedJwts.AnyAsync(bt => bt.Token == token);
+    }
 }

@@ -1,4 +1,5 @@
 namespace rag_2_backend.DTO;
+
 public class RecordedGameResponse
 {
     public int Id { get; set; }

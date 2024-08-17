@@ -31,6 +31,7 @@ public class UserServiceTest
     private readonly User _user = new("email@prz.edu.pl")
     {
         Id = 1,
+        Name = "John",
         Password = HashUtil.HashPassword("password"),
         StudyCycleYearA = 2022,
         StudyCycleYearB = 2023
@@ -75,7 +76,7 @@ public class UserServiceTest
     public void ShouldRegisterUser()
     {
         _userService.RegisterUser(new UserRequest
-            { Email = "email1@prz.edu.pl", Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023 }
+            { Email = "email1@prz.edu.pl", Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023, Name = "John" }
         );
 
         _contextMock.Verify(c => c.Users.Add(It.IsAny<User>()), Times.Once);
@@ -84,7 +85,7 @@ public class UserServiceTest
 
         Assert.Throws<BadHttpRequestException>(
             () => _userService.RegisterUser(new UserRequest
-                { Email = "email1@stud.prz.edu.pl", Password = "pass", StudyCycleYearA = 2020, StudyCycleYearB = 2023 }
+                { Email = "email1@stud.prz.edu.pl", Password = "pass", StudyCycleYearA = 2020, StudyCycleYearB = 2023, Name = "John" }
             )
         );
     }
@@ -142,6 +143,7 @@ public class UserServiceTest
         var userResponse = new UserResponse
         {
             Id = 1,
+            Name = "John",
             Email = "email@prz.edu.pl",
             Role = Role.Teacher,
             StudyCycleYearA = 2022,

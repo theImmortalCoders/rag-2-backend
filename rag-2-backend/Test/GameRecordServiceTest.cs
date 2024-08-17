@@ -31,6 +31,7 @@ public class GameRecordServiceTest
     private readonly User _user = new("email@prz.edu.pl")
     {
         Id = 1,
+        Name = "John",
         Password = "password",
         StudyCycleYearA = 2022,
         StudyCycleYearB = 2023
@@ -73,6 +74,7 @@ public class GameRecordServiceTest
                 UserResponse = new UserResponse
                 {
                     Id = 1, Email = "email@prz.edu.pl", Role = Role.Teacher, StudyCycleYearA = 2022,
+                    Name = "John",
                     StudyCycleYearB = 2023
                 }
             }

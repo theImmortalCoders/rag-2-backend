@@ -22,6 +22,7 @@ public class UserService(
 
         User user = new(userRequest.Email)
         {
+            Name = userRequest.Name,
             Password = HashUtil.HashPassword(userRequest.Password),
             StudyCycleYearA = userRequest.StudyCycleYearA,
             StudyCycleYearB = userRequest.StudyCycleYearB

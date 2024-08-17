@@ -12,7 +12,8 @@ public abstract class UserMapper
             Email = user.Email,
             Role = user.Role,
             StudyCycleYearA = user.StudyCycleYearA,
-            StudyCycleYearB = user.StudyCycleYearB
+            StudyCycleYearB = user.StudyCycleYearB,
+            Name = user.Name
         };
     }
 }

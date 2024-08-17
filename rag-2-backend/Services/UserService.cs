@@ -70,7 +70,7 @@ public class UserService(
         if (!HashUtil.VerifyPassword(password, user.Password))
             throw new UnauthorizedAccessException("Invalid password");
         if (!user.Confirmed)
-            throw new UnauthorizedAccessException("Confirm email");
+            throw new UnauthorizedAccessException("Mail not confirmed");
 
         return jwtUtil.GenerateToken(user.Email, user.Role.ToString());
     }

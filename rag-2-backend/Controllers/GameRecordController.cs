@@ -17,9 +17,8 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
         return gameRecordService.GetRecordsByGame(gameId);
     }
 
-    /// <summary>
-    ///     (Authenticated)
-    /// </summary>
+    /// <summary>(Auth)</summary>
+    /// <response code="404">User or game not found</response>
     [HttpPost]
     [Authorize]
     public void AddGameRecord([FromBody] [Required] RecordedGameRequest request)

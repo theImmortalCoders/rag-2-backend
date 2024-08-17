@@ -16,9 +16,8 @@ public class GameController(GameService gameService) : ControllerBase
         return await gameService.GetGames();
     }
 
-    /// <summary>
-    ///     (Admin)
-    /// </summary>
+    /// <summary>(Admin)</summary>
+    /// <response code="400">Game with this name already exists</response>
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public void Add([FromBody] [Required] GameRequest request)
@@ -26,9 +25,9 @@ public class GameController(GameService gameService) : ControllerBase
         gameService.AddGame(request);
     }
 
-    /// <summary>
-    ///     (Admin)
-    /// </summary>
+    /// <summary>(Admin)</summary>
+    /// <response code="404">Game not found</response>
+    /// <response code="400">Game with this name already exists</response>
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Admin")]
     public void Edit([FromBody] [Required] GameRequest request, int id)
@@ -36,9 +35,8 @@ public class GameController(GameService gameService) : ControllerBase
         gameService.EditGame(request, id);
     }
 
-    /// <summary>
-    ///     (Admin)
-    /// </summary>
+    /// <summary>(Admin)</summary>
+    /// <response code="404">Game not found</response>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "Admin")]
     public void Remove(int id)

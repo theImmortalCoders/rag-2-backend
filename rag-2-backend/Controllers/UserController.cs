@@ -11,24 +11,28 @@ namespace rag_2_backend.controllers;
 [Route("api/[controller]/auth")]
 public class UserController(UserService userService) : ControllerBase
 {
+    /// <response code="400">User already exists or wrong study cycle year</response>
     [HttpPost("register")]
     public void Register([FromBody] [Required] UserRequest userRequest)
     {
         userService.RegisterUser(userRequest);
     }
 
+    /// <response code="401">Invalid password or mail not confirmed</response>
     [HttpPost("login")]
     public string Login([FromBody] [Required] UserLoginRequest loginRequest)
     {
         return userService.LoginUser(loginRequest.Email, loginRequest.Password);
     }
 
+    /// <response code="400">User is already confirmed</response>
     [HttpPost("resend-confirmation-email")]
     public void ResendConfirmationEmail([Required] string email)
     {
         userService.ResendConfirmationEmail(email);
     }
 
+    /// <response code="400">Invalid token</response>
     [HttpPost("confirm-account")]
     public void ConfirmAccount([Required] string token)
     {
@@ -41,15 +45,14 @@ public class UserController(UserService userService) : ControllerBase
         userService.RequestPasswordReset(email);
     }
 
+    /// <response code="400">Invalid token</response>
     [HttpPost("reset-password")]
     public void ResetPassword([Required] string tokenValue, [Required] string newPassword)
     {
         userService.ResetPassword(tokenValue, newPassword);
     }
 
-    /// <summary>
-    ///     (Auth)
-    /// </summary>
+    /// <summary>(Auth)</summary>
     [HttpPost("logout")]
     [Authorize]
     public void Logout()
@@ -60,9 +63,7 @@ public class UserController(UserService userService) : ControllerBase
         userService.LogoutUser(header);
     }
 
-    /// <summary>
-    ///     (Auth)
-    /// </summary>
+    /// <summary>(Auth)</summary>
     [HttpGet("me")]
     [Authorize]
     public UserResponse Me()
@@ -72,9 +73,8 @@ public class UserController(UserService userService) : ControllerBase
         return userService.GetMe(email);
     }
 
-    /// <summary>
-    ///     (Auth)
-    /// </summary>
+    /// <summary>(Auth)</summary>
+    /// <response code="400">Invalid old password or given the same password as old</response>
     [HttpPost("change-password")]
     [Authorize]
     public void ChangePassword([Required] string oldPassword, [Required] string newPassword)
@@ -84,9 +84,7 @@ public class UserController(UserService userService) : ControllerBase
         userService.ChangePassword(email, oldPassword, newPassword);
     }
 
-    /// <summary>
-    ///     (Auth)
-    /// </summary>
+    /// <summary> (Auth)</summary>
     [HttpDelete("delete-account")]
     [Authorize]
     public void DeleteAccount()

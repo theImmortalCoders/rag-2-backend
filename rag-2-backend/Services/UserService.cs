@@ -24,27 +24,20 @@ public class UserService(
         {
             Password = HashUtil.HashPassword(userRequest.Password),
             StudyCycleYearA = userRequest.StudyCycleYearA,
-            StudyCycleYearB = userRequest.StudyCycleYearB,
+            StudyCycleYearB = userRequest.StudyCycleYearB
         };
-        if (user.Role == Role.Student)
-        {
-            if (userRequest.StudyCycleYearA == 0 || userRequest.StudyCycleYearB == 0 ||
-                userRequest.StudyCycleYearB - userRequest.StudyCycleYearA != 1)
-                throw new BadHttpRequestException("Wrong study cycle year");
-        }
+
+        if (user.Role == Role.Student && IsStudyYearWrong(userRequest))
+            throw new BadHttpRequestException("Wrong study cycle year");
 
         context.Users.Add(user);
-
         GenerateAccountTokenAndSendConfirmationMail(user);
-
         context.SaveChanges();
     }
 
     public void ResendConfirmationEmail(string email)
     {
-        var user = context.Users.SingleOrDefault(u => u.Email == email) ??
-                   throw new KeyNotFoundException("User not found");
-
+        var user = GetUserByEmailOrThrow(email);
         if (user.Confirmed) throw new BadHttpRequestException("User is already confirmed");
 
         context.AccountConfirmationTokens.RemoveRange(
@@ -52,7 +45,6 @@ public class UserService(
         );
 
         GenerateAccountTokenAndSendConfirmationMail(user);
-
         context.SaveChanges();
     }
 
@@ -62,20 +54,17 @@ public class UserService(
                         .Include(t => t.User)
                         .SingleOrDefault(t => t.Token == tokenValue)
                     ?? throw new BadHttpRequestException("Invalid token");
+
         if (token.Expiration < DateTime.Now) throw new BadHttpRequestException("Invalid token");
 
-        var user = context.Users.SingleOrDefault(u => u.Email == token.User.Email) ??
-                   throw new KeyNotFoundException("User not found");
-        user.Confirmed = true;
-
+        token.User.Confirmed = true;
         context.AccountConfirmationTokens.Remove(token);
         context.SaveChanges();
     }
 
-    public async Task<string> LoginUser(string email, string password)
+    public string LoginUser(string email, string password)
     {
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ??
-                   throw new KeyNotFoundException("User not found");
+        var user = GetUserByEmailOrThrow(email);
 
         if (!HashUtil.VerifyPassword(password, user.Password))
             throw new UnauthorizedAccessException("Invalid password");
@@ -85,38 +74,30 @@ public class UserService(
         return jwtUtil.GenerateToken(user.Email, user.Role.ToString());
     }
 
-    public async Task<UserResponse> GetMe(string email)
+    public UserResponse GetMe(string email)
     {
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email) ??
-                   throw new KeyNotFoundException("User not found");
-
-        return UserMapper.Map(user);
+        return UserMapper.Map(GetUserByEmailOrThrow(email));
     }
 
     public void LogoutUser(string header)
     {
         var tokenValue = header["Bearer ".Length..].Trim();
-
         var jwtToken = jwtSecurityTokenHandler.ReadToken(tokenValue) as JwtSecurityToken ??
                        throw new UnauthorizedAccessException("Unauthorized");
 
-        var expiryDate = jwtToken.ValidTo;
-        context.BlacklistedJwts.Add(new BlacklistedJwt { Token = tokenValue, Expiration = expiryDate });
-
+        context.BlacklistedJwts.Add(new BlacklistedJwt { Token = tokenValue, Expiration = jwtToken.ValidTo });
         context.SaveChanges();
     }
 
     public void RequestPasswordReset(string email)
     {
-        var user = context.Users.SingleOrDefault(u => u.Email == email) ??
-                   throw new KeyNotFoundException("User not found");
+        var user = GetUserByEmailOrThrow(email);
 
         context.PasswordResetTokens.RemoveRange(
             context.PasswordResetTokens.Where(a => a.User.Email == user.Email)
         );
 
         GeneratePasswordResetTokenAndSendMail(user);
-
         context.SaveChanges();
     }
 
@@ -126,20 +107,17 @@ public class UserService(
                         .Include(t => t.User)
                         .SingleOrDefault(t => t.Token == tokenValue)
                     ?? throw new BadHttpRequestException("Invalid token");
+
         if (token.Expiration < DateTime.Now) throw new BadHttpRequestException("Invalid token");
 
-        var user = context.Users.SingleOrDefault(u => u.Email == token.User.Email) ??
-                   throw new KeyNotFoundException("User not found");
-        user.Password = HashUtil.HashPassword(newPassword);
-
+        token.User.Password = HashUtil.HashPassword(newPassword);
         context.PasswordResetTokens.Remove(token);
         context.SaveChanges();
     }
 
     public void ChangePassword(string email, string oldPassword, string newPassword)
     {
-        var user = context.Users.SingleOrDefault(u => u.Email == email) ??
-                   throw new KeyNotFoundException("User not found");
+        var user = GetUserByEmailOrThrow(email);
 
         if (!HashUtil.VerifyPassword(oldPassword, user.Password))
             throw new BadHttpRequestException("Invalid old password");
@@ -152,8 +130,7 @@ public class UserService(
 
     public void DeleteAccount(string email, string header)
     {
-        var user = context.Users.SingleOrDefault(u => u.Email == email) ??
-                   throw new KeyNotFoundException("User not found");
+        var user = GetUserByEmailOrThrow(email);
 
         context.PasswordResetTokens.RemoveRange(context.PasswordResetTokens
             .Include(p => p.User)
@@ -176,6 +153,18 @@ public class UserService(
 
     //
 
+    private User GetUserByEmailOrThrow(string email)
+    {
+        return context.Users.SingleOrDefault(u => u.Email == email) ??
+               throw new KeyNotFoundException("User not found");
+    }
+
+    private static bool IsStudyYearWrong(UserRequest userRequest)
+    {
+        return userRequest.StudyCycleYearA == 0 || userRequest.StudyCycleYearB == 0 ||
+               userRequest.StudyCycleYearB - userRequest.StudyCycleYearA != 1;
+    }
+
     private void GenerateAccountTokenAndSendConfirmationMail(User user)
     {
         var token = new AccountConfirmationToken
@@ -194,7 +183,7 @@ public class UserService(
         {
             Token = TokenGenerationUtil.GenerateToken(15),
             User = user,
-            Expiration = DateTime.Now.AddDays(7)
+            Expiration = DateTime.Now.AddDays(2)
         };
         context.PasswordResetTokens.Add(token);
         emailService.SendPasswordResetMail(user.Email, token.Token);

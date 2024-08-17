@@ -1,14 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
+using Newtonsoft.Json;
 using rag_2_backend.data;
 using rag_2_backend.DTO;
 using rag_2_backend.DTO.Mapper;
-using rag_2_backend.models.entity;
 using rag_2_backend.Models;
+using rag_2_backend.models.entity;
 using rag_2_backend.Services;
-using Newtonsoft.Json;
-using rag_2_backend.Models.Entity;
 using Xunit;
 
 namespace rag_2_backend.Test;
@@ -19,13 +18,13 @@ public class GameServiceTest
         new DbContextOptionsBuilder<DatabaseContext>().Options
     );
 
-    private readonly GameService _gameService;
-
     private readonly List<Game> _games =
     [
-        new() { Id = 1, Name = "Game1", GameType = GameType.EventGame },
-        new() { Id = 2, Name = "Game2", GameType = GameType.TimeGame },
+        new Game { Id = 1, Name = "Game1", GameType = GameType.EventGame },
+        new Game { Id = 2, Name = "Game2", GameType = GameType.TimeGame }
     ];
+
+    private readonly GameService _gameService;
 
     public GameServiceTest()
     {

@@ -16,14 +16,17 @@ namespace rag_2_backend.Test;
 
 public class UserServiceTest
 {
+    private readonly AccountConfirmationToken _accountToken;
+
     private readonly Mock<DatabaseContext> _contextMock = new(
         new DbContextOptionsBuilder<DatabaseContext>().Options
     );
 
-    private readonly Mock<JwtUtil> _jwtUtilMock = new(null, null);
-    private readonly Mock<JwtSecurityTokenHandler> _jwtSecurityTokenHandlerMock = new();
     private readonly Mock<EmailService> _emailService = new(null, null);
-    private readonly UserService _userService;
+    private readonly Mock<JwtSecurityTokenHandler> _jwtSecurityTokenHandlerMock = new();
+
+    private readonly Mock<JwtUtil> _jwtUtilMock = new(null, null);
+    private readonly PasswordResetToken _passwordToken;
 
     private readonly User _user = new("email@prz.edu.pl")
     {
@@ -33,8 +36,7 @@ public class UserServiceTest
         StudyCycleYearB = 2023
     };
 
-    private readonly AccountConfirmationToken _accountToken;
-    private readonly PasswordResetToken _passwordToken;
+    private readonly UserService _userService;
 
     public UserServiceTest()
     {
@@ -42,13 +44,13 @@ public class UserServiceTest
         {
             User = _user,
             Expiration = DateTime.Now.AddDays(7),
-            Token = HashUtil.HashPassword("password"),
+            Token = HashUtil.HashPassword("password")
         };
-        _passwordToken = new PasswordResetToken()
+        _passwordToken = new PasswordResetToken
         {
             User = _user,
             Expiration = DateTime.Now.AddDays(7),
-            Token = HashUtil.HashPassword("password"),
+            Token = HashUtil.HashPassword("password")
         };
         _userService = new UserService(_contextMock.Object, _jwtUtilMock.Object, _emailService.Object,
             _jwtSecurityTokenHandlerMock.Object);
@@ -62,7 +64,7 @@ public class UserServiceTest
         _contextMock.Setup(c => c.RecordedGames)
             .Returns(() => new List<RecordedGame>().AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.PasswordResetTokens)
-            .Returns(() => new List<PasswordResetToken>() { _passwordToken }.AsQueryable().BuildMockDbSet().Object);
+            .Returns(() => new List<PasswordResetToken> { _passwordToken }.AsQueryable().BuildMockDbSet().Object);
         _jwtUtilMock.Setup(j => j.GenerateToken(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         _emailService.Setup(e => e.SendConfirmationEmail(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         _emailService.Setup(e => e.SendPasswordResetMail(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
@@ -113,16 +115,16 @@ public class UserServiceTest
     [Fact]
     public async void ShouldLoginUser()
     {
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(
+        Assert.Throws<UnauthorizedAccessException>(
             () => _userService.LoginUser("email@prz.edu.pl", "pass")
         ); //wrong password
 
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(
+        Assert.Throws<UnauthorizedAccessException>(
             () => _userService.LoginUser("email@prz.edu.pl", "password")
         ); //not confirmed
 
         _user.Confirmed = true;
-        await _userService.LoginUser("email@prz.edu.pl", "password");
+        _userService.LoginUser("email@prz.edu.pl", "password");
         _jwtUtilMock.Verify(j => j.GenerateToken(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
@@ -137,7 +139,7 @@ public class UserServiceTest
     [Fact]
     public void ShouldGetMe()
     {
-        var userResponse = new UserResponse()
+        var userResponse = new UserResponse
         {
             Id = 1,
             Email = "email@prz.edu.pl",
@@ -147,7 +149,7 @@ public class UserServiceTest
         };
 
         Assert.Equal(JsonConvert.SerializeObject(userResponse),
-            JsonConvert.SerializeObject(_userService.GetMe("email@prz.edu.pl").Result));
+            JsonConvert.SerializeObject(_userService.GetMe("email@prz.edu.pl")));
     }
 
     [Fact]

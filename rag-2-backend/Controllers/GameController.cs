@@ -17,7 +17,7 @@ public class GameController(GameService gameService) : ControllerBase
     }
 
     /// <summary>
-    /// (Admin)
+    ///     (Admin)
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "Admin")]
@@ -27,7 +27,7 @@ public class GameController(GameService gameService) : ControllerBase
     }
 
     /// <summary>
-    /// (Admin)
+    ///     (Admin)
     /// </summary>
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Admin")]
@@ -37,7 +37,7 @@ public class GameController(GameService gameService) : ControllerBase
     }
 
     /// <summary>
-    /// (Admin)
+    ///     (Admin)
     /// </summary>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "Admin")]

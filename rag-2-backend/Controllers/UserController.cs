@@ -1,31 +1,56 @@
 using System.ComponentModel.DataAnnotations;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rag_2_backend.DTO;
 using rag_2_backend.Services;
-using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace rag_2_backend.controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/[controller]/auth")]
 public class UserController(UserService userService) : ControllerBase
 {
-    [HttpPost("auth/register")]
+    [HttpPost("register")]
     public void Register([FromBody] [Required] UserRequest userRequest)
     {
         userService.RegisterUser(userRequest);
     }
 
-    [HttpPost("auth/login")]
-    public async Task<string> Login([FromBody] [Required] UserLoginRequest loginRequest)
+    [HttpPost("login")]
+    public string Login([FromBody] [Required] UserLoginRequest loginRequest)
     {
-        return await userService.LoginUser(loginRequest.Email, loginRequest.Password);
+        return userService.LoginUser(loginRequest.Email, loginRequest.Password);
     }
 
-    [HttpPost("auth/logout")]
+    [HttpPost("resend-confirmation-email")]
+    public void ResendConfirmationEmail([Required] string email)
+    {
+        userService.ResendConfirmationEmail(email);
+    }
+
+    [HttpPost("confirm-account")]
+    public void ConfirmAccount([Required] string token)
+    {
+        userService.ConfirmAccount(token);
+    }
+
+    [HttpPost("request-password-reset")]
+    public void RequestPasswordReset([Required] string email)
+    {
+        userService.RequestPasswordReset(email);
+    }
+
+    [HttpPost("reset-password")]
+    public void ResetPassword([Required] string tokenValue, [Required] string newPassword)
+    {
+        userService.ResetPassword(tokenValue, newPassword);
+    }
+
+    /// <summary>
+    ///     (Auth)
+    /// </summary>
+    [HttpPost("logout")]
     [Authorize]
     public void Logout()
     {
@@ -35,43 +60,22 @@ public class UserController(UserService userService) : ControllerBase
         userService.LogoutUser(header);
     }
 
-    [HttpPost("auth/resend-confirmation-email")]
-    public void ResendConfirmationEmail([Required] string email)
-    {
-        userService.ResendConfirmationEmail(email);
-    }
-
-    [HttpPost("auth/confirm-account")]
-    public void ConfirmAccount([Required] string token)
-    {
-        userService.ConfirmAccount(token);
-    }
-
     /// <summary>
-    /// (Auth)
+    ///     (Auth)
     /// </summary>
-    [HttpGet("auth/me")]
+    [HttpGet("me")]
     [Authorize]
-    public async Task<UserResponse> Me()
+    public UserResponse Me()
     {
         var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedAccessException("Unauthorized");
 
-        return await userService.GetMe(email);
+        return userService.GetMe(email);
     }
 
-    [HttpPost("auth/request-password-reset")]
-    public void RequestPasswordReset([Required] string email)
-    {
-        userService.RequestPasswordReset(email);
-    }
-
-    [HttpPost("auth/reset-password")]
-    public void ResetPassword([Required] string tokenValue, [Required] string newPassword)
-    {
-        userService.ResetPassword(tokenValue, newPassword);
-    }
-
-    [HttpPost("auth/change-password")]
+    /// <summary>
+    ///     (Auth)
+    /// </summary>
+    [HttpPost("change-password")]
     [Authorize]
     public void ChangePassword([Required] string oldPassword, [Required] string newPassword)
     {
@@ -80,7 +84,10 @@ public class UserController(UserService userService) : ControllerBase
         userService.ChangePassword(email, oldPassword, newPassword);
     }
 
-    [HttpPost("auth/delete-account")]
+    /// <summary>
+    ///     (Auth)
+    /// </summary>
+    [HttpPost("delete-account")]
     [Authorize]
     public void DeleteAccount()
     {

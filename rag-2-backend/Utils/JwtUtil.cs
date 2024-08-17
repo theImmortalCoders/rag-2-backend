@@ -23,9 +23,9 @@ public class JwtUtil(IConfiguration config, DatabaseContext context)
         ];
 
         var token = new JwtSecurityToken(
-            issuer: config["Jwt:Issuer"],
-            audience: config["Jwt:Issuer"],
-            claims: claims,
+            config["Jwt:Issuer"],
+            config["Jwt:Issuer"],
+            claims,
             expires: DateTime.Now.AddMinutes(double.Parse(config["Jwt:ExpireMinutes"] ?? "60")),
             signingCredentials: credentials
         );

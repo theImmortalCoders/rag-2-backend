@@ -1,14 +1,14 @@
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.EntityFrameworkCore;
+using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using rag_2_backend.data;
 using rag_2_backend.Exceptions;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.OpenApi.Models;
-using rag_2_backend.Utils;
 using rag_2_backend.Services;
+using rag_2_backend.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,9 +41,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 var token = header["Bearer ".Length..].Trim();
 
                 if (!string.IsNullOrEmpty(token) && await tokenBlacklistService.IsTokenBlacklistedAsync(token))
-                {
                     throw new UnauthorizedAccessException("Token is not valid");
-                }
             }
         };
     });
@@ -52,7 +50,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddSwaggerGen(options =>
 {
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
         In = ParameterLocation.Header,
@@ -88,8 +86,8 @@ builder.Services.AddSwaggerGen(s =>
 });
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
-        builder.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+    options.AddDefaultPolicy(b =>
+        b.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
 });
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 

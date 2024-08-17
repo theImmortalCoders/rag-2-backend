@@ -87,7 +87,7 @@ public class UserController(UserService userService) : ControllerBase
     /// <summary>
     ///     (Auth)
     /// </summary>
-    [HttpPost("delete-account")]
+    [HttpDelete("delete-account")]
     [Authorize]
     public void DeleteAccount()
     {

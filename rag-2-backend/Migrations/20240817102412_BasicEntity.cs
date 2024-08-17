@@ -7,11 +7,23 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace rag_2_backend.Migrations
 {
     /// <inheritdoc />
-    public partial class BaseEntity : Migration
+    public partial class BasicEntity : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "blacklisted_jwt",
+                columns: table => new
+                {
+                    Token = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Expiration = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_blacklisted_jwt", x => x.Token);
+                });
+
             migrationBuilder.CreateTable(
                 name: "games",
                 columns: table => new
@@ -35,7 +47,9 @@ namespace rag_2_backend.Migrations
                     Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Password = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Role = table.Column<int>(type: "integer", nullable: false),
-                    Confirmed = table.Column<bool>(type: "boolean", nullable: false)
+                    Confirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    StudyCycleYearA = table.Column<int>(type: "integer", nullable: false),
+                    StudyCycleYearB = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -55,6 +69,25 @@ namespace rag_2_backend.Migrations
                     table.PrimaryKey("PK_account_confirmation_token", x => x.Token);
                     table.ForeignKey(
                         name: "FK_account_confirmation_token_users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "password_reset_token",
+                columns: table => new
+                {
+                    Token = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Expiration = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_password_reset_token", x => x.Token);
+                    table.ForeignKey(
+                        name: "FK_password_reset_token_users_UserId",
                         column: x => x.UserId,
                         principalTable: "users",
                         principalColumn: "Id",
@@ -100,6 +133,11 @@ namespace rag_2_backend.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_password_reset_token_UserId",
+                table: "password_reset_token",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_recorded_games_GameId",
                 table: "recorded_games",
                 column: "GameId");
@@ -115,6 +153,12 @@ namespace rag_2_backend.Migrations
         {
             migrationBuilder.DropTable(
                 name: "account_confirmation_token");
+
+            migrationBuilder.DropTable(
+                name: "blacklisted_jwt");
+
+            migrationBuilder.DropTable(
+                name: "password_reset_token");
 
             migrationBuilder.DropTable(
                 name: "recorded_games");

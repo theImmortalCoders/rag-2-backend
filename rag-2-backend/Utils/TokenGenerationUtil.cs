@@ -2,9 +2,9 @@ using System.Text;
 
 namespace rag_2_backend.Utils;
 
-public class TokenGenerationUtil
+public abstract class TokenGenerationUtil
 {
-    public static string CreatePassword(int length)
+    public static string GenerateToken(int length)
     {
         const string valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         var res = new StringBuilder();

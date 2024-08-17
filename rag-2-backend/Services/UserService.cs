@@ -104,17 +104,59 @@ public class UserService(
         context.SaveChanges();
     }
 
+    public void RequestPasswordReset(string email)
+    {
+        var user = context.Users.SingleOrDefault(u => u.Email == email) ??
+                   throw new KeyNotFoundException("User not found");
+
+        context.PasswordResetTokens.RemoveRange(
+            context.PasswordResetTokens.Where(a => a.User.Email == user.Email)
+        );
+
+        GeneratePasswordResetTokenAndSendMail(user);
+
+        context.SaveChanges();
+    }
+
+    public void ResetPassword(string tokenValue, string newPassword)
+    {
+        var token = context.PasswordResetTokens
+                        .Include(t => t.User)
+                        .SingleOrDefault(t => t.Token == tokenValue)
+                    ?? throw new BadHttpRequestException("Invalid token");
+        if (token.Expiration < DateTime.Now) throw new BadHttpRequestException("Invalid token");
+
+        var user = context.Users.SingleOrDefault(u => u.Email == token.User.Email) ??
+                   throw new KeyNotFoundException("User not found");
+        user.Password = HashUtil.HashPassword(newPassword);
+
+        context.PasswordResetTokens.Remove(token);
+        context.SaveChanges();
+    }
+
     //
 
     private void GenerateAccountTokenAndSendConfirmationMail(User user)
     {
         var token = new AccountConfirmationToken
         {
-            Token = TokenGenerationUtil.CreatePassword(15),
+            Token = TokenGenerationUtil.GenerateToken(15),
             User = user,
             Expiration = DateTime.Now.AddDays(7)
         };
         context.AccountConfirmationTokens.Add(token);
         emailService.SendConfirmationEmail(user.Email, token.Token);
+    }
+
+    private void GeneratePasswordResetTokenAndSendMail(User user)
+    {
+        var token = new PasswordResetToken
+        {
+            Token = TokenGenerationUtil.GenerateToken(15),
+            User = user,
+            Expiration = DateTime.Now.AddDays(7)
+        };
+        context.PasswordResetTokens.Add(token);
+        emailService.SendPasswordResetMail(user.Email, token.Token);
     }
 }

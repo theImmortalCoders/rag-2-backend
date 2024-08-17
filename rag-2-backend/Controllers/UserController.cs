@@ -50,12 +50,24 @@ public class UserController(UserService userService) : ControllerBase
     /// <summary>
     /// (Auth)
     /// </summary>
-    [HttpGet("me")]
+    [HttpGet("auth/me")]
     [Authorize]
     public async Task<UserResponse> Me()
     {
         var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedAccessException("Unauthorized");
 
         return await userService.GetMe(email);
+    }
+
+    [HttpPost("auth/request-password-reset")]
+    public void RequestPasswordReset([Required] string email)
+    {
+        userService.RequestPasswordReset(email);
+    }
+
+    [HttpPost("auth/reset-password")]
+    public void ResetPassword([Required] string tokenValue, [Required] string newPassword)
+    {
+        userService.ResetPassword(tokenValue, newPassword);
     }
 }

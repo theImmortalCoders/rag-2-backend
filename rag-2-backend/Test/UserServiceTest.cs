@@ -5,7 +5,6 @@ using Moq;
 using Newtonsoft.Json;
 using rag_2_backend.data;
 using rag_2_backend.DTO;
-using rag_2_backend.Migrations;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Services;
@@ -33,11 +32,18 @@ public class UserServiceTest
         StudyCycleYearB = 2023
     };
 
-    private readonly AccountConfirmationToken _token;
+    private readonly AccountConfirmationToken _accountToken;
+    private readonly PasswordResetToken _passwordToken;
 
     public UserServiceTest()
     {
-        _token = new AccountConfirmationToken
+        _accountToken = new AccountConfirmationToken
+        {
+            User = _user,
+            Expiration = DateTime.Now.AddDays(7),
+            Token = HashUtil.HashPassword("password"),
+        };
+        _passwordToken = new PasswordResetToken()
         {
             User = _user,
             Expiration = DateTime.Now.AddDays(7),
@@ -49,11 +55,14 @@ public class UserServiceTest
         _contextMock.Setup(c => c.Users).Returns(() => new List<User> { _user }
             .AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.AccountConfirmationTokens)
-            .Returns(() => new List<AccountConfirmationToken> { _token }.AsQueryable().BuildMockDbSet().Object);
+            .Returns(() => new List<AccountConfirmationToken> { _accountToken }.AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.BlacklistedJwts)
             .Returns(() => new List<BlacklistedJwt>().AsQueryable().BuildMockDbSet().Object);
+        _contextMock.Setup(c => c.PasswordResetTokens)
+            .Returns(() => new List<PasswordResetToken>(){_passwordToken}.AsQueryable().BuildMockDbSet().Object);
         _jwtUtilMock.Setup(j => j.GenerateToken(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         _emailService.Setup(e => e.SendConfirmationEmail(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
+        _emailService.Setup(e=>e.SendPasswordResetMail(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         _jwtSecurityTokenHandlerMock.Setup(e => e.ReadToken(It.IsAny<string>())).Returns(() => new JwtSecurityToken());
     }
 
@@ -90,12 +99,12 @@ public class UserServiceTest
     [Fact]
     public void ShouldConfirmAccount()
     {
-        _userService.ConfirmAccount(_token.Token);
+        _userService.ConfirmAccount(_accountToken.Token);
         _contextMock.Verify(c => c.AccountConfirmationTokens.Remove(It.IsAny<AccountConfirmationToken>()), Times.Once);
 
         Assert.Throws<BadHttpRequestException>(() => _userService.ConfirmAccount("token")); //wrong token
-        _token.Expiration = DateTime.Now.AddDays(-7);
-        Assert.Throws<BadHttpRequestException>(() => _userService.ConfirmAccount(_token.Token)); //invalid date
+        _accountToken.Expiration = DateTime.Now.AddDays(-7);
+        Assert.Throws<BadHttpRequestException>(() => _userService.ConfirmAccount(_accountToken.Token)); //invalid date
     }
 
     [Fact]
@@ -136,5 +145,25 @@ public class UserServiceTest
 
         Assert.Equal(JsonConvert.SerializeObject(userResponse),
             JsonConvert.SerializeObject(_userService.GetMe("email@prz.edu.pl").Result));
+    }
+
+    [Fact]
+    public void ShouldRequestPasswordReset()
+    {
+        _userService.RequestPasswordReset("email@prz.edu.pl");
+
+        _contextMock.Verify(c => c.PasswordResetTokens.Add(It.IsAny<PasswordResetToken>()), Times.Once);
+        _emailService.Verify(e => e.SendPasswordResetMail(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public void ShouldResetPassword()
+    {
+        _userService.ResetPassword(_passwordToken.Token, "pass");
+        _contextMock.Verify(c => c.PasswordResetTokens.Remove(It.IsAny<PasswordResetToken>()), Times.Once);
+
+        Assert.Throws<BadHttpRequestException>(() => _userService.ResetPassword("token1", "pass")); //wrong token
+        _passwordToken.Expiration = DateTime.Now.AddDays(-7);
+        Assert.Throws<BadHttpRequestException>(() => _userService.ResetPassword(_passwordToken.Token, "pass")); //invalid date
     }
 }

@@ -13,4 +13,14 @@ public class EmailService(EmailSendingUtil emailSendingUtil, IConfiguration conf
         Task.Run(async () =>
             await emailSendingUtil.SendMail(to, "Confirmation email", body));
     }
+
+    public virtual void SendPasswordResetMail(string to, string token)
+    {
+        var address = config.GetValue<string>("FrontendURLs:PasswordResetURL") + token;
+        var body = "Reset your password by clicking this button: <a target='blank' href='" +
+                   address + "'>Reset</a>";
+
+        Task.Run(async () =>
+            await emailSendingUtil.SendMail(to, "Password reset", body));
+    }
 }

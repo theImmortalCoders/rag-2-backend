@@ -55,6 +55,25 @@ namespace rag_2_backend.Migrations
                     b.ToTable("blacklisted_jwt");
                 });
 
+            modelBuilder.Entity("rag_2_backend.Models.Entity.PasswordResetToken", b =>
+                {
+                    b.Property<string>("Token")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("Expiration")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Token");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("password_reset_token");
+                });
+
             modelBuilder.Entity("rag_2_backend.Models.Entity.User", b =>
                 {
                     b.Property<int>("Id")
@@ -142,6 +161,17 @@ namespace rag_2_backend.Migrations
                 });
 
             modelBuilder.Entity("rag_2_backend.Models.Entity.AccountConfirmationToken", b =>
+                {
+                    b.HasOne("rag_2_backend.Models.Entity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("rag_2_backend.Models.Entity.PasswordResetToken", b =>
                 {
                     b.HasOne("rag_2_backend.Models.Entity.User", "User")
                         .WithMany()

@@ -10,14 +10,15 @@ public class BackgroundServiceImpl(IServiceProvider serviceProvider) : Backgroun
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            CheckUnusedAccountTokens();
+            DeleteUnusedAccountTokens();
             DeleteUnusedBlacklistedJwts();
+            DeleteUnusedPasswordResetTokens();
 
             await Task.Delay(TimeSpan.FromDays(1), cancellationToken);
         }
     }
 
-    private void CheckUnusedAccountTokens()
+    private void DeleteUnusedAccountTokens()
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
@@ -48,5 +49,17 @@ public class BackgroundServiceImpl(IServiceProvider serviceProvider) : Backgroun
         dbContext.SaveChanges();
 
         Console.WriteLine("Deleted" + unusedTokens.Count + " blacklisted jwts");
+    }
+
+    private void DeleteUnusedPasswordResetTokens()
+    {
+        using var scope = serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+
+        var unusedTokens = dbContext.PasswordResetTokens.Where(b => b.Expiration < DateTime.Now).ToList();
+        dbContext.PasswordResetTokens.RemoveRange(unusedTokens);
+        dbContext.SaveChanges();
+
+        Console.WriteLine("Deleted" + unusedTokens.Count + " password reset tokens");
     }
 }

@@ -69,8 +69,8 @@ public class UserService(
 
         if (!HashUtil.VerifyPassword(password, user.Password))
             throw new UnauthorizedAccessException("Invalid password");
-        if (!user.Confirmed)
-            throw new UnauthorizedAccessException("Mail not confirmed");
+        if (!user.Confirmed || user.Banned)
+            throw new UnauthorizedAccessException("Mail not confirmed or user banned");
 
         return jwtUtil.GenerateToken(user.Email, user.Role.ToString());
     }

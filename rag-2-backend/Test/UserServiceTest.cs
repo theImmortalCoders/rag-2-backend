@@ -114,7 +114,7 @@ public class UserServiceTest
     }
 
     [Fact]
-    public async void ShouldLoginUser()
+    public void ShouldLoginUser()
     {
         Assert.Throws<UnauthorizedAccessException>(
             () => _userService.LoginUser("email@prz.edu.pl", "pass")

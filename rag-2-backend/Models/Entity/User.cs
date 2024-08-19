@@ -29,4 +29,5 @@ public class User
     public bool Confirmed { get; set; }
     public int StudyCycleYearA { get; init; }
     public int StudyCycleYearB { get; init; }
+    public bool Banned { get; set; }
 }

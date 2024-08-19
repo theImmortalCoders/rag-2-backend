@@ -18,7 +18,7 @@ public class UserController(UserService userService) : ControllerBase
         userService.RegisterUser(userRequest);
     }
 
-    /// <response code="401">Invalid password or mail not confirmed</response>
+    /// <response code="401">Invalid password or mail not confirmed or user banned</response>
     [HttpPost("login")]
     public string Login([FromBody] [Required] UserLoginRequest loginRequest)
     {

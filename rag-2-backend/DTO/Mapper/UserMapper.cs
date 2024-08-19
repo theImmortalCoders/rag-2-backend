@@ -16,4 +16,17 @@ public abstract class UserMapper
             Name = user.Name
         };
     }
+
+    public static UserDetailsResponse MapDetails(User user)
+    {
+        return new UserDetailsResponse
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Role = user.Role,
+            StudyCycleYearA = user.StudyCycleYearA,
+            StudyCycleYearB = user.StudyCycleYearB,
+            Name = user.Name
+        };
+    }
 }

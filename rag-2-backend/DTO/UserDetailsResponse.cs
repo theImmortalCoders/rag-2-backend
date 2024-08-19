@@ -1,9 +1,8 @@
-using System.ComponentModel.DataAnnotations;
 using rag_2_backend.Models;
 
 namespace rag_2_backend.DTO;
 
-public class UserResponse
+public class UserDetailsResponse
 {
     public required int Id { get; set; }
     public required string Email { get; set; }

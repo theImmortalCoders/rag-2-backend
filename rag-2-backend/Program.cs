@@ -93,14 +93,15 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailS
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHostedService<BackgroundServiceImpl>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<GameRecordService>();
 builder.Services.AddScoped<JwtUtil>();
 builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<EmailSendingUtil>();
 builder.Services.AddScoped<EmailService>();
-builder.Services.AddHostedService<BackgroundServiceImpl>();
 builder.Services.AddScoped<JwtSecurityTokenHandler>();
+builder.Services.AddScoped<AdministrationService>();
 
 var app = builder.Build();
 

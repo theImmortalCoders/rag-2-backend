@@ -25,6 +25,7 @@ public class UserController(UserService userService) : ControllerBase
         return userService.LoginUser(loginRequest.Email, loginRequest.Password);
     }
 
+    /// <response code="404">User not found</response>
     /// <response code="400">User is already confirmed</response>
     [HttpPost("resend-confirmation-email")]
     public void ResendConfirmationEmail([Required] string email)

@@ -6,8 +6,8 @@ public record ExceptionResponse(HttpStatusCode StatusCode, string Description);
 
 public class ExceptionHandlingMiddleware
 {
-    private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly RequestDelegate _next;
 
     public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
     {
@@ -31,11 +31,11 @@ public class ExceptionHandlingMiddleware
     {
         _logger.LogError(exception, "An unexpected error occurred.");
 
-        ExceptionResponse response = exception switch
+        var response = exception switch
         {
-            BadHttpRequestException _ => new ExceptionResponse(HttpStatusCode.BadRequest, "Application exception occurred."),
-            KeyNotFoundException _ => new ExceptionResponse(HttpStatusCode.NotFound, "The request key not found."),
-            UnauthorizedAccessException _ => new ExceptionResponse(HttpStatusCode.Unauthorized, "Unauthorized."),
+            BadHttpRequestException e => new ExceptionResponse(HttpStatusCode.BadRequest, e.Message),
+            KeyNotFoundException e => new ExceptionResponse(HttpStatusCode.NotFound, e.Message),
+            UnauthorizedAccessException e => new ExceptionResponse(HttpStatusCode.Unauthorized, e.Message),
             _ => new ExceptionResponse(HttpStatusCode.InternalServerError, "Internal server error. Please retry later.")
         };
 

@@ -1,6 +1,0 @@
-@rag_2_backend_HostAddress = http://localhost:5172
-
-GET {{rag_2_backend_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

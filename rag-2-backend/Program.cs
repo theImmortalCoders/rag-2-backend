@@ -92,7 +92,9 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 builder.Services.AddHostedService<BackgroundServiceImpl>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<GameRecordService>();
@@ -105,10 +107,28 @@ builder.Services.AddScoped<AdministrationService>();
 
 var app = builder.Build();
 
+Console.WriteLine(app.Environment.IsDevelopment() ? "Development" : "Production");
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<DatabaseContext>();
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or initializing the database.");
+        throw;
+    }
 }
 
 app.UseCors();

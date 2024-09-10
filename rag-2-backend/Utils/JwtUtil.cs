@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using rag_2_backend.data;
+using rag_2_backend.Config;
 
 namespace rag_2_backend.Utils;
 

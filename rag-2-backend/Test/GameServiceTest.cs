@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
 using Newtonsoft.Json;
-using rag_2_backend.data;
+using rag_2_backend.Config;
 using rag_2_backend.DTO;
 using rag_2_backend.DTO.Mapper;
 using rag_2_backend.Models;

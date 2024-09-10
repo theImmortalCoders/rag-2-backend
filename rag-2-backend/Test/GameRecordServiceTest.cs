@@ -2,7 +2,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
-using rag_2_backend.data;
+using rag_2_backend.Config;
 using rag_2_backend.DTO;
 using rag_2_backend.Models;
 using rag_2_backend.models.entity;
@@ -55,21 +55,21 @@ public class GameRecordServiceTest
         {
             Id = 1,
             Game = _game,
-            Value = "10",
+            Values = [],
             User = _user
         });
     }
 
     [Fact]
-    public async void GetRecordsByGameTest()
+    public void GetRecordsByGameTest()
     {
         var actualRecords = _gameRecordService.GetRecordsByGame(1);
         List<RecordedGameResponse> expectedRecords =
         [
-            new RecordedGameResponse
+            new()
             {
                 Id = 1,
-                Value = "10",
+                Values = [],
                 GameResponse = new GameResponse { Id = 1, Name = "pong" },
                 UserResponse = new UserResponse
                 {
@@ -90,7 +90,7 @@ public class GameRecordServiceTest
     [Fact]
     public void AddGameRecordTest()
     {
-        var request = new RecordedGameRequest { GameName = "pong", Value = "10" };
+        var request = new RecordedGameRequest { GameName = "pong", Values = [] };
         _gameRecordService.AddGameRecord(request, "email@prz.edu.pl");
 
         _contextMock.Verify(c => c.RecordedGames.Add(It.IsAny<RecordedGame>()), Times.Once);

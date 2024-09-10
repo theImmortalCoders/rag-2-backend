@@ -11,7 +11,7 @@ public abstract class RecordedGameMapper
             Id = recordedGame.Id,
             UserResponse = UserMapper.Map(recordedGame.User),
             GameResponse = GameMapper.Map(recordedGame.Game),
-            Value = recordedGame.Value
+            Values = recordedGame.Values,
         };
     }
 }

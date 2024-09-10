@@ -22,7 +22,7 @@ public class GameRecordService(DatabaseContext context)
     {
         var user = context.Users.SingleOrDefault(u => u.Email == email)
                    ?? throw new KeyNotFoundException("User not found");
-        var game = context.Games.SingleOrDefault(g => g.Id == request.GameId)
+        var game = context.Games.SingleOrDefault(g => Equals(g.Name.ToLower(), request.GameName.ToLower()))
                    ?? throw new KeyNotFoundException("Game not found");
 
         var recordedGame = new RecordedGame

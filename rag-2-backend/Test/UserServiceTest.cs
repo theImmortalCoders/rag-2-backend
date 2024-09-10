@@ -76,7 +76,10 @@ public class UserServiceTest
     public void ShouldRegisterUser()
     {
         _userService.RegisterUser(new UserRequest
-            { Email = "email1@prz.edu.pl", Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023, Name = "John" }
+            {
+                Email = "email1@prz.edu.pl", Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023,
+                Name = "John"
+            }
         );
 
         _contextMock.Verify(c => c.Users.Add(It.IsAny<User>()), Times.Once);
@@ -85,7 +88,10 @@ public class UserServiceTest
 
         Assert.Throws<BadHttpRequestException>(
             () => _userService.RegisterUser(new UserRequest
-                { Email = "email1@stud.prz.edu.pl", Password = "pass", StudyCycleYearA = 2020, StudyCycleYearB = 2023, Name = "John" }
+                {
+                    Email = "email1@stud.prz.edu.pl", Password = "pass", StudyCycleYearA = 2020, StudyCycleYearB = 2023,
+                    Name = "John"
+                }
             )
         );
     }

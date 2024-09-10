@@ -21,7 +21,7 @@ public class GameRecordServiceTest
     private readonly Game _game = new()
     {
         Id = 1,
-        Name = "Game1"
+        Name = "pong"
     };
 
     private readonly GameRecordService _gameRecordService;
@@ -70,7 +70,7 @@ public class GameRecordServiceTest
             {
                 Id = 1,
                 Value = "10",
-                GameResponse = new GameResponse { Id = 1, Name = "Game1", GameType = GameType.EventGame },
+                GameResponse = new GameResponse { Id = 1, Name = "pong" },
                 UserResponse = new UserResponse
                 {
                     Id = 1, Email = "email@prz.edu.pl", Role = Role.Teacher, StudyCycleYearA = 2022,
@@ -90,7 +90,7 @@ public class GameRecordServiceTest
     [Fact]
     public void AddGameRecordTest()
     {
-        var request = new RecordedGameRequest { GameId = 1, Value = "10" };
+        var request = new RecordedGameRequest { GameName = "pong", Value = "10" };
         _gameRecordService.AddGameRecord(request, "email@prz.edu.pl");
 
         _contextMock.Verify(c => c.RecordedGames.Add(It.IsAny<RecordedGame>()), Times.Once);

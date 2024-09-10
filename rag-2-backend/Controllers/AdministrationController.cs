@@ -47,9 +47,9 @@ public class AdministrationController(AdministrationService administrationServic
     /// <summary>(Admin, Teacher)</summary>
     [HttpGet("students")]
     [Authorize(Roles = "Admin, Teacher")]
-    public List<UserResponse> GetStudents([FromQuery][Required] int studyCycleYearA, [FromQuery][Required] int studyCycleYearB)
+    public List<UserResponse> GetStudents([FromQuery] [Required] int studyCycleYearA,
+        [FromQuery] [Required] int studyCycleYearB)
     {
         return administrationService.GetStudents(studyCycleYearA, studyCycleYearB);
     }
-
 }

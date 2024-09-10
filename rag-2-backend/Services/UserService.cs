@@ -71,7 +71,7 @@ public class UserService(
             throw new UnauthorizedAccessException("Invalid password");
         if (!user.Confirmed)
             throw new UnauthorizedAccessException("Mail not confirmed");
-        if(user.Banned)
+        if (user.Banned)
             throw new UnauthorizedAccessException("User banned");
 
         return jwtUtil.GenerateToken(user.Email, user.Role.ToString());

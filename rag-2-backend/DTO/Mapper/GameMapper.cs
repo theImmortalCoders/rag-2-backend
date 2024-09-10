@@ -9,8 +9,7 @@ public abstract class GameMapper
         return new GameResponse
         {
             Id = game.Id,
-            Name = game.Name,
-            GameType = game.GameType
+            Name = game.Name
         };
     }
 }

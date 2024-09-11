@@ -1,6 +1,7 @@
-using rag_2_backend.data;
+using rag_2_backend.Config;
 using rag_2_backend.DTO;
-using rag_2_backend.DTO.Mapper;
+using rag_2_backend.DTO.User;
+using rag_2_backend.Mapper;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
 
@@ -34,7 +35,7 @@ public class AdministrationService(DatabaseContext context)
     {
         var principal = GetUserByEmailOrThrow(principalEmail);
 
-        if(principal.Role is Role.Student or Role.Special && userId != principal.Id)
+        if (principal.Role is Role.Student or Role.Special && userId != principal.Id)
             throw new KeyNotFoundException("Cannot view details");
 
         return UserMapper.MapDetails(GetUserByIdOrThrow(userId));
@@ -43,9 +44,9 @@ public class AdministrationService(DatabaseContext context)
     public List<UserResponse> GetStudents(int studyCycleYearA, int studyCycleYearB)
     {
         return context.Users
-            .Where(u=>u.Role == Role.Student &&
-                      u.StudyCycleYearA == studyCycleYearA &&
-                      u.StudyCycleYearB == studyCycleYearB)
+            .Where(u => u.Role == Role.Student &&
+                        u.StudyCycleYearA == studyCycleYearA &&
+                        u.StudyCycleYearB == studyCycleYearB)
             .OrderBy(u => u.Email)
             .Select(u => UserMapper.Map(u))
             .ToList();

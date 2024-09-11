@@ -1,6 +1,8 @@
+using rag_2_backend.DTO;
+using rag_2_backend.DTO.RecordedGame;
 using rag_2_backend.models.entity;
 
-namespace rag_2_backend.DTO.Mapper;
+namespace rag_2_backend.Mapper;
 
 public abstract class RecordedGameMapper
 {
@@ -11,7 +13,7 @@ public abstract class RecordedGameMapper
             Id = recordedGame.Id,
             UserResponse = UserMapper.Map(recordedGame.User),
             GameResponse = GameMapper.Map(recordedGame.Game),
-            Value = recordedGame.Value
+            Values = recordedGame.Values,
         };
     }
 }

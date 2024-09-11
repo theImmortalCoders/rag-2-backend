@@ -2,9 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
 using Newtonsoft.Json;
-using rag_2_backend.data;
+using rag_2_backend.Config;
 using rag_2_backend.DTO;
-using rag_2_backend.DTO.Mapper;
+using rag_2_backend.DTO.Game;
+using rag_2_backend.Mapper;
 using rag_2_backend.Models;
 using rag_2_backend.models.entity;
 using rag_2_backend.Services;
@@ -20,8 +21,8 @@ public class GameServiceTest
 
     private readonly List<Game> _games =
     [
-        new Game { Id = 1, Name = "Game1", GameType = GameType.EventGame },
-        new Game { Id = 2, Name = "Game2", GameType = GameType.TimeGame }
+        new Game { Id = 1, Name = "Game1" },
+        new Game { Id = 2, Name = "Game2" }
     ];
 
     private readonly GameService _gameService;
@@ -48,14 +49,13 @@ public class GameServiceTest
     {
         var gameRequest = new GameRequest
         {
-            Name = "Game3",
-            GameType = GameType.EventGame
+            Name = "Game3"
         };
 
         _gameService.AddGame(gameRequest);
 
         _contextMock.Verify(
-            c => c.Games.Add(It.Is<Game>(g => g.Name == gameRequest.Name && g.GameType == gameRequest.GameType)),
+            c => c.Games.Add(It.Is<Game>(g => g.Name == gameRequest.Name)),
             Times.Once);
     }
 
@@ -64,8 +64,7 @@ public class GameServiceTest
     {
         var gameRequest = new GameRequest
         {
-            Name = "Game1",
-            GameType = GameType.EventGame
+            Name = "Game1"
         };
 
         Assert.Throws<BadHttpRequestException>(() => _gameService.AddGame(gameRequest));
@@ -90,14 +89,13 @@ public class GameServiceTest
     {
         var gameRequest = new GameRequest
         {
-            Name = "Game3",
-            GameType = GameType.EventGame
+            Name = "Game3"
         };
 
         _gameService.EditGame(gameRequest, 1);
 
         _contextMock.Verify(
-            c => c.Games.Update(It.Is<Game>(g => g.Name == gameRequest.Name && g.GameType == gameRequest.GameType)),
+            c => c.Games.Update(It.Is<Game>(g => g.Name == gameRequest.Name)),
             Times.Once);
     }
 
@@ -106,8 +104,7 @@ public class GameServiceTest
     {
         var gameRequest = new GameRequest
         {
-            Name = "Game2",
-            GameType = GameType.EventGame
+            Name = "Game2"
         };
 
         Assert.Throws<BadHttpRequestException>(() => _gameService.EditGame(gameRequest, 1));
@@ -118,8 +115,7 @@ public class GameServiceTest
     {
         var gameRequest = new GameRequest
         {
-            Name = "Game2",
-            GameType = GameType.EventGame
+            Name = "Game2"
         };
 
         Assert.Throws<KeyNotFoundException>(() => _gameService.EditGame(gameRequest, 4));

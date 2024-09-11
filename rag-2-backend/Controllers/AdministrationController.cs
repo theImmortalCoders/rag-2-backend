@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rag_2_backend.DTO;
+using rag_2_backend.DTO.User;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Services;
@@ -47,9 +48,9 @@ public class AdministrationController(AdministrationService administrationServic
     /// <summary>(Admin, Teacher)</summary>
     [HttpGet("students")]
     [Authorize(Roles = "Admin, Teacher")]
-    public List<UserResponse> GetStudents([FromQuery][Required] int studyCycleYearA, [FromQuery][Required] int studyCycleYearB)
+    public List<UserResponse> GetStudents([FromQuery] [Required] int studyCycleYearA,
+        [FromQuery] [Required] int studyCycleYearB)
     {
         return administrationService.GetStudents(studyCycleYearA, studyCycleYearB);
     }
-
 }

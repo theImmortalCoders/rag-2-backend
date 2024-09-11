@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using rag_2_backend.data;
+using rag_2_backend.Config;
 using rag_2_backend.DTO;
+using rag_2_backend.DTO.Game;
 using rag_2_backend.models.entity;
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
 
@@ -15,8 +16,7 @@ public class GameService(DatabaseContext context)
         return games.Select(g => new GameResponse
         {
             Id = g.Id,
-            Name = g.Name,
-            GameType = g.GameType
+            Name = g.Name
         });
     }
 
@@ -27,8 +27,7 @@ public class GameService(DatabaseContext context)
 
         var game = new Game
         {
-            Name = request.Name,
-            GameType = request.GameType
+            Name = request.Name
         };
 
         context.Games.Add(game);
@@ -43,7 +42,6 @@ public class GameService(DatabaseContext context)
             throw new BadHttpRequestException("Game with this name already exists");
 
         game.Name = request.Name;
-        game.GameType = request.GameType;
 
         context.Games.Update(game);
         context.SaveChanges();

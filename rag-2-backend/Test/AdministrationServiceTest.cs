@@ -3,8 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
 using Newtonsoft.Json;
-using rag_2_backend.data;
+using rag_2_backend.Config;
 using rag_2_backend.DTO;
+using rag_2_backend.DTO.User;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Services;
@@ -29,6 +30,7 @@ public class AdministrationServiceTest
         StudyCycleYearB = 2023,
         Role = Role.Admin
     };
+
     private readonly User _user = new("email2@stud.prz.edu.pl")
     {
         Id = 2,
@@ -54,7 +56,7 @@ public class AdministrationServiceTest
         Assert.True(_user.Banned);
 
         Assert.Throws<BadHttpRequestException>(
-            ()=>_administrationService.ChangeBanStatus(1, false));
+            () => _administrationService.ChangeBanStatus(1, false));
     }
 
     [Fact]
@@ -65,7 +67,7 @@ public class AdministrationServiceTest
         Assert.Equal(Role.Student, _user.Role);
 
         Assert.Throws<BadHttpRequestException>(
-            ()=>_administrationService.ChangeRole(1, Role.Teacher));
+            () => _administrationService.ChangeRole(1, Role.Teacher));
     }
 
     [Fact]
@@ -81,8 +83,9 @@ public class AdministrationServiceTest
             StudyCycleYearB = 2023
         };
 
-        Assert.Equal(JsonConvert.SerializeObject(response), JsonConvert.SerializeObject(_administrationService.GetUserDetails("email@prz.edu.pl",1)));
-        Assert.Throws<KeyNotFoundException>(()=>_administrationService.GetUserDetails("email1@prz.edu.pl",1));
+        Assert.Equal(JsonConvert.SerializeObject(response),
+            JsonConvert.SerializeObject(_administrationService.GetUserDetails("email@prz.edu.pl", 1)));
+        Assert.Throws<KeyNotFoundException>(() => _administrationService.GetUserDetails("email1@prz.edu.pl", 1));
     }
 
     [Fact]

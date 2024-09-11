@@ -1,6 +1,7 @@
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using rag_2_backend.Models;
 
 namespace rag_2_backend.Utils;
 

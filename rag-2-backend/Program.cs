@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using rag_2_backend.data;
-using rag_2_backend.Exceptions;
+using rag_2_backend.Config;
+using rag_2_backend.Models;
 using rag_2_backend.Services;
 using rag_2_backend.Utils;
 

@@ -1,8 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
-using rag_2_backend.data;
+using rag_2_backend.Config;
 using rag_2_backend.DTO;
-using rag_2_backend.DTO.Mapper;
+using rag_2_backend.DTO.User;
+using rag_2_backend.Mapper;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Utils;
@@ -71,7 +72,7 @@ public class UserService(
             throw new UnauthorizedAccessException("Invalid password");
         if (!user.Confirmed)
             throw new UnauthorizedAccessException("Mail not confirmed");
-        if(user.Banned)
+        if (user.Banned)
             throw new UnauthorizedAccessException("User banned");
 
         return jwtUtil.GenerateToken(user.Email, user.Role.ToString());

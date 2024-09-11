@@ -12,8 +12,8 @@ using rag_2_backend.Config;
 namespace rag_2_backend.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240819180819_UserBanned")]
-    partial class UserBanned
+    [Migration("20240911152600_Base")]
+    partial class Base
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -128,9 +128,6 @@ namespace rag_2_backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("GameType")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -158,7 +155,7 @@ namespace rag_2_backend.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Value")
+                    b.Property<string>("Values")
                         .IsRequired()
                         .HasColumnType("text");
 

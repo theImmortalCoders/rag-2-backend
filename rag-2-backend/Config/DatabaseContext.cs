@@ -1,4 +1,6 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using rag_2_backend.DTO;
 using rag_2_backend.models.entity;
 using rag_2_backend.Models.Entity;
 
@@ -12,11 +14,14 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     public virtual required DbSet<AccountConfirmationToken> AccountConfirmationTokens { get; init; }
     public virtual required DbSet<BlacklistedJwt> BlacklistedJwts { get; init; }
     public virtual required DbSet<PasswordResetToken> PasswordResetTokens { get; init; }
-    
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<RecordedGame>()
-            .Property<string>(e=>e.ValuesStr)
-            .HasField("_values");
+            .Property(e => e.Values)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
+                v => JsonSerializer.Deserialize<List<RecordedGameResponseValue>>(v, (JsonSerializerOptions)null!)!
+            );
     }
 }

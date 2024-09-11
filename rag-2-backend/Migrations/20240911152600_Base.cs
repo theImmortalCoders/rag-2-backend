@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace rag_2_backend.Migrations
 {
     /// <inheritdoc />
-    public partial class BasicEntity : Migration
+    public partial class Base : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,8 +30,7 @@ namespace rag_2_backend.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    GameType = table.Column<int>(type: "integer", nullable: false)
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -46,10 +45,12 @@ namespace rag_2_backend.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Password = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Role = table.Column<int>(type: "integer", nullable: false),
                     Confirmed = table.Column<bool>(type: "boolean", nullable: false),
                     StudyCycleYearA = table.Column<int>(type: "integer", nullable: false),
-                    StudyCycleYearB = table.Column<int>(type: "integer", nullable: false)
+                    StudyCycleYearB = table.Column<int>(type: "integer", nullable: false),
+                    Banned = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -101,8 +102,8 @@ namespace rag_2_backend.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     GameId = table.Column<int>(type: "integer", nullable: false),
-                    Value = table.Column<string>(type: "text", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false)
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    Values = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -55,7 +55,10 @@ public class GameRecordServiceTest
         {
             Id = 1,
             Game = _game,
-            Values = [],
+            Values =
+            [
+                new RecordedGameResponseValue()
+            ],
             User = _user
         });
     }
@@ -69,7 +72,7 @@ public class GameRecordServiceTest
             new()
             {
                 Id = 1,
-                Values = [],
+                Values = [new RecordedGameResponseValue()],
                 GameResponse = new GameResponse { Id = 1, Name = "pong" },
                 UserResponse = new UserResponse
                 {
@@ -90,7 +93,7 @@ public class GameRecordServiceTest
     [Fact]
     public void AddGameRecordTest()
     {
-        var request = new RecordedGameRequest { GameName = "pong", Values = [] };
+        var request = new RecordedGameRequest { GameName = "pong", Values = [new RecordedGameResponseValue()] };
         _gameRecordService.AddGameRecord(request, "email@prz.edu.pl");
 
         _contextMock.Verify(c => c.RecordedGames.Add(It.IsAny<RecordedGame>()), Times.Once);

@@ -1,25 +1,16 @@
 using System.Net;
 
-namespace rag_2_backend.Exceptions;
+namespace rag_2_backend.Config;
 
 public record ExceptionResponse(HttpStatusCode StatusCode, string Description);
 
-public class ExceptionHandlingMiddleware
+public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
-    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-    private readonly RequestDelegate _next;
-
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
-
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            await _next(context);
+            await next(context);
         }
         catch (Exception ex)
         {
@@ -29,7 +20,7 @@ public class ExceptionHandlingMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        _logger.LogError(exception, "An unexpected error occurred.");
+        logger.LogError(exception, "An unexpected error occurred.");
 
         var response = exception switch
         {

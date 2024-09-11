@@ -152,10 +152,9 @@ namespace rag_2_backend.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ValuesStr")
-                        .HasMaxLength(10000)
-                        .HasColumnType("character varying(10000)")
-                        .HasColumnName("ValuesStr");
+                    b.Property<string>("Values")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

@@ -20,6 +20,7 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
 
     /// <summary>(Auth)</summary>
     /// <response code="404">User or game not found</response>
+    /// /// <response code="400">Space limit exceeded</response>
     [HttpPost]
     [Authorize]
     public void AddGameRecord([FromBody] [Required] RecordedGameRequest request)
@@ -27,5 +28,15 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
         var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new KeyNotFoundException("User not found");
 
         gameRecordService.AddGameRecord(request, email);
+    }
+
+    /// <summary>(Auth)</summary>
+    [HttpGet("used-space")]
+    [Authorize]
+    public double GetUsedSpace()
+    {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new KeyNotFoundException("User not found");
+
+        return gameRecordService.GetCurrentSpaceByUser(email);
     }
 }

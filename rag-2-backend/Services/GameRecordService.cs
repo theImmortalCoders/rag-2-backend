@@ -9,6 +9,8 @@ namespace rag_2_backend.Services;
 
 public class GameRecordService(DatabaseContext context)
 {
+    public readonly double UserLimitMb = 10;
+
     public List<RecordedGameResponse> GetRecordsByGame(int gameId)
     {
         var records = context.RecordedGames
@@ -23,6 +25,10 @@ public class GameRecordService(DatabaseContext context)
     {
         var user = context.Users.SingleOrDefault(u => u.Email == email)
                    ?? throw new KeyNotFoundException("User not found");
+
+        if (GetSizeByUser(user.Id, request.Values.Count) > UserLimitMb)
+            throw new BadHttpRequestException("Space limit exceeded");
+
         var game = context.Games.SingleOrDefault(g => Equals(g.Name.ToLower(), request.GameName.ToLower()))
                    ?? throw new KeyNotFoundException("Game not found");
 
@@ -38,12 +44,36 @@ public class GameRecordService(DatabaseContext context)
 
         var startTimestamp = request.Values[0].Timestamp;
         var endTimestamp = request.Values[^1].Timestamp;
-        if(startTimestamp is not null)
+        if (startTimestamp is not null)
             recordedGame.Started = DateTime.Parse(startTimestamp, null, DateTimeStyles.RoundtripKind);
-        if(endTimestamp is not null)
+        if (endTimestamp is not null)
             recordedGame.Ended = DateTime.Parse(endTimestamp, null, DateTimeStyles.RoundtripKind);
 
         context.RecordedGames.Add(recordedGame);
         context.SaveChanges();
+    }
+
+    public double GetCurrentSpaceByUser(string email)
+    {
+        var user = context.Users.SingleOrDefault(u => u.Email == email)
+                   ?? throw new KeyNotFoundException("User not found");
+
+        return GetSizeByUser(user.Id, 0);
+    }
+
+    //
+
+    private double GetSizeByUser(int userId, double initialSizeBytes)
+    {
+        var results = context.RecordedGames
+            .Where(e => e.User.Id == userId)
+            .Select(e => new
+            {
+                StringFieldLength = e.Values.Count
+            })
+            .ToList();
+
+        var totalBytes = results.Sum(r => r.StringFieldLength) + initialSizeBytes;
+        return totalBytes / 1024.0;
     }
 }

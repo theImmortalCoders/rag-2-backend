@@ -17,6 +17,6 @@ public class RecordedGame
     public List<Player>? Players { get; init; }
     public DateTime? Started { get; set; }
     public DateTime? Ended { get; set; }
-    [MaxLength(500)] public string? OutputSpec { get; init; }
+    [MaxLength(1000)] public string? OutputSpec { get; init; }
     [MaxLength(500)] public string? EndState { get; init; }
 }

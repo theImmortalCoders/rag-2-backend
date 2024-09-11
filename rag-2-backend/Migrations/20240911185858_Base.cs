@@ -107,8 +107,8 @@ namespace rag_2_backend.Migrations
                     Players = table.Column<string>(type: "text", nullable: true),
                     Started = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     Ended = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    OutputSpec = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    EndState = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
+                    OutputSpec = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    EndState = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
                 },
                 constraints: table =>
                 {

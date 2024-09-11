@@ -5,6 +5,7 @@ using Moq;
 using Newtonsoft.Json;
 using rag_2_backend.Config;
 using rag_2_backend.DTO;
+using rag_2_backend.DTO.User;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Services;

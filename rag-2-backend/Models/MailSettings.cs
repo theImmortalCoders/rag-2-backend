@@ -1,4 +1,4 @@
-namespace rag_2_backend.Utils;
+namespace rag_2_backend.Models;
 
 public class MailSettings
 {

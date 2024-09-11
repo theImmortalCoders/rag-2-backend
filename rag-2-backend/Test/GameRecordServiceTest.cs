@@ -4,6 +4,9 @@ using MockQueryable.Moq;
 using Moq;
 using rag_2_backend.Config;
 using rag_2_backend.DTO;
+using rag_2_backend.DTO.Game;
+using rag_2_backend.DTO.RecordedGame;
+using rag_2_backend.DTO.User;
 using rag_2_backend.Models;
 using rag_2_backend.models.entity;
 using rag_2_backend.Models.Entity;
@@ -57,7 +60,7 @@ public class GameRecordServiceTest
             Game = _game,
             Values =
             [
-                new RecordedGameResponseValue()
+                new RecordedGameValue()
             ],
             User = _user
         });
@@ -72,7 +75,7 @@ public class GameRecordServiceTest
             new()
             {
                 Id = 1,
-                Values = [new RecordedGameResponseValue()],
+                Values = [new RecordedGameValue()],
                 GameResponse = new GameResponse { Id = 1, Name = "pong" },
                 UserResponse = new UserResponse
                 {
@@ -93,7 +96,7 @@ public class GameRecordServiceTest
     [Fact]
     public void AddGameRecordTest()
     {
-        var request = new RecordedGameRequest { GameName = "pong", Values = [new RecordedGameResponseValue()] };
+        var request = new RecordedGameRequest { GameName = "pong", Values = [new RecordedGameValue()] };
         _gameRecordService.AddGameRecord(request, "email@prz.edu.pl");
 
         _contextMock.Verify(c => c.RecordedGames.Add(It.IsAny<RecordedGame>()), Times.Once);

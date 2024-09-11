@@ -1,6 +1,8 @@
+using rag_2_backend.DTO;
+using rag_2_backend.DTO.Game;
 using rag_2_backend.models.entity;
 
-namespace rag_2_backend.DTO.Mapper;
+namespace rag_2_backend.Mapper;
 
 public abstract class GameMapper
 {

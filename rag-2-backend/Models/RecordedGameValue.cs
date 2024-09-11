@@ -1,10 +1,10 @@
-namespace rag_2_backend.DTO;
+namespace rag_2_backend.Models;
 
-public class RecordedGameResponseValue
+public class RecordedGameValue
 {
     public string? Name { get; init; }
     public object? State { get; init; }
-    public List<object>? Players { get; init; }
+    public List<Player>? Players { get; init; }
     public string? Timestamp { get; init; }
     public string? OutputSpec { get; init; }
 }

@@ -103,7 +103,12 @@ namespace rag_2_backend.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     GameId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
-                    Values = table.Column<string>(type: "text", nullable: false)
+                    Values = table.Column<string>(type: "text", nullable: false),
+                    Players = table.Column<string>(type: "text", nullable: true),
+                    Started = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    Ended = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    OutputSpec = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    EndState = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {

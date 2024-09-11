@@ -1,7 +1,6 @@
-using System.ComponentModel.DataAnnotations;
 using rag_2_backend.Models;
 
-namespace rag_2_backend.DTO;
+namespace rag_2_backend.DTO.User;
 
 public class UserResponse
 {

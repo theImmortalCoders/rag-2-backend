@@ -1,7 +1,8 @@
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.Config;
-using rag_2_backend.DTO;
-using rag_2_backend.DTO.Mapper;
+using rag_2_backend.DTO.RecordedGame;
+using rag_2_backend.Mapper;
 using rag_2_backend.models.entity;
 
 namespace rag_2_backend.Services;
@@ -29,8 +30,18 @@ public class GameRecordService(DatabaseContext context)
         {
             Game = game,
             Values = request.Values,
-            User = user
+            User = user,
+            Players = request.Values[0].Players,
+            OutputSpec = request.Values[0].OutputSpec,
+            EndState = request.Values[^1].State?.ToString()
         };
+
+        var startTimestamp = request.Values[0].Timestamp;
+        var endTimestamp = request.Values[^1].Timestamp;
+        if(startTimestamp is not null)
+            recordedGame.Started = DateTime.Parse(startTimestamp, null, DateTimeStyles.RoundtripKind);
+        if(endTimestamp is not null)
+            recordedGame.Ended = DateTime.Parse(endTimestamp, null, DateTimeStyles.RoundtripKind);
 
         context.RecordedGames.Add(recordedGame);
         context.SaveChanges();

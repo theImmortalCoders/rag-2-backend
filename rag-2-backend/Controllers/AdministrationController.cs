@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rag_2_backend.DTO;
+using rag_2_backend.DTO.User;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Services;

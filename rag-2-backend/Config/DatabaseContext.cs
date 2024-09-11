@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.DTO;
+using rag_2_backend.Models;
 using rag_2_backend.models.entity;
 using rag_2_backend.Models.Entity;
 
@@ -21,7 +22,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
             .Property(e => e.Values)
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
-                v => JsonSerializer.Deserialize<List<RecordedGameResponseValue>>(v, (JsonSerializerOptions)null!)!
+                v => JsonSerializer.Deserialize<List<RecordedGameValue>>(v, (JsonSerializerOptions)null!)!
+            );
+        modelBuilder.Entity<RecordedGame>()
+            .Property(e => e.Players)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
+                v => JsonSerializer.Deserialize<List<Player>>(v, (JsonSerializerOptions)null!)!
             );
     }
 }

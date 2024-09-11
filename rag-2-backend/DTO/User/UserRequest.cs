@@ -1,4 +1,4 @@
-namespace rag_2_backend.DTO;
+namespace rag_2_backend.DTO.User;
 
 public class UserRequest
 {

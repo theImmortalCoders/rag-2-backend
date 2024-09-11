@@ -12,7 +12,7 @@ using rag_2_backend.Config;
 namespace rag_2_backend.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240911152600_Base")]
+    [Migration("20240911185858_Base")]
     partial class Base
     {
         /// <inheritdoc />
@@ -149,8 +149,25 @@ namespace rag_2_backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("EndState")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("Ended")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<int>("GameId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("OutputSpec")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Players")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("Started")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");

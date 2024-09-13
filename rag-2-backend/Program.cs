@@ -104,6 +104,7 @@ builder.Services.AddScoped<EmailSendingUtil>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<JwtSecurityTokenHandler>();
 builder.Services.AddScoped<AdministrationService>();
+builder.Services.AddScoped<StatsService>();
 
 var app = builder.Build();
 

@@ -19,7 +19,7 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     {
         return gameRecordService.GetRecordsByGame(gameId);
     }
-    
+
     /// <summary>Download JSON file from specific game (Auth)</summary>
     /// <response code="404">User or game record not found</response>
     /// <response code="400">Permission denied</response>
@@ -29,7 +29,7 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
         var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new KeyNotFoundException("User not found");
         var fileName = "game_record_" + recordedGameId + "_" + email + ".json";
         var fileStream = gameRecordService.DownloadRecordData(recordedGameId, email);
-        
+
         return File(fileStream, "application/json", fileName);
     }
 
@@ -44,7 +44,7 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
 
         gameRecordService.AddGameRecord(request, email);
     }
-    
+
     /// <summary>Remove game recording (Auth)</summary>
     /// <response code="404">User or game record not found</response>
     /// <response code="400">Permission denied</response>

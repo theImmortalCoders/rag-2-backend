@@ -32,10 +32,10 @@ public class GameRecordService(DatabaseContext context)
         var recordedGame = context.RecordedGames.Include(recordedGame => recordedGame.User)
                                .SingleOrDefault(g => g.Id == recordedGameId)
                            ?? throw new KeyNotFoundException("Game record not found");
-        
-        if(user.Id != recordedGame.User.Id && user.Role != Role.Admin)
+
+        if (user.Id != recordedGame.User.Id && user.Role != Role.Admin)
             throw new BadHttpRequestException("Permission denied");
-        
+
         return System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(recordedGame));
     }
 
@@ -79,10 +79,10 @@ public class GameRecordService(DatabaseContext context)
         var recordedGame = context.RecordedGames.Include(recordedGame => recordedGame.User)
                                .SingleOrDefault(g => g.Id == gameRecordId)
                            ?? throw new KeyNotFoundException("Game record not found");
-        
-        if(user.Id != recordedGame.User.Id && user.Role != Role.Admin)
+
+        if (user.Id != recordedGame.User.Id && user.Role != Role.Admin)
             throw new BadHttpRequestException("Permission denied");
-        
+
         context.RecordedGames.Remove(recordedGame);
         context.SaveChanges();
     }

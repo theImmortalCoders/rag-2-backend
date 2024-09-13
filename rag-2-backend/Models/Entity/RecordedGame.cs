@@ -1,7 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Newtonsoft.Json;
-using rag_2_backend.DTO;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
 

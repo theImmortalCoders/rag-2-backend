@@ -11,9 +11,11 @@ public abstract class RecordedGameMapper
         return new RecordedGameResponse
         {
             Id = recordedGame.Id,
-            UserResponse = UserMapper.Map(recordedGame.User),
-            GameResponse = GameMapper.Map(recordedGame.Game),
-            Values = recordedGame.Values,
+            Players = recordedGame.Players,
+            Ended = recordedGame.Ended,
+            Started = recordedGame.Started,
+            EndState = recordedGame.EndState,
+            OutputSpec = recordedGame.OutputSpec,
         };
     }
 }

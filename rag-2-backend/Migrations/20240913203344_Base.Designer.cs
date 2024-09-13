@@ -12,7 +12,7 @@ using rag_2_backend.Config;
 namespace rag_2_backend.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240911185858_Base")]
+    [Migration("20240913203344_Base")]
     partial class Base
     {
         /// <inheritdoc />
@@ -153,20 +153,20 @@ namespace rag_2_backend.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<DateTime?>("Ended")
+                    b.Property<DateTime>("Ended")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("GameId")
                         .HasColumnType("integer");
 
                     b.Property<string>("OutputSpec")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("Players")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("Started")
+                    b.Property<DateTime>("Started")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("UserId")

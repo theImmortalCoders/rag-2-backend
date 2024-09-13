@@ -105,10 +105,10 @@ namespace rag_2_backend.Migrations
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     Values = table.Column<string>(type: "text", nullable: false),
                     Players = table.Column<string>(type: "text", nullable: true),
-                    Started = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    Ended = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    Started = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Ended = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     OutputSpec = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    EndState = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
+                    EndState = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {

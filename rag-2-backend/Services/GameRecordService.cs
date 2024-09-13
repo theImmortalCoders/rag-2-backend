@@ -1,8 +1,11 @@
 using System.Globalization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using rag_2_backend.Config;
 using rag_2_backend.DTO.RecordedGame;
 using rag_2_backend.Mapper;
+using rag_2_backend.Models;
 using rag_2_backend.models.entity;
 
 namespace rag_2_backend.Services;
@@ -19,6 +22,21 @@ public class GameRecordService(DatabaseContext context)
             .Where(r => r.Game.Id == gameId)
             .ToList();
         return records.Select(RecordedGameMapper.Map).ToList();
+    }
+
+    public byte[] DownloadRecordData(int recordedGameId, string email)
+    {
+        var user = context.Users.SingleOrDefault(u => u.Email == email)
+                   ?? throw new KeyNotFoundException("User not found");
+
+        var recordedGame = context.RecordedGames.Include(recordedGame => recordedGame.User)
+                               .SingleOrDefault(g => g.Id == recordedGameId)
+                           ?? throw new KeyNotFoundException("Game record not found");
+
+        if (user.Id != recordedGame.User.Id && user.Role != Role.Admin)
+            throw new BadHttpRequestException("Permission denied");
+
+        return System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(recordedGame));
     }
 
     public void AddGameRecord(RecordedGameRequest request, string email)
@@ -50,6 +68,22 @@ public class GameRecordService(DatabaseContext context)
             recordedGame.Ended = DateTime.Parse(endTimestamp, null, DateTimeStyles.RoundtripKind);
 
         context.RecordedGames.Add(recordedGame);
+        context.SaveChanges();
+    }
+
+    public void RemoveGameRecord(int gameRecordId, string email)
+    {
+        var user = context.Users.SingleOrDefault(u => u.Email == email)
+                   ?? throw new KeyNotFoundException("User not found");
+
+        var recordedGame = context.RecordedGames.Include(recordedGame => recordedGame.User)
+                               .SingleOrDefault(g => g.Id == gameRecordId)
+                           ?? throw new KeyNotFoundException("Game record not found");
+
+        if (user.Id != recordedGame.User.Id && user.Role != Role.Admin)
+            throw new BadHttpRequestException("Permission denied");
+
+        context.RecordedGames.Remove(recordedGame);
         context.SaveChanges();
     }
 

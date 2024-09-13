@@ -75,14 +75,6 @@ public class GameRecordServiceTest
             new()
             {
                 Id = 1,
-                Values = [new RecordedGameValue()],
-                GameResponse = new GameResponse { Id = 1, Name = "pong" },
-                UserResponse = new UserResponse
-                {
-                    Id = 1, Email = "email@prz.edu.pl", Role = Role.Teacher, StudyCycleYearA = 2022,
-                    Name = "John",
-                    StudyCycleYearB = 2023
-                }
             }
         ];
 

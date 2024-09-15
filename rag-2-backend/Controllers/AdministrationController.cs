@@ -38,7 +38,7 @@ public class AdministrationController(AdministrationService administrationServic
     /// <response code="404">User details not found</response>
     [HttpGet("{userId:int}/details")]
     [Authorize]
-    public UserDetailsResponse GetUserDetails(int userId)
+    public UserResponse GetUserDetails(int userId)
     {
         var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedAccessException("Unauthorized");
 

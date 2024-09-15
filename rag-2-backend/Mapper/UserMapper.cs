@@ -19,9 +19,9 @@ public abstract class UserMapper
         };
     }
 
-    public static UserDetailsResponse MapDetails(User user)
+    public static UserResponse MapDetails(User user)
     {
-        return new UserDetailsResponse
+        return new UserResponse
         {
             Id = user.Id,
             Email = user.Email,

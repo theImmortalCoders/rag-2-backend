@@ -31,7 +31,7 @@ public class AdministrationService(DatabaseContext context)
         context.SaveChanges();
     }
 
-    public UserDetailsResponse GetUserDetails(string principalEmail, int userId)
+    public UserResponse GetUserDetails(string principalEmail, int userId)
     {
         var principal = GetUserByEmailOrThrow(principalEmail);
 

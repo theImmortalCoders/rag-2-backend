@@ -73,7 +73,7 @@ public class AdministrationServiceTest
     [Fact]
     public void ShouldGetUserDetails()
     {
-        var response = new UserDetailsResponse
+        var response = new UserResponse
         {
             Id = 1,
             Email = "email@prz.edu.pl",

@@ -87,14 +87,6 @@ public class GameRecordService(DatabaseContext context)
         context.SaveChanges();
     }
 
-    public double GetCurrentSpaceByUser(string email)
-    {
-        var user = context.Users.SingleOrDefault(u => u.Email == email)
-                   ?? throw new KeyNotFoundException("User not found");
-
-        return GetSizeByUser(user.Id, 0);
-    }
-
     //
 
     private double GetSizeByUser(int userId, double initialSizeBytes)

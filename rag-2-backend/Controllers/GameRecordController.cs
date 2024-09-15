@@ -56,14 +56,4 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
 
         gameRecordService.RemoveGameRecord(recordedGameId, email);
     }
-
-    /// <summary>Get all used space for user (Auth)</summary>
-    [HttpGet("used-space")]
-    [Authorize]
-    public double GetUsedSpace()
-    {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new KeyNotFoundException("User not found");
-
-        return gameRecordService.GetCurrentSpaceByUser(email);
-    }
 }

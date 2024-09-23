@@ -14,7 +14,7 @@ namespace rag_2_backend.controllers;
 [Route("api/[controller]")]
 public class AdministrationController(AdministrationService administrationService) : ControllerBase
 {
-    /// <summary>(Admin)</summary>
+    /// <summary>Change ban status for any user by user ID despite admins (Admin)</summary>
     /// <response code="404">User not found</response>
     /// <response code="400">Cannot ban administrator</response>
     [HttpPost("{userId:int}/ban-status")]
@@ -24,7 +24,7 @@ public class AdministrationController(AdministrationService administrationServic
         administrationService.ChangeBanStatus(userId, isBanned);
     }
 
-    /// <summary>(Admin)</summary>
+    /// <summary>Change role for any user by user ID despite admins (Admin)</summary>
     /// <response code="404">User not found</response>
     /// <response code="400">Cannot change administrator's role</response>
     [HttpPost("{userId:int}/role")]
@@ -34,8 +34,8 @@ public class AdministrationController(AdministrationService administrationServic
         administrationService.ChangeRole(userId, role);
     }
 
-    /// <summary>(Auth)</summary>
-    /// <response code="404">User details not found</response>
+    /// <summary>Get details of any user by user ID, only yours if not admin or teacher (Auth)</summary>
+    /// <response code="404">Cannot view details</response>
     [HttpGet("{userId:int}/details")]
     [Authorize]
     public UserResponse GetUserDetails(int userId)
@@ -45,7 +45,7 @@ public class AdministrationController(AdministrationService administrationServic
         return administrationService.GetUserDetails(email, userId);
     }
 
-    /// <summary>(Admin, Teacher)</summary>
+    /// <summary>Get students list by study year cycle (Admin, Teacher)</summary>
     [HttpGet("students")]
     [Authorize(Roles = "Admin, Teacher")]
     public List<UserResponse> GetStudents([FromQuery] [Required] int studyCycleYearA,

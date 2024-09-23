@@ -23,10 +23,10 @@ public class UserServiceTest
         new DbContextOptionsBuilder<DatabaseContext>().Options
     );
 
-    private readonly Mock<EmailService> _emailService = new(null, null);
+    private readonly Mock<EmailService> _emailService = new(null!, null!);
     private readonly Mock<JwtSecurityTokenHandler> _jwtSecurityTokenHandlerMock = new();
 
-    private readonly Mock<JwtUtil> _jwtUtilMock = new(null, null);
+    private readonly Mock<JwtUtil> _jwtUtilMock = new(null!, null!);
     private readonly PasswordResetToken _passwordToken;
 
     private readonly User _user = new("email@prz.edu.pl")

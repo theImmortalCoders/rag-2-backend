@@ -40,6 +40,7 @@ public static class ServiceRegistrationExtension
         services.AddScoped<JwtSecurityTokenHandler>();
         services.AddScoped<AdministrationService>();
         services.AddScoped<StatsService>();
+        services.AddScoped<UserUtil>();
     }
 
     private static void ConfigSwagger(IServiceCollection services)

@@ -2,6 +2,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using HttpExceptions.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rag_2_backend.DTO.User;
@@ -37,12 +38,12 @@ public class AdministrationController(AdministrationService administrationServic
     }
 
     /// <summary>Get details of any user by user ID, only yours if not admin or teacher (Auth)</summary>
-    /// <response code="404">Cannot view details</response>
+    /// <response code="403">Cannot view details</response>
     [HttpGet("{userId:int}/details")]
     [Authorize]
     public UserResponse GetUserDetails(int userId)
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedAccessException("Unauthorized");
+        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedException("Unauthorized");
 
         return administrationService.GetUserDetails(email, userId);
     }

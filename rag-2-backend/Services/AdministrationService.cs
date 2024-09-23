@@ -1,5 +1,6 @@
 #region
 
+using HttpExceptions.Exceptions;
 using rag_2_backend.Config;
 using rag_2_backend.DTO.User;
 using rag_2_backend.Mapper;
@@ -17,7 +18,7 @@ public class AdministrationService(DatabaseContext context, UserUtil userUtil)
         var user = userUtil.GetUserByIdOrThrow(userId);
 
         if (user.Role == Role.Admin)
-            throw new BadHttpRequestException("Cannot ban administrator");
+            throw new BadRequestException("Cannot ban administrator");
 
         user.Banned = isBanned;
         context.SaveChanges();
@@ -28,7 +29,7 @@ public class AdministrationService(DatabaseContext context, UserUtil userUtil)
         var user = userUtil.GetUserByIdOrThrow(userId);
 
         if (user.Role == Role.Admin)
-            throw new BadHttpRequestException("Cannot change administrator's role");
+            throw new BadRequestException("Cannot change administrator's role");
 
         user.Role = role;
         context.SaveChanges();
@@ -39,7 +40,7 @@ public class AdministrationService(DatabaseContext context, UserUtil userUtil)
         var principal = userUtil.GetUserByEmailOrThrow(principalEmail);
 
         if (principal.Role is Role.Student or Role.Special && userId != principal.Id)
-            throw new KeyNotFoundException("Cannot view details");
+            throw new ForbiddenException("Cannot view details");
 
         return UserMapper.MapDetails(userUtil.GetUserByIdOrThrow(userId));
     }

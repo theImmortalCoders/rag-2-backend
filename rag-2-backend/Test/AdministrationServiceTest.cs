@@ -1,5 +1,6 @@
 #region
 
+using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
@@ -64,7 +65,7 @@ public class AdministrationServiceTest
         Assert.True(_user.Banned);
 
         _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_admin);
-        Assert.Throws<BadHttpRequestException>(
+        Assert.Throws<BadRequestException>(
             () => _administrationService.ChangeBanStatus(1, false));
     }
 
@@ -76,7 +77,7 @@ public class AdministrationServiceTest
         Assert.Equal(Role.Student, _user.Role);
 
         _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_admin);
-        Assert.Throws<BadHttpRequestException>(
+        Assert.Throws<BadRequestException>(
             () => _administrationService.ChangeRole(1, Role.Teacher));
     }
 
@@ -97,7 +98,7 @@ public class AdministrationServiceTest
             JsonConvert.SerializeObject(_administrationService.GetUserDetails("email@prz.edu.pl", 1)));
 
         _userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
-        Assert.Throws<KeyNotFoundException>(() => _administrationService.GetUserDetails("email1@prz.edu.pl", 1));
+        Assert.Throws<ForbiddenException>(() => _administrationService.GetUserDetails("email1@prz.edu.pl", 1));
     }
 
     [Fact]

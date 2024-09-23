@@ -1,6 +1,9 @@
-using rag_2_backend.DTO;
+#region
+
 using rag_2_backend.DTO.User;
 using rag_2_backend.Models.Entity;
+
+#endregion
 
 namespace rag_2_backend.Mapper;
 

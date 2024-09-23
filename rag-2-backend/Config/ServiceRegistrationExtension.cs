@@ -1,8 +1,12 @@
+#region
+
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using rag_2_backend.Services;
 using rag_2_backend.Utils;
+
+#endregion
 
 namespace rag_2_backend.Config;
 

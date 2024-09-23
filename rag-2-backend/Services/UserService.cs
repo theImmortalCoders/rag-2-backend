@@ -1,12 +1,15 @@
+#region
+
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.Config;
-using rag_2_backend.DTO;
 using rag_2_backend.DTO.User;
 using rag_2_backend.Mapper;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Utils;
+
+#endregion
 
 namespace rag_2_backend.Services;
 

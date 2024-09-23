@@ -1,10 +1,10 @@
-using System.Text.Json.Serialization;
+#region
+
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
 using Newtonsoft.Json;
 using rag_2_backend.Config;
-using rag_2_backend.DTO;
 using rag_2_backend.DTO.User;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
@@ -12,18 +12,12 @@ using rag_2_backend.Services;
 using rag_2_backend.Utils;
 using Xunit;
 
+#endregion
+
 namespace rag_2_backend.Test;
 
 public class AdministrationServiceTest
 {
-    private readonly Mock<DatabaseContext> _contextMock = new(
-        new DbContextOptionsBuilder<DatabaseContext>().Options
-    );
-
-    private readonly Mock<UserUtil> _userMock;
-
-    private readonly AdministrationService _administrationService;
-
     private readonly User _admin = new("email@prz.edu.pl")
     {
         Id = 1,
@@ -34,6 +28,12 @@ public class AdministrationServiceTest
         Role = Role.Admin
     };
 
+    private readonly AdministrationService _administrationService;
+
+    private readonly Mock<DatabaseContext> _contextMock = new(
+        new DbContextOptionsBuilder<DatabaseContext>().Options
+    );
+
     private readonly User _user = new("email2@stud.prz.edu.pl")
     {
         Id = 2,
@@ -42,6 +42,8 @@ public class AdministrationServiceTest
         StudyCycleYearA = 2022,
         StudyCycleYearB = 2023
     };
+
+    private readonly Mock<UserUtil> _userMock;
 
     public AdministrationServiceTest()
     {
@@ -93,7 +95,7 @@ public class AdministrationServiceTest
 
         Assert.Equal(JsonConvert.SerializeObject(response),
             JsonConvert.SerializeObject(_administrationService.GetUserDetails("email@prz.edu.pl", 1)));
-        
+
         _userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
         Assert.Throws<KeyNotFoundException>(() => _administrationService.GetUserDetails("email1@prz.edu.pl", 1));
     }

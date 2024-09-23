@@ -1,5 +1,7 @@
+#region
+
 using System.Globalization;
-using Microsoft.AspNetCore.Mvc;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using rag_2_backend.Config;
@@ -7,6 +9,8 @@ using rag_2_backend.DTO.RecordedGame;
 using rag_2_backend.Mapper;
 using rag_2_backend.Models;
 using rag_2_backend.models.entity;
+
+#endregion
 
 namespace rag_2_backend.Services;
 
@@ -36,7 +40,7 @@ public class GameRecordService(DatabaseContext context)
         if (user.Id != recordedGame.User.Id && user.Role != Role.Admin)
             throw new BadHttpRequestException("Permission denied");
 
-        return System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(recordedGame));
+        return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(recordedGame));
     }
 
     public void AddGameRecord(RecordedGameRequest request, string email)

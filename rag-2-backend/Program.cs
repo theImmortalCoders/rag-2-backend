@@ -1,14 +1,14 @@
-using System.IdentityModel.Tokens.Jwt;
+#region
+
 using System.Text;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using rag_2_backend.Config;
 using rag_2_backend.Models;
-using rag_2_backend.Services;
 using rag_2_backend.Utils;
+
+#endregion
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);

@@ -1,9 +1,12 @@
+#region
+
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.Config;
-using rag_2_backend.DTO;
 using rag_2_backend.DTO.Game;
 using rag_2_backend.models.entity;
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
+#endregion
 
 namespace rag_2_backend.Services;
 

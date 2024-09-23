@@ -1,7 +1,10 @@
-using System.ComponentModel.DataAnnotations;
+#region
+
 using rag_2_backend.Models;
 
-namespace rag_2_backend.DTO;
+#endregion
+
+namespace rag_2_backend.DTO.User;
 
 public class UserResponse
 {

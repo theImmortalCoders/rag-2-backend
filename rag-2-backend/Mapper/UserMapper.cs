@@ -1,6 +1,11 @@
+#region
+
+using rag_2_backend.DTO.User;
 using rag_2_backend.Models.Entity;
 
-namespace rag_2_backend.DTO.Mapper;
+#endregion
+
+namespace rag_2_backend.Mapper;
 
 public abstract class UserMapper
 {
@@ -17,9 +22,9 @@ public abstract class UserMapper
         };
     }
 
-    public static UserDetailsResponse MapDetails(User user)
+    public static UserResponse MapDetails(User user)
     {
-        return new UserDetailsResponse
+        return new UserResponse
         {
             Id = user.Id,
             Email = user.Email,

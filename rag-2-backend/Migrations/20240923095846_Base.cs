@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace rag_2_backend.Migrations
 {
     /// <inheritdoc />
-    public partial class BasicEntity : Migration
+    public partial class Base : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,35 +25,36 @@ namespace rag_2_backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "games",
+                name: "game_table",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    GameType = table.Column<int>(type: "integer", nullable: false)
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_games", x => x.Id);
+                    table.PrimaryKey("PK_game_table", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "users",
+                name: "user_table",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Password = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Role = table.Column<int>(type: "integer", nullable: false),
                     Confirmed = table.Column<bool>(type: "boolean", nullable: false),
                     StudyCycleYearA = table.Column<int>(type: "integer", nullable: false),
-                    StudyCycleYearB = table.Column<int>(type: "integer", nullable: false)
+                    StudyCycleYearB = table.Column<int>(type: "integer", nullable: false),
+                    Banned = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_users", x => x.Id);
+                    table.PrimaryKey("PK_user_table", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -68,9 +69,9 @@ namespace rag_2_backend.Migrations
                 {
                     table.PrimaryKey("PK_account_confirmation_token", x => x.Token);
                     table.ForeignKey(
-                        name: "FK_account_confirmation_token_users_UserId",
+                        name: "FK_account_confirmation_token_user_table_UserId",
                         column: x => x.UserId,
-                        principalTable: "users",
+                        principalTable: "user_table",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -87,36 +88,41 @@ namespace rag_2_backend.Migrations
                 {
                     table.PrimaryKey("PK_password_reset_token", x => x.Token);
                     table.ForeignKey(
-                        name: "FK_password_reset_token_users_UserId",
+                        name: "FK_password_reset_token_user_table_UserId",
                         column: x => x.UserId,
-                        principalTable: "users",
+                        principalTable: "user_table",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "recorded_games",
+                name: "recorded_game",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     GameId = table.Column<int>(type: "integer", nullable: false),
-                    Value = table.Column<string>(type: "text", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false)
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    Values = table.Column<string>(type: "text", nullable: false),
+                    Players = table.Column<string>(type: "text", nullable: true),
+                    Started = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Ended = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    OutputSpec = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    EndState = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_recorded_games", x => x.Id);
+                    table.PrimaryKey("PK_recorded_game", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_recorded_games_games_GameId",
+                        name: "FK_recorded_game_game_table_GameId",
                         column: x => x.GameId,
-                        principalTable: "games",
+                        principalTable: "game_table",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_recorded_games_users_UserId",
+                        name: "FK_recorded_game_user_table_UserId",
                         column: x => x.UserId,
-                        principalTable: "users",
+                        principalTable: "user_table",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -127,8 +133,8 @@ namespace rag_2_backend.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_games_Name",
-                table: "games",
+                name: "IX_game_table_Name",
+                table: "game_table",
                 column: "Name",
                 unique: true);
 
@@ -138,13 +144,13 @@ namespace rag_2_backend.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_recorded_games_GameId",
-                table: "recorded_games",
+                name: "IX_recorded_game_GameId",
+                table: "recorded_game",
                 column: "GameId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_recorded_games_UserId",
-                table: "recorded_games",
+                name: "IX_recorded_game_UserId",
+                table: "recorded_game",
                 column: "UserId");
         }
 
@@ -161,13 +167,13 @@ namespace rag_2_backend.Migrations
                 name: "password_reset_token");
 
             migrationBuilder.DropTable(
-                name: "recorded_games");
+                name: "recorded_game");
 
             migrationBuilder.DropTable(
-                name: "games");
+                name: "game_table");
 
             migrationBuilder.DropTable(
-                name: "users");
+                name: "user_table");
         }
     }
 }

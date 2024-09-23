@@ -1,16 +1,20 @@
+#region
+
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
 using Newtonsoft.Json;
-using rag_2_backend.data;
-using rag_2_backend.DTO;
+using rag_2_backend.Config;
+using rag_2_backend.DTO.User;
 using rag_2_backend.Models;
 using rag_2_backend.models.entity;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Services;
 using rag_2_backend.Utils;
 using Xunit;
+
+#endregion
 
 namespace rag_2_backend.Test;
 
@@ -22,10 +26,10 @@ public class UserServiceTest
         new DbContextOptionsBuilder<DatabaseContext>().Options
     );
 
-    private readonly Mock<EmailService> _emailService = new(null, null);
+    private readonly Mock<EmailService> _emailService = new(null!, null!);
     private readonly Mock<JwtSecurityTokenHandler> _jwtSecurityTokenHandlerMock = new();
 
-    private readonly Mock<JwtUtil> _jwtUtilMock = new(null, null);
+    private readonly Mock<JwtUtil> _jwtUtilMock = new(null!, null!);
     private readonly PasswordResetToken _passwordToken;
 
     private readonly User _user = new("email@prz.edu.pl")
@@ -53,8 +57,13 @@ public class UserServiceTest
             Expiration = DateTime.Now.AddDays(7),
             Token = HashUtil.HashPassword("password")
         };
+
+        Mock<UserUtil> userMock = new(_contextMock.Object);
+        userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
+        userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
+
         _userService = new UserService(_contextMock.Object, _jwtUtilMock.Object, _emailService.Object,
-            _jwtSecurityTokenHandlerMock.Object);
+            _jwtSecurityTokenHandlerMock.Object, userMock.Object);
 
         _contextMock.Setup(c => c.Users).Returns(() => new List<User> { _user }
             .AsQueryable().BuildMockDbSet().Object);
@@ -76,7 +85,10 @@ public class UserServiceTest
     public void ShouldRegisterUser()
     {
         _userService.RegisterUser(new UserRequest
-            { Email = "email1@prz.edu.pl", Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023, Name = "John" }
+            {
+                Email = "email1@prz.edu.pl", Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023,
+                Name = "John"
+            }
         );
 
         _contextMock.Verify(c => c.Users.Add(It.IsAny<User>()), Times.Once);
@@ -85,7 +97,10 @@ public class UserServiceTest
 
         Assert.Throws<BadHttpRequestException>(
             () => _userService.RegisterUser(new UserRequest
-                { Email = "email1@stud.prz.edu.pl", Password = "pass", StudyCycleYearA = 2020, StudyCycleYearB = 2023, Name = "John" }
+                {
+                    Email = "email1@stud.prz.edu.pl", Password = "pass", StudyCycleYearA = 2020, StudyCycleYearB = 2023,
+                    Name = "John"
+                }
             )
         );
     }

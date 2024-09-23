@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using rag_2_backend.data;
+using rag_2_backend.Config;
 
 #nullable disable
 
 namespace rag_2_backend.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240817102412_BasicEntity")]
-    partial class BasicEntity
+    [Migration("20240923095846_Base")]
+    partial class Base
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -85,10 +85,18 @@ namespace rag_2_backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Banned")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("Confirmed")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -109,7 +117,7 @@ namespace rag_2_backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("users");
+                    b.ToTable("user_table");
                 });
 
             modelBuilder.Entity("rag_2_backend.models.entity.Game", b =>
@@ -119,9 +127,6 @@ namespace rag_2_backend.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("GameType")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -133,7 +138,7 @@ namespace rag_2_backend.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("games");
+                    b.ToTable("game_table");
                 });
 
             modelBuilder.Entity("rag_2_backend.models.entity.RecordedGame", b =>
@@ -144,13 +149,30 @@ namespace rag_2_backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("EndState")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("Ended")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<int>("GameId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("OutputSpec")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Players")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Started")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Value")
+                    b.Property<string>("Values")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -160,7 +182,7 @@ namespace rag_2_backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("recorded_games");
+                    b.ToTable("recorded_game");
                 });
 
             modelBuilder.Entity("rag_2_backend.Models.Entity.AccountConfirmationToken", b =>

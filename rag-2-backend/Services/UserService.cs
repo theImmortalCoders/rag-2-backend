@@ -1,11 +1,15 @@
+#region
+
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
-using rag_2_backend.data;
-using rag_2_backend.DTO;
-using rag_2_backend.DTO.Mapper;
+using rag_2_backend.Config;
+using rag_2_backend.DTO.User;
+using rag_2_backend.Mapper;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Utils;
+
+#endregion
 
 namespace rag_2_backend.Services;
 
@@ -13,7 +17,8 @@ public class UserService(
     DatabaseContext context,
     JwtUtil jwtUtil,
     EmailService emailService,
-    JwtSecurityTokenHandler jwtSecurityTokenHandler)
+    JwtSecurityTokenHandler jwtSecurityTokenHandler,
+    UserUtil userUtil)
 {
     public void RegisterUser(UserRequest userRequest)
     {
@@ -38,7 +43,7 @@ public class UserService(
 
     public void ResendConfirmationEmail(string email)
     {
-        var user = GetUserByEmailOrThrow(email);
+        var user = userUtil.GetUserByEmailOrThrow(email);
         if (user.Confirmed) throw new BadHttpRequestException("User is already confirmed");
 
         context.AccountConfirmationTokens.RemoveRange(
@@ -65,13 +70,13 @@ public class UserService(
 
     public string LoginUser(string email, string password)
     {
-        var user = GetUserByEmailOrThrow(email);
+        var user = userUtil.GetUserByEmailOrThrow(email);
 
         if (!HashUtil.VerifyPassword(password, user.Password))
             throw new UnauthorizedAccessException("Invalid password");
         if (!user.Confirmed)
             throw new UnauthorizedAccessException("Mail not confirmed");
-        if(user.Banned)
+        if (user.Banned)
             throw new UnauthorizedAccessException("User banned");
 
         return jwtUtil.GenerateToken(user.Email, user.Role.ToString());
@@ -79,7 +84,7 @@ public class UserService(
 
     public UserResponse GetMe(string email)
     {
-        return UserMapper.Map(GetUserByEmailOrThrow(email));
+        return UserMapper.Map(userUtil.GetUserByEmailOrThrow(email));
     }
 
     public void LogoutUser(string header)
@@ -94,7 +99,7 @@ public class UserService(
 
     public void RequestPasswordReset(string email)
     {
-        var user = GetUserByEmailOrThrow(email);
+        var user = userUtil.GetUserByEmailOrThrow(email);
 
         context.PasswordResetTokens.RemoveRange(
             context.PasswordResetTokens.Where(a => a.User.Email == user.Email)
@@ -120,7 +125,7 @@ public class UserService(
 
     public void ChangePassword(string email, string oldPassword, string newPassword)
     {
-        var user = GetUserByEmailOrThrow(email);
+        var user = userUtil.GetUserByEmailOrThrow(email);
 
         if (!HashUtil.VerifyPassword(oldPassword, user.Password))
             throw new BadHttpRequestException("Invalid old password");
@@ -133,7 +138,7 @@ public class UserService(
 
     public void DeleteAccount(string email, string header)
     {
-        var user = GetUserByEmailOrThrow(email);
+        var user = userUtil.GetUserByEmailOrThrow(email);
 
         context.PasswordResetTokens.RemoveRange(context.PasswordResetTokens
             .Include(p => p.User)
@@ -155,12 +160,6 @@ public class UserService(
     }
 
     //
-
-    private User GetUserByEmailOrThrow(string email)
-    {
-        return context.Users.SingleOrDefault(u => u.Email == email) ??
-               throw new KeyNotFoundException("User not found");
-    }
 
     private static bool IsStudyYearWrong(UserRequest userRequest)
     {

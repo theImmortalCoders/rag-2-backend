@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using rag_2_backend.DTO.User;
 using rag_2_backend.Models;
 using rag_2_backend.Services;
+using rag_2_backend.Utils;
 
 #endregion
 
@@ -41,11 +42,9 @@ public class AdministrationController(AdministrationService administrationServic
     /// <response code="403">Cannot view details</response>
     [HttpGet("{userId:int}/details")]
     [Authorize]
-    public UserResponse GetUserDetails(int userId)
+    public UserResponse GetUserDetails([Required] int userId)
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedException("Unauthorized");
-
-        return administrationService.GetUserDetails(email, userId);
+        return administrationService.GetUserDetails(UserUtil.GetPrincipalEmail(User), userId);
     }
 
     /// <summary>Get students list by study year cycle (Admin, Teacher)</summary>

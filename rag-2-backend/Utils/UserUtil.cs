@@ -1,5 +1,6 @@
 #region
 
+using System.Security.Claims;
 using HttpExceptions.Exceptions;
 using rag_2_backend.Config;
 using rag_2_backend.Models.Entity;
@@ -20,5 +21,10 @@ public class UserUtil(DatabaseContext context)
     {
         return context.Users.SingleOrDefault(u => u.Email == email) ??
                throw new NotFoundException("User not found");
+    }
+
+    public static string GetPrincipalEmail(ClaimsPrincipal user)
+    {
+        return user.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedException("Unauthorized");
     }
 }

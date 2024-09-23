@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rag_2_backend.DTO.User;
 using rag_2_backend.Services;
+using rag_2_backend.Utils;
 
 #endregion
 
@@ -73,9 +74,7 @@ public class UserController(UserService userService) : ControllerBase
     [Authorize]
     public UserResponse Me()
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedAccessException("Unauthorized");
-
-        return userService.GetMe(email);
+        return userService.GetMe(UserUtil.GetPrincipalEmail(User));
     }
 
     /// <summary>(Auth)</summary>
@@ -84,9 +83,7 @@ public class UserController(UserService userService) : ControllerBase
     [Authorize]
     public void ChangePassword([Required] string oldPassword, [Required] string newPassword)
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedAccessException("Unauthorized");
-
-        userService.ChangePassword(email, oldPassword, newPassword);
+        userService.ChangePassword(UserUtil.GetPrincipalEmail(User), oldPassword, newPassword);
     }
 
     /// <summary> (Auth)</summary>
@@ -94,10 +91,9 @@ public class UserController(UserService userService) : ControllerBase
     [Authorize]
     public void DeleteAccount()
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedAccessException("Unauthorized");
         var header = HttpContext.Request.Headers.Authorization.FirstOrDefault() ??
                      throw new UnauthorizedAccessException("Unauthorized");
 
-        userService.DeleteAccount(email, header);
+        userService.DeleteAccount(UserUtil.GetPrincipalEmail(User), header);
     }
 }

@@ -44,7 +44,7 @@ public class GameController(GameService gameService) : ControllerBase
     /// <response code="404">Game not found</response>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "Admin")]
-    public void Remove(int id)
+    public void Remove([Required] int id)
     {
         gameService.RemoveGame(id);
     }

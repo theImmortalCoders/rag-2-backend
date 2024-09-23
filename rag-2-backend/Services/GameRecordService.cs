@@ -37,7 +37,7 @@ public class GameRecordService(DatabaseContext context)
                                .SingleOrDefault(g => g.Id == recordedGameId)
                            ?? throw new KeyNotFoundException("Game record not found");
 
-        if (user.Id != recordedGame.User.Id && user.Role != Role.Admin)
+        if (user.Id != recordedGame.User.Id && user.Role != Role.Admin && user.Role != Role.Teacher)
             throw new BadHttpRequestException("Permission denied");
 
         return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(recordedGame));

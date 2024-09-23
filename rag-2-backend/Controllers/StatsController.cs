@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rag_2_backend.DTO.Stats;
 using rag_2_backend.Services;
+using rag_2_backend.Utils;
 
 #endregion
 
@@ -22,9 +23,7 @@ public class StatsController(StatsService statsService) : ControllerBase
     [Authorize]
     public UserStatsResponse GetStatsForUser([Required] [FromQuery] int userId)
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new KeyNotFoundException("User not found");
-
-        return statsService.GetStatsForUser(email, userId);
+        return statsService.GetStatsForUser(UserUtil.GetPrincipalEmail(User), userId);
     }
 
     /// <summary>Get stats for game</summary>

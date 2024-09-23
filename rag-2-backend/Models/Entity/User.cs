@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace rag_2_backend.Models.Entity;
 
-[Table("users")]
+[Table("user_table")]
 public class User
 {
     public User() //for ef

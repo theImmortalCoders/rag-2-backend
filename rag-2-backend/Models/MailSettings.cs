@@ -2,11 +2,11 @@ namespace rag_2_backend.Models;
 
 public class MailSettings
 {
-    public string EmailId { get; set; }
-    public string Name { get; set; }
-    public string UserName { get; set; }
-    public string Password { get; set; }
-    public string Host { get; set; }
-    public int Port { get; set; }
-    public bool UseSSL { get; set; }
+    public required string EmailId { get; init; }
+    public required string Name { get; init; }
+    public required string UserName { get; init; }
+    public required string Password { get; init; }
+    public required string Host { get; init; }
+    public required int Port { get; init; }
+    public required bool UseSSL { get; init; }
 }

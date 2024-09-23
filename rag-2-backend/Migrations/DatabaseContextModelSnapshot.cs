@@ -114,7 +114,7 @@ namespace rag_2_backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("users");
+                    b.ToTable("user_table");
                 });
 
             modelBuilder.Entity("rag_2_backend.models.entity.Game", b =>
@@ -135,7 +135,7 @@ namespace rag_2_backend.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("games");
+                    b.ToTable("game_table");
                 });
 
             modelBuilder.Entity("rag_2_backend.models.entity.RecordedGame", b =>
@@ -179,7 +179,7 @@ namespace rag_2_backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("recorded_games");
+                    b.ToTable("recorded_game");
                 });
 
             modelBuilder.Entity("rag_2_backend.Models.Entity.AccountConfirmationToken", b =>

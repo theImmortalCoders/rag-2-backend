@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace rag_2_backend.Models;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class Player
 {
     public required int Id { get; set; }

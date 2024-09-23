@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace rag_2_backend.models.entity;
 
-[Table("games")]
+[Table("game_table")]
 [Index(nameof(Name), IsUnique = true)]
 public class Game
 {

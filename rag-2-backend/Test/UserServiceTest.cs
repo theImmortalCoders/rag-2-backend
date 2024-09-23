@@ -41,6 +41,8 @@ public class UserServiceTest
         StudyCycleYearB = 2023
     };
 
+    private readonly Mock<UserUtil> _userMock;
+
     private readonly UserService _userService;
 
     public UserServiceTest()
@@ -57,8 +59,13 @@ public class UserServiceTest
             Expiration = DateTime.Now.AddDays(7),
             Token = HashUtil.HashPassword("password")
         };
+
+        _userMock = new Mock<UserUtil>(_contextMock.Object);
+        _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
+        _userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
+
         _userService = new UserService(_contextMock.Object, _jwtUtilMock.Object, _emailService.Object,
-            _jwtSecurityTokenHandlerMock.Object);
+            _jwtSecurityTokenHandlerMock.Object, _userMock.Object);
 
         _contextMock.Setup(c => c.Users).Returns(() => new List<User> { _user }
             .AsQueryable().BuildMockDbSet().Object);

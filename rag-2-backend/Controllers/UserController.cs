@@ -15,6 +15,7 @@ namespace rag_2_backend.controllers;
 [Route("api/[controller]/auth")]
 public class UserController(UserService userService) : ControllerBase
 {
+    /// <summary>Register new user</summary>
     /// <response code="400">User already exists or wrong study cycle year</response>
     [HttpPost("register")]
     public void Register([FromBody] [Required] UserRequest userRequest)
@@ -22,6 +23,7 @@ public class UserController(UserService userService) : ControllerBase
         userService.RegisterUser(userRequest);
     }
 
+    /// <summary>Authenticate</summary>
     /// <response code="401">Invalid password or mail not confirmed or user banned</response>
     [HttpPost("login")]
     public string Login([FromBody] [Required] UserLoginRequest loginRequest)
@@ -29,6 +31,7 @@ public class UserController(UserService userService) : ControllerBase
         return userService.LoginUser(loginRequest.Email, loginRequest.Password);
     }
 
+    /// <summary>Resend confirmation email to specified email</summary>
     /// <response code="404">User not found</response>
     /// <response code="400">User is already confirmed</response>
     [HttpPost("resend-confirmation-email")]
@@ -37,6 +40,7 @@ public class UserController(UserService userService) : ControllerBase
         userService.ResendConfirmationEmail(email);
     }
 
+    /// <summary>Confirm account with token from mail</summary>
     /// <response code="400">Invalid token</response>
     [HttpPost("confirm-account")]
     public void ConfirmAccount([Required] string token)
@@ -44,12 +48,14 @@ public class UserController(UserService userService) : ControllerBase
         userService.ConfirmAccount(token);
     }
 
+    /// <summary>Request password reset for given email</summary>
     [HttpPost("request-password-reset")]
     public void RequestPasswordReset([Required] string email)
     {
         userService.RequestPasswordReset(email);
     }
 
+    /// <summary>Reset password with token and new password</summary>
     /// <response code="400">Invalid token</response>
     [HttpPost("reset-password")]
     public void ResetPassword([Required] string tokenValue, [Required] string newPassword)
@@ -57,7 +63,7 @@ public class UserController(UserService userService) : ControllerBase
         userService.ResetPassword(tokenValue, newPassword);
     }
 
-    /// <summary>(Auth)</summary>
+    /// <summary>Logout current user (Auth)</summary>
     [HttpPost("logout")]
     [Authorize]
     public void Logout()
@@ -68,7 +74,7 @@ public class UserController(UserService userService) : ControllerBase
         userService.LogoutUser(header);
     }
 
-    /// <summary>(Auth)</summary>
+    /// <summary>Get current user details (Auth)</summary>
     [HttpGet("me")]
     [Authorize]
     public UserResponse Me()
@@ -76,7 +82,7 @@ public class UserController(UserService userService) : ControllerBase
         return userService.GetMe(UserUtil.GetPrincipalEmail(User));
     }
 
-    /// <summary>(Auth)</summary>
+    /// <summary>Change current user's password (Auth)</summary>
     /// <response code="400">Invalid old password or given the same password as old</response>
     [HttpPost("change-password")]
     [Authorize]
@@ -85,7 +91,7 @@ public class UserController(UserService userService) : ControllerBase
         userService.ChangePassword(UserUtil.GetPrincipalEmail(User), oldPassword, newPassword);
     }
 
-    /// <summary> (Auth)</summary>
+    /// <summary>Permanently delete account and all data (Auth)</summary>
     [HttpDelete("delete-account")]
     [Authorize]
     public void DeleteAccount()

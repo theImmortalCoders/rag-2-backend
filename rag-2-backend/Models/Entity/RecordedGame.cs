@@ -9,7 +9,7 @@ using rag_2_backend.Models.Entity;
 
 namespace rag_2_backend.models.entity;
 
-[Table("recorded_games")]
+[Table("recorded_game")]
 public class RecordedGame
 {
     [Key] public int Id { get; init; }

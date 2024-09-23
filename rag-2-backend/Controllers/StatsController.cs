@@ -15,9 +15,9 @@ namespace rag_2_backend.controllers;
 [Route("api/[controller]")]
 public class StatsController(StatsService statsService) : ControllerBase
 {
-    /// <summary>Get stats for user (Auth)</summary>
+    /// <summary>Get stats for user, Student can only view his data (Auth)</summary>
     /// <response code="404">User not found</response>
-    /// /// <response code="400">Permission denied</response>
+    /// <response code="403">Permission denied</response>
     [HttpGet("user")]
     [Authorize]
     public UserStatsResponse GetStatsForUser([Required] [FromQuery] int userId)

@@ -25,7 +25,7 @@ namespace rag_2_backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "games",
+                name: "game_table",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -34,11 +34,11 @@ namespace rag_2_backend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_games", x => x.Id);
+                    table.PrimaryKey("PK_game_table", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "users",
+                name: "user_table",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -54,7 +54,7 @@ namespace rag_2_backend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_users", x => x.Id);
+                    table.PrimaryKey("PK_user_table", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -69,9 +69,9 @@ namespace rag_2_backend.Migrations
                 {
                     table.PrimaryKey("PK_account_confirmation_token", x => x.Token);
                     table.ForeignKey(
-                        name: "FK_account_confirmation_token_users_UserId",
+                        name: "FK_account_confirmation_token_user_table_UserId",
                         column: x => x.UserId,
-                        principalTable: "users",
+                        principalTable: "user_table",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -88,15 +88,15 @@ namespace rag_2_backend.Migrations
                 {
                     table.PrimaryKey("PK_password_reset_token", x => x.Token);
                     table.ForeignKey(
-                        name: "FK_password_reset_token_users_UserId",
+                        name: "FK_password_reset_token_user_table_UserId",
                         column: x => x.UserId,
-                        principalTable: "users",
+                        principalTable: "user_table",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "recorded_games",
+                name: "recorded_game",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -112,17 +112,17 @@ namespace rag_2_backend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_recorded_games", x => x.Id);
+                    table.PrimaryKey("PK_recorded_game", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_recorded_games_games_GameId",
+                        name: "FK_recorded_game_game_table_GameId",
                         column: x => x.GameId,
-                        principalTable: "games",
+                        principalTable: "game_table",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_recorded_games_users_UserId",
+                        name: "FK_recorded_game_user_table_UserId",
                         column: x => x.UserId,
-                        principalTable: "users",
+                        principalTable: "user_table",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -133,8 +133,8 @@ namespace rag_2_backend.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_games_Name",
-                table: "games",
+                name: "IX_game_table_Name",
+                table: "game_table",
                 column: "Name",
                 unique: true);
 
@@ -144,13 +144,13 @@ namespace rag_2_backend.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_recorded_games_GameId",
-                table: "recorded_games",
+                name: "IX_recorded_game_GameId",
+                table: "recorded_game",
                 column: "GameId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_recorded_games_UserId",
-                table: "recorded_games",
+                name: "IX_recorded_game_UserId",
+                table: "recorded_game",
                 column: "UserId");
         }
 
@@ -167,13 +167,13 @@ namespace rag_2_backend.Migrations
                 name: "password_reset_token");
 
             migrationBuilder.DropTable(
-                name: "recorded_games");
+                name: "recorded_game");
 
             migrationBuilder.DropTable(
-                name: "games");
+                name: "game_table");
 
             migrationBuilder.DropTable(
-                name: "users");
+                name: "user_table");
         }
     }
 }

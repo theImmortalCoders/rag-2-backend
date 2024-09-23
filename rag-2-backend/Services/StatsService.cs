@@ -1,20 +1,24 @@
+#region
+
+using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.Config;
 using rag_2_backend.DTO.Stats;
 using rag_2_backend.Models;
-using rag_2_backend.models.entity;
+using rag_2_backend.Utils;
+
+#endregion
 
 namespace rag_2_backend.Services;
 
-public class StatsService(DatabaseContext context)
+public class StatsService(DatabaseContext context, UserUtil userUtil)
 {
     public UserStatsResponse GetStatsForUser(string email, int userId)
     {
-        var user = context.Users.SingleOrDefault(u => u.Email == email)
-                   ?? throw new KeyNotFoundException("User not found");
+        var user = userUtil.GetUserByEmailOrThrow(email);
 
         if (user.Email != email && user.Role == Role.Student)
-            throw new BadHttpRequestException("Permission denied");
+            throw new ForbiddenException("Permission denied");
 
         var records = context.RecordedGames
             .OrderBy(r => r.Started)

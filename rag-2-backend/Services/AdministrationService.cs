@@ -1,20 +1,24 @@
+#region
+
+using HttpExceptions.Exceptions;
 using rag_2_backend.Config;
-using rag_2_backend.DTO;
 using rag_2_backend.DTO.User;
 using rag_2_backend.Mapper;
 using rag_2_backend.Models;
-using rag_2_backend.Models.Entity;
+using rag_2_backend.Utils;
+
+#endregion
 
 namespace rag_2_backend.Services;
 
-public class AdministrationService(DatabaseContext context)
+public class AdministrationService(DatabaseContext context, UserUtil userUtil)
 {
     public void ChangeBanStatus(int userId, bool isBanned)
     {
-        var user = GetUserByIdOrThrow(userId);
+        var user = userUtil.GetUserByIdOrThrow(userId);
 
         if (user.Role == Role.Admin)
-            throw new BadHttpRequestException("Cannot ban administrator");
+            throw new BadRequestException("Cannot ban administrator");
 
         user.Banned = isBanned;
         context.SaveChanges();
@@ -22,10 +26,10 @@ public class AdministrationService(DatabaseContext context)
 
     public void ChangeRole(int userId, Role role)
     {
-        var user = GetUserByIdOrThrow(userId);
+        var user = userUtil.GetUserByIdOrThrow(userId);
 
         if (user.Role == Role.Admin)
-            throw new BadHttpRequestException("Cannot change administrator's role");
+            throw new BadRequestException("Cannot change administrator's role");
 
         user.Role = role;
         context.SaveChanges();
@@ -33,12 +37,12 @@ public class AdministrationService(DatabaseContext context)
 
     public UserResponse GetUserDetails(string principalEmail, int userId)
     {
-        var principal = GetUserByEmailOrThrow(principalEmail);
+        var principal = userUtil.GetUserByEmailOrThrow(principalEmail);
 
         if (principal.Role is Role.Student or Role.Special && userId != principal.Id)
-            throw new KeyNotFoundException("Cannot view details");
+            throw new ForbiddenException("Cannot view details");
 
-        return UserMapper.MapDetails(GetUserByIdOrThrow(userId));
+        return UserMapper.MapDetails(userUtil.GetUserByIdOrThrow(userId));
     }
 
     public List<UserResponse> GetStudents(int studyCycleYearA, int studyCycleYearB)
@@ -50,19 +54,5 @@ public class AdministrationService(DatabaseContext context)
             .OrderBy(u => u.Email)
             .Select(u => UserMapper.Map(u))
             .ToList();
-    }
-
-    //
-
-    private User GetUserByIdOrThrow(int id)
-    {
-        return context.Users.SingleOrDefault(u => u.Id == id) ??
-               throw new KeyNotFoundException("User not found");
-    }
-
-    private User GetUserByEmailOrThrow(string email)
-    {
-        return context.Users.SingleOrDefault(u => u.Email == email) ??
-               throw new KeyNotFoundException("User not found");
     }
 }

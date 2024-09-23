@@ -1,5 +1,8 @@
+#region
+
 using System.Globalization;
-using Microsoft.AspNetCore.Mvc;
+using System.Text;
+using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using rag_2_backend.Config;
@@ -7,48 +10,45 @@ using rag_2_backend.DTO.RecordedGame;
 using rag_2_backend.Mapper;
 using rag_2_backend.Models;
 using rag_2_backend.models.entity;
+using rag_2_backend.Utils;
+
+#endregion
 
 namespace rag_2_backend.Services;
 
-public class GameRecordService(DatabaseContext context)
+public class GameRecordService(DatabaseContext context, IConfiguration configuration, UserUtil userUtil)
 {
-    public readonly double UserLimitMb = 10;
-
     public List<RecordedGameResponse> GetRecordsByGame(int gameId)
     {
-        var records = context.RecordedGames
-            .Include(r => r.Game) //include nullable reference
+        return context.RecordedGames
+            .Include(r => r.Game)
             .Include(r => r.User)
             .Where(r => r.Game.Id == gameId)
+            .ToList()
+            .Select(RecordedGameMapper.Map)
             .ToList();
-        return records.Select(RecordedGameMapper.Map).ToList();
     }
 
     public byte[] DownloadRecordData(int recordedGameId, string email)
     {
-        var user = context.Users.SingleOrDefault(u => u.Email == email)
-                   ?? throw new KeyNotFoundException("User not found");
+        var user = userUtil.GetUserByEmailOrThrow(email);
+        var recordedGame = GetRecordedGameById(recordedGameId);
 
-        var recordedGame = context.RecordedGames.Include(recordedGame => recordedGame.User)
-                               .SingleOrDefault(g => g.Id == recordedGameId)
-                           ?? throw new KeyNotFoundException("Game record not found");
+        if (user.Id != recordedGame.User.Id && user.Role != Role.Admin && user.Role != Role.Teacher)
+            throw new BadRequestException("Permission denied");
 
-        if (user.Id != recordedGame.User.Id && user.Role != Role.Admin)
-            throw new BadHttpRequestException("Permission denied");
-
-        return System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(recordedGame));
+        return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(recordedGame));
     }
 
     public void AddGameRecord(RecordedGameRequest request, string email)
     {
-        var user = context.Users.SingleOrDefault(u => u.Email == email)
-                   ?? throw new KeyNotFoundException("User not found");
+        var user = userUtil.GetUserByEmailOrThrow(email);
 
-        if (GetSizeByUser(user.Id, request.Values.Count) > UserLimitMb)
-            throw new BadHttpRequestException("Space limit exceeded");
+        if (GetSizeByUser(user.Id, request.Values.Count) > configuration.GetValue<int>("UserDataLimitMb"))
+            throw new BadRequestException("Space limit exceeded");
 
         var game = context.Games.SingleOrDefault(g => Equals(g.Name.ToLower(), request.GameName.ToLower()))
-                   ?? throw new KeyNotFoundException("Game not found");
+                   ?? throw new NotFoundException("Game not found");
 
         var recordedGame = new RecordedGame
         {
@@ -60,12 +60,7 @@ public class GameRecordService(DatabaseContext context)
             EndState = request.Values[^1].State?.ToString()
         };
 
-        var startTimestamp = request.Values[0].Timestamp;
-        var endTimestamp = request.Values[^1].Timestamp;
-        if (startTimestamp is not null)
-            recordedGame.Started = DateTime.Parse(startTimestamp, null, DateTimeStyles.RoundtripKind);
-        if (endTimestamp is not null)
-            recordedGame.Ended = DateTime.Parse(endTimestamp, null, DateTimeStyles.RoundtripKind);
+        UpdateTimestamps(request, recordedGame);
 
         context.RecordedGames.Add(recordedGame);
         context.SaveChanges();
@@ -73,21 +68,24 @@ public class GameRecordService(DatabaseContext context)
 
     public void RemoveGameRecord(int gameRecordId, string email)
     {
-        var user = context.Users.SingleOrDefault(u => u.Email == email)
-                   ?? throw new KeyNotFoundException("User not found");
-
-        var recordedGame = context.RecordedGames.Include(recordedGame => recordedGame.User)
-                               .SingleOrDefault(g => g.Id == gameRecordId)
-                           ?? throw new KeyNotFoundException("Game record not found");
+        var user = userUtil.GetUserByEmailOrThrow(email);
+        var recordedGame = GetRecordedGameById(gameRecordId);
 
         if (user.Id != recordedGame.User.Id && user.Role != Role.Admin)
-            throw new BadHttpRequestException("Permission denied");
+            throw new BadRequestException("Permission denied");
 
         context.RecordedGames.Remove(recordedGame);
         context.SaveChanges();
     }
 
     //
+
+    private RecordedGame GetRecordedGameById(int recordedGameId)
+    {
+        return context.RecordedGames.Include(recordedGame => recordedGame.User)
+                   .SingleOrDefault(g => g.Id == recordedGameId)
+               ?? throw new NotFoundException("Game record not found");
+    }
 
     private double GetSizeByUser(int userId, double initialSizeBytes)
     {
@@ -101,5 +99,15 @@ public class GameRecordService(DatabaseContext context)
 
         var totalBytes = results.Sum(r => r.StringFieldLength) + initialSizeBytes;
         return totalBytes / 1024.0;
+    }
+
+    private static void UpdateTimestamps(RecordedGameRequest request, RecordedGame recordedGame)
+    {
+        var startTimestamp = request.Values[0].Timestamp;
+        var endTimestamp = request.Values[^1].Timestamp;
+        if (startTimestamp is not null)
+            recordedGame.Started = DateTime.Parse(startTimestamp, null, DateTimeStyles.RoundtripKind);
+        if (endTimestamp is not null)
+            recordedGame.Ended = DateTime.Parse(endTimestamp, null, DateTimeStyles.RoundtripKind);
     }
 }

@@ -1,11 +1,14 @@
+#region
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-using rag_2_backend.Models;
+
+#endregion
 
 namespace rag_2_backend.models.entity;
 
-[Table("games")]
+[Table("game_table")]
 [Index(nameof(Name), IsUnique = true)]
 public class Game
 {

@@ -1,7 +1,11 @@
+#region
+
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using rag_2_backend.Models;
+
+#endregion
 
 namespace rag_2_backend.Utils;
 
@@ -33,7 +37,7 @@ public class EmailSendingUtil(IOptions<MailSettings> options)
 
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return false;
         }

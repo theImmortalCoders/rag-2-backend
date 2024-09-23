@@ -1,6 +1,9 @@
-using rag_2_backend.DTO;
+#region
+
 using rag_2_backend.DTO.RecordedGame;
 using rag_2_backend.models.entity;
+
+#endregion
 
 namespace rag_2_backend.Mapper;
 
@@ -15,7 +18,7 @@ public abstract class RecordedGameMapper
             Ended = recordedGame.Ended,
             Started = recordedGame.Started,
             EndState = recordedGame.EndState,
-            OutputSpec = recordedGame.OutputSpec,
+            OutputSpec = recordedGame.OutputSpec
         };
     }
 }

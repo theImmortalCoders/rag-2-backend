@@ -1,10 +1,13 @@
+#region
+
 using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using rag_2_backend.DTO;
 using rag_2_backend.DTO.RecordedGame;
 using rag_2_backend.Services;
+using rag_2_backend.Utils;
+
+#endregion
 
 namespace rag_2_backend.controllers;
 
@@ -12,7 +15,7 @@ namespace rag_2_backend.controllers;
 [Route("api/[controller]")]
 public class GameRecordController(GameRecordService gameRecordService) : ControllerBase
 {
-    /// <summary>Get all recorded games for user by gameId (Auth)</summary>
+    /// <summary>Get all recorded games for user by game ID (Auth)</summary>
     /// <response code="404">User or game not found</response>
     [HttpGet]
     public List<RecordedGameResponse> GetRecordsByGame([Required] int gameId)
@@ -20,40 +23,36 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
         return gameRecordService.GetRecordsByGame(gameId);
     }
 
-    /// <summary>Download JSON file from specific game (Auth)</summary>
+    /// <summary>Download JSON file from specific game, admin and teacher can download everyone's data (Auth)</summary>
     /// <response code="404">User or game record not found</response>
-    /// <response code="400">Permission denied</response>
+    /// <response code="403">Permission denied</response>
     [HttpGet("{recordedGameId:int}")]
     public FileContentResult DownloadRecordData([Required] int recordedGameId)
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new KeyNotFoundException("User not found");
+        var email = UserUtil.GetPrincipalEmail(User);
         var fileName = "game_record_" + recordedGameId + "_" + email + ".json";
         var fileStream = gameRecordService.DownloadRecordData(recordedGameId, email);
 
         return File(fileStream, "application/json", fileName);
     }
 
-    /// <summary>Add game recording (Auth)</summary>
+    /// <summary>Add game recording, limits are present (Auth)</summary>
     /// <response code="404">User or game not found</response>
     /// <response code="400">Space limit exceeded</response>
     [HttpPost]
     [Authorize]
     public void AddGameRecord([FromBody] [Required] RecordedGameRequest request)
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new KeyNotFoundException("User not found");
-
-        gameRecordService.AddGameRecord(request, email);
+        gameRecordService.AddGameRecord(request, UserUtil.GetPrincipalEmail(User));
     }
 
-    /// <summary>Remove game recording (Auth)</summary>
+    /// <summary>Remove game recording, admin can remove everyone's data (Auth)</summary>
     /// <response code="404">User or game record not found</response>
-    /// <response code="400">Permission denied</response>
+    /// <response code="403">Permission denied</response>
     [HttpDelete]
     [Authorize]
     public void RemoveGameRecord([Required] int recordedGameId)
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? throw new KeyNotFoundException("User not found");
-
-        gameRecordService.RemoveGameRecord(recordedGameId, email);
+        gameRecordService.RemoveGameRecord(recordedGameId, UserUtil.GetPrincipalEmail(User));
     }
 }

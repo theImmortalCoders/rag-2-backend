@@ -9,6 +9,7 @@ using rag_2_backend.DTO.User;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Services;
+using rag_2_backend.Utils;
 using Xunit;
 
 namespace rag_2_backend.Test;
@@ -18,6 +19,8 @@ public class AdministrationServiceTest
     private readonly Mock<DatabaseContext> _contextMock = new(
         new DbContextOptionsBuilder<DatabaseContext>().Options
     );
+
+    private readonly Mock<UserUtil> _userMock;
 
     private readonly AdministrationService _administrationService;
 
@@ -45,7 +48,10 @@ public class AdministrationServiceTest
         _contextMock.Setup(c => c.Users).Returns(
             new List<User> { _admin, _user }.AsQueryable().BuildMockDbSet().Object
         );
-        _administrationService = new AdministrationService(_contextMock.Object);
+        _userMock = new Mock<UserUtil>(_contextMock.Object);
+        _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
+        _userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_admin);
+        _administrationService = new AdministrationService(_contextMock.Object, _userMock.Object);
     }
 
     [Fact]
@@ -55,6 +61,7 @@ public class AdministrationServiceTest
 
         Assert.True(_user.Banned);
 
+        _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_admin);
         Assert.Throws<BadHttpRequestException>(
             () => _administrationService.ChangeBanStatus(1, false));
     }
@@ -66,6 +73,7 @@ public class AdministrationServiceTest
 
         Assert.Equal(Role.Student, _user.Role);
 
+        _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_admin);
         Assert.Throws<BadHttpRequestException>(
             () => _administrationService.ChangeRole(1, Role.Teacher));
     }
@@ -75,16 +83,18 @@ public class AdministrationServiceTest
     {
         var response = new UserDetailsResponse
         {
-            Id = 1,
-            Email = "email@prz.edu.pl",
+            Id = 2,
+            Email = "email2@stud.prz.edu.pl",
             Name = "John",
-            Role = Role.Admin,
+            Role = Role.Student,
             StudyCycleYearA = 2022,
             StudyCycleYearB = 2023
         };
 
         Assert.Equal(JsonConvert.SerializeObject(response),
             JsonConvert.SerializeObject(_administrationService.GetUserDetails("email@prz.edu.pl", 1)));
+        
+        _userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
         Assert.Throws<KeyNotFoundException>(() => _administrationService.GetUserDetails("email1@prz.edu.pl", 1));
     }
 

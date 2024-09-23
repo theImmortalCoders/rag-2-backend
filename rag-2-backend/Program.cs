@@ -10,14 +10,17 @@ using rag_2_backend.Models;
 using rag_2_backend.Services;
 using rag_2_backend.Utils;
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
 
-//Jwt configuration
 var jwtIssuer = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
 var jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
 
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+builder.Services.AddDbContext<DatabaseContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -45,76 +48,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             }
         };
     });
-
-//Jwt configuration
-
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer"
-    });
-
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
-builder.Services.AddSwaggerGen(s =>
-{
-    var filePath = Path.Combine(AppContext.BaseDirectory, "rag-2-backend.xml");
-    s.IncludeXmlComments(filePath);
-});
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(b =>
-        b.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
-});
-builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
-
-builder.Services.AddDbContext<DatabaseContext>(options =>
-{
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
-builder.Services.AddHostedService<BackgroundServiceImpl>();
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<GameRecordService>();
-builder.Services.AddScoped<JwtUtil>();
-builder.Services.AddScoped<GameService>();
-builder.Services.AddScoped<EmailSendingUtil>();
-builder.Services.AddScoped<EmailService>();
-builder.Services.AddScoped<JwtSecurityTokenHandler>();
-builder.Services.AddScoped<AdministrationService>();
-builder.Services.AddScoped<StatsService>();
-
+builder.Services.RegisterServices(builder.Configuration);
 var app = builder.Build();
 
 Console.WriteLine(app.Environment.IsDevelopment() ? "Development" : "Production");
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
 using (var scope = app.Services.CreateScope())
 {
@@ -135,9 +72,13 @@ using (var scope = app.Services.CreateScope())
 app.UseCors();
 app.UseHttpsRedirection();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
 app.Run();

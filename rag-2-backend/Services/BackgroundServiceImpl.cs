@@ -6,7 +6,7 @@ namespace rag_2_backend.Services;
 
 public class BackgroundServiceImpl(IServiceProvider serviceProvider) : BackgroundService
 {
-    private DatabaseContext _dbContext;
+    private DatabaseContext _dbContext = null!;
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
@@ -47,7 +47,7 @@ public class BackgroundServiceImpl(IServiceProvider serviceProvider) : Backgroun
         _dbContext.BlacklistedJwts.RemoveRange(unusedTokens);
         _dbContext.SaveChanges();
 
-        Console.WriteLine("Deleted" + unusedTokens.Count + " blacklisted jwts");
+        Console.WriteLine("Deleted " + unusedTokens.Count + " blacklisted jwts");
     }
 
     private void DeleteUnusedPasswordResetTokens()
@@ -56,6 +56,6 @@ public class BackgroundServiceImpl(IServiceProvider serviceProvider) : Backgroun
         _dbContext.PasswordResetTokens.RemoveRange(unusedTokens);
         _dbContext.SaveChanges();
 
-        Console.WriteLine("Deleted" + unusedTokens.Count + " password reset tokens");
+        Console.WriteLine("Deleted " + unusedTokens.Count + " password reset tokens");
     }
 }

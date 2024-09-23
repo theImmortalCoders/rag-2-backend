@@ -1,8 +1,6 @@
 #region
 
 using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
-using HttpExceptions.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rag_2_backend.DTO.RecordedGame;
@@ -55,6 +53,6 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     [Authorize]
     public void RemoveGameRecord([Required] int recordedGameId)
     {
-       gameRecordService.RemoveGameRecord(recordedGameId, UserUtil.GetPrincipalEmail(User));
+        gameRecordService.RemoveGameRecord(recordedGameId, UserUtil.GetPrincipalEmail(User));
     }
 }

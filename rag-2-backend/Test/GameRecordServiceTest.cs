@@ -10,6 +10,7 @@ using rag_2_backend.Models;
 using rag_2_backend.models.entity;
 using rag_2_backend.Models.Entity;
 using rag_2_backend.Services;
+using rag_2_backend.Utils;
 using Xunit;
 
 #endregion
@@ -41,6 +42,8 @@ public class GameRecordServiceTest
         StudyCycleYearB = 2023
     };
 
+    private readonly Mock<UserUtil> _userMock;
+
     public GameRecordServiceTest()
     {
         _contextMock.Setup(c => c.RecordedGames).Returns(
@@ -52,8 +55,21 @@ public class GameRecordServiceTest
         _contextMock.Setup(c => c.Games).Returns(
             new List<Game> { _game }.AsQueryable().BuildMockDbSet().Object
         );
+        _userMock = new Mock<UserUtil>(_contextMock.Object);
 
-        _gameRecordService = new GameRecordService(_contextMock.Object);
+        _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
+        _userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
+
+        var inMemorySettings = new Dictionary<string, string>
+        {
+            { "UserDataLimitMb", "10" }
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings!)
+            .Build();
+
+        _gameRecordService = new GameRecordService(_contextMock.Object, configuration, _userMock.Object);
 
         _recordedGames.Add(new RecordedGame
         {

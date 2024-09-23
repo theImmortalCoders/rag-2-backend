@@ -14,13 +14,14 @@ namespace rag_2_backend.controllers;
 [Route("api/[controller]")]
 public class GameController(GameService gameService) : ControllerBase
 {
+    /// <summary>Get games available in system</summary>
     [HttpGet]
     public async Task<IEnumerable<GameResponse>> GetGames()
     {
         return await gameService.GetGames();
     }
 
-    /// <summary>(Admin)</summary>
+    /// <summary>Add new game to system (Admin)</summary>
     /// <response code="400">Game with this name already exists</response>
     [HttpPost]
     [Authorize(Roles = "Admin")]
@@ -29,7 +30,7 @@ public class GameController(GameService gameService) : ControllerBase
         gameService.AddGame(request);
     }
 
-    /// <summary>(Admin)</summary>
+    /// <summary>Edit existing game (Admin)</summary>
     /// <response code="404">Game not found</response>
     /// <response code="400">Game with this name already exists</response>
     [HttpPut("{id:int}")]
@@ -39,7 +40,7 @@ public class GameController(GameService gameService) : ControllerBase
         gameService.EditGame(request, id);
     }
 
-    /// <summary>(Admin)</summary>
+    /// <summary>Remove existing game (Admin)</summary>
     /// <response code="404">Game not found</response>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "Admin")]

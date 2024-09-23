@@ -1,6 +1,7 @@
 #region
 
 using System.Net;
+using HttpExceptions.Exceptions;
 
 #endregion
 
@@ -28,9 +29,10 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
 
         var response = exception switch
         {
-            BadHttpRequestException e => new ExceptionResponse(HttpStatusCode.BadRequest, e.Message),
-            KeyNotFoundException e => new ExceptionResponse(HttpStatusCode.NotFound, e.Message),
-            UnauthorizedAccessException e => new ExceptionResponse(HttpStatusCode.Unauthorized, e.Message),
+            BadRequestException e => new ExceptionResponse(HttpStatusCode.BadRequest, e.Message),
+            NotFoundException e => new ExceptionResponse(HttpStatusCode.NotFound, e.Message),
+            UnauthorizedException e => new ExceptionResponse(HttpStatusCode.Unauthorized, e.Message),
+            ForbiddenException e => new ExceptionResponse(HttpStatusCode.Forbidden, e.Message),
             _ => new ExceptionResponse(HttpStatusCode.InternalServerError, "Internal server error. Please retry later.")
         };
 

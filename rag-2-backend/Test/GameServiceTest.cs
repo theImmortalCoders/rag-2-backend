@@ -1,5 +1,6 @@
 #region
 
+using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
@@ -69,7 +70,7 @@ public class GameServiceTest
             Name = "Game1"
         };
 
-        Assert.Throws<BadHttpRequestException>(() => _gameService.AddGame(gameRequest));
+        Assert.Throws<BadRequestException>(() => _gameService.AddGame(gameRequest));
     }
 
     [Fact]
@@ -83,7 +84,7 @@ public class GameServiceTest
     [Fact]
     public void ShouldNotRemoveGameIfGameNotExists()
     {
-        Assert.Throws<KeyNotFoundException>(() => _gameService.RemoveGame(4));
+        Assert.Throws<NotFoundException>(() => _gameService.RemoveGame(4));
     }
 
     [Fact]
@@ -109,7 +110,7 @@ public class GameServiceTest
             Name = "Game2"
         };
 
-        Assert.Throws<BadHttpRequestException>(() => _gameService.EditGame(gameRequest, 1));
+        Assert.Throws<BadRequestException>(() => _gameService.EditGame(gameRequest, 1));
     }
 
     [Fact]
@@ -120,6 +121,6 @@ public class GameServiceTest
             Name = "Game2"
         };
 
-        Assert.Throws<KeyNotFoundException>(() => _gameService.EditGame(gameRequest, 4));
+        Assert.Throws<NotFoundException>(() => _gameService.EditGame(gameRequest, 4));
     }
 }

@@ -42,8 +42,6 @@ public class GameRecordServiceTest
         StudyCycleYearB = 2023
     };
 
-    private readonly Mock<UserUtil> _userMock;
-
     public GameRecordServiceTest()
     {
         _contextMock.Setup(c => c.RecordedGames).Returns(
@@ -55,10 +53,10 @@ public class GameRecordServiceTest
         _contextMock.Setup(c => c.Games).Returns(
             new List<Game> { _game }.AsQueryable().BuildMockDbSet().Object
         );
-        _userMock = new Mock<UserUtil>(_contextMock.Object);
+        Mock<UserUtil> userMock = new(_contextMock.Object);
 
-        _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
-        _userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
+        userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
+        userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
 
         var inMemorySettings = new Dictionary<string, string>
         {
@@ -69,7 +67,7 @@ public class GameRecordServiceTest
             .AddInMemoryCollection(inMemorySettings!)
             .Build();
 
-        _gameRecordService = new GameRecordService(_contextMock.Object, configuration, _userMock.Object);
+        _gameRecordService = new GameRecordService(_contextMock.Object, configuration, userMock.Object);
 
         _recordedGames.Add(new RecordedGame
         {

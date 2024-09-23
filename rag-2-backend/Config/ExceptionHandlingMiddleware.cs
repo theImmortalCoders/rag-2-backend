@@ -7,6 +7,7 @@ using HttpExceptions.Exceptions;
 
 namespace rag_2_backend.Config;
 
+// ReSharper disable once NotAccessedPositionalProperty.Global
 public record ExceptionResponse(HttpStatusCode StatusCode, string Description);
 
 public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)

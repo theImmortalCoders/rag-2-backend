@@ -37,7 +37,7 @@ public class EmailSendingUtil(IOptions<MailSettings> options)
 
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return false;
         }

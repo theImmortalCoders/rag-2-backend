@@ -1,7 +1,11 @@
+#region
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using rag_2_backend.Models;
 using rag_2_backend.Models.Entity;
+
+#endregion
 
 namespace rag_2_backend.models.entity;
 

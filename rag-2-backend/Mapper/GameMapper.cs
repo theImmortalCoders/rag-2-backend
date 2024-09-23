@@ -1,6 +1,9 @@
-using rag_2_backend.DTO;
+#region
+
 using rag_2_backend.DTO.Game;
 using rag_2_backend.models.entity;
+
+#endregion
 
 namespace rag_2_backend.Mapper;
 

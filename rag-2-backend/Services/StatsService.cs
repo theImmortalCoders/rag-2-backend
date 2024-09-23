@@ -1,8 +1,11 @@
+#region
+
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.Config;
 using rag_2_backend.DTO.Stats;
 using rag_2_backend.Models;
-using rag_2_backend.models.entity;
+
+#endregion
 
 namespace rag_2_backend.Services;
 

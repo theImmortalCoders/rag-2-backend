@@ -1,6 +1,8 @@
-using rag_2_backend.DTO.Game;
-using rag_2_backend.DTO.User;
+#region
+
 using rag_2_backend.Models;
+
+#endregion
 
 namespace rag_2_backend.DTO.RecordedGame;
 

@@ -1,4 +1,8 @@
+#region
+
 using System.ComponentModel.DataAnnotations;
+
+#endregion
 
 namespace rag_2_backend.Models;
 

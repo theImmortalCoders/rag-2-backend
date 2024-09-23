@@ -1,9 +1,13 @@
+#region
+
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using rag_2_backend.Config;
+
+#endregion
 
 namespace rag_2_backend.Utils;
 
@@ -18,8 +22,8 @@ public class JwtUtil(IConfiguration config, DatabaseContext context)
 
         List<Claim> claims =
         [
-            new Claim(ClaimTypes.Email, email),
-            new Claim(ClaimTypes.Role, role)
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.Role, role)
         ];
 
         var token = new JwtSecurityToken(

@@ -44,7 +44,10 @@ public class StatsServiceTests
     public StatsServiceTests()
     {
         _mockUserUtil = new Mock<UserUtil>(_contextMock.Object);
-        _statsService = new StatsService(_contextMock.Object, _mockUserUtil.Object);
+
+        var serviceProvider = MockServiceProvider();
+
+        _statsService = new StatsService(serviceProvider.Object);
 
         _contextMock.Setup(c => c.RecordedGames).Returns(
             _recordedGames.AsQueryable().BuildMockDbSet().Object
@@ -90,5 +93,28 @@ public class StatsServiceTests
         Assert.Equal(_recordedGames.Last().Ended, result.LastPlayed);
         Assert.Equal(1, result.Plays);
         Assert.Equal(1, result.TotalPlayers);
+    }
+
+    //
+
+    private Mock<IServiceProvider> MockServiceProvider()
+    {
+        var serviceProvider = new Mock<IServiceProvider>();
+        serviceProvider
+            .Setup(x => x.GetService(typeof(DatabaseContext)))
+            .Returns(_contextMock.Object);
+
+        var serviceScope = new Mock<IServiceScope>();
+        serviceScope.Setup(x => x.ServiceProvider).Returns(serviceProvider.Object);
+
+        var serviceScopeFactory = new Mock<IServiceScopeFactory>();
+        serviceScopeFactory
+            .Setup(x => x.CreateScope())
+            .Returns(serviceScope.Object);
+
+        serviceProvider
+            .Setup(x => x.GetService(typeof(IServiceScopeFactory)))
+            .Returns(serviceScopeFactory.Object);
+        return serviceProvider;
     }
 }

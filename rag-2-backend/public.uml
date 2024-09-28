@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>DATABASE</ID>
+  <OriginalElement>fa1a1854-887a-48ed-9eec-82dbd016d9ae.SCHEMA:postgres.public</OriginalElement>
+  <nodes>
+    <node x="316.5" y="475.5">fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.recorded_game</node>
+    <node x="-137.5" y="544.5">fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.password_reset_token</node>
+    <node x="260.0" y="-124.0">fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.game_table</node>
+    <node x="-3.0" y="344.5">fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.account_confirmation_token</node>
+    <node x="4.5" y="-4.5">fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.user_table</node>
+    <node x="353.5" y="76.0">fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.blacklisted_jwt</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.password_reset_token" target="fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.user_table" relationship="REFERENCES">
+      <point x="0.0" y="-54.5" />
+      <point x="-16.03621621621619" y="319.0" />
+      <point x="117.0" y="319.0" />
+      <point x="0.0" y="123.5" />
+    </edge>
+    <edge source="fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.recorded_game" target="fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.game_table" relationship="REFERENCES">
+      <point x="60.73189189189188" y="-123.5" />
+      <point x="498.6956756756757" y="299.0" />
+      <point x="335.0" y="299.0" />
+      <point x="0.0" y="43.0" />
+    </edge>
+    <edge source="fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.recorded_game" target="fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.user_table" relationship="REFERENCES">
+      <point x="-60.73189189189188" y="-123.5" />
+      <point x="377.2318918918919" y="319.0" />
+      <point x="117.0" y="319.0" />
+      <point x="0.0" y="123.5" />
+    </edge>
+    <edge source="fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.account_confirmation_token" target="fa1a1854-887a-48ed-9eec-82dbd016d9ae.TABLE:postgres.public.user_table" relationship="REFERENCES">
+      <point x="0.0" y="-54.5" />
+      <point x="135.0" y="293.5" />
+      <point x="117.0" y="293.5" />
+      <point x="0.0" y="123.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Compact" zoom="1.0668973471741638" showDependencies="false" x="338.21999999999895" y="311.3745945945947" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Columns</Category>
+    <Category>Comments</Category>
+    <Category>Key columns</Category>
+    <Category>Virtual foreign keys</Category>
+  </Categories>
+</Diagram>
+

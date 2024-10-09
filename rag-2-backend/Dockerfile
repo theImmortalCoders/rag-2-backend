@@ -6,9 +6,9 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 WORKDIR /src
-COPY ["rag-2-backend/rag-2-backend/rag-2-backend.csproj", "./"]
+COPY ["rag-2-backend/rag-2-backend.csproj", "./"]
 RUN dotnet restore "rag-2-backend.csproj"
-COPY ["rag-2-backend/rag-2-backend/", "."]
+COPY ["rag-2-backend/", "."]
 WORKDIR "/src/"
 RUN dotnet build "rag-2-backend.csproj" -c --no-launch-profile -o /app/build
 

@@ -84,7 +84,7 @@ public class GameRecordServiceTest
     [Fact]
     public void GetRecordsByGameTest()
     {
-        var actualRecords = _gameRecordService.GetRecordsByGame(1);
+        var actualRecords = _gameRecordService.GetRecordsByGameAndUser(1, "email@prz.edu.pl");
         List<RecordedGameResponse> expectedRecords =
         [
             new()

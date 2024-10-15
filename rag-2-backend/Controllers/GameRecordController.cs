@@ -15,18 +15,22 @@ namespace rag_2_backend.controllers;
 [Route("api/[controller]")]
 public class GameRecordController(GameRecordService gameRecordService) : ControllerBase
 {
-    /// <summary>Get all recorded games for user by game ID (Auth)</summary>
+    /// <summary>Get all recorded games for user by game ID and user (Auth)</summary>
     /// <response code="404">User or game not found</response>
     [HttpGet]
+    [Authorize]
     public List<RecordedGameResponse> GetRecordsByGame([Required] int gameId)
     {
-        return gameRecordService.GetRecordsByGame(gameId);
+        var email = UserUtil.GetPrincipalEmail(User);
+
+        return gameRecordService.GetRecordsByGameAndUser(gameId, email);
     }
 
     /// <summary>Download JSON file from specific game, admin and teacher can download everyone's data (Auth)</summary>
     /// <response code="404">User or game record not found</response>
     /// <response code="403">Permission denied</response>
     [HttpGet("{recordedGameId:int}")]
+    [Authorize]
     public FileContentResult DownloadRecordData([Required] int recordedGameId)
     {
         var email = UserUtil.GetPrincipalEmail(User);

@@ -43,8 +43,9 @@ public static class ServiceRegistrationExtension
         services.AddScoped<EmailService>();
         services.AddScoped<JwtSecurityTokenHandler>();
         services.AddScoped<AdministrationService>();
-        services.AddScoped<StatsService>();
         services.AddScoped<UserUtil>();
+
+        services.AddSingleton<StatsService>();
     }
 
     private static void ConfigSwagger(IServiceCollection services)

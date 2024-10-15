@@ -7,4 +7,5 @@ public class GameStatsResponse
     public double TotalStorageMb { get; set; }
     public DateTime FirstPlayed { get; init; }
     public DateTime LastPlayed { get; init; }
+    public DateTime StatsUpdatedDate { get; init; }
 }

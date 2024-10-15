@@ -18,12 +18,12 @@ namespace rag_2_backend.Services;
 
 public class GameRecordService(DatabaseContext context, IConfiguration configuration, UserUtil userUtil)
 {
-    public List<RecordedGameResponse> GetRecordsByGame(int gameId)
+    public List<RecordedGameResponse> GetRecordsByGameAndUser(int gameId, string email)
     {
         return context.RecordedGames
             .Include(r => r.Game)
             .Include(r => r.User)
-            .Where(r => r.Game.Id == gameId)
+            .Where(r => r.Game.Id == gameId && r.User.Email == email)
             .ToList()
             .Select(RecordedGameMapper.Map)
             .ToList();

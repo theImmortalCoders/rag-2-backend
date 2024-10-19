@@ -1,6 +1,7 @@
 #region
 
 using System.IdentityModel.Tokens.Jwt;
+using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.Config;
 using rag_2_backend.DTO.User;
@@ -23,7 +24,7 @@ public class UserService(
     public void RegisterUser(UserRequest userRequest)
     {
         if (context.Users.Any(u => u.Email == userRequest.Email))
-            throw new BadHttpRequestException("User already exists");
+            throw new BadRequestException("User already exists");
 
         User user = new(userRequest.Email)
         {
@@ -34,7 +35,7 @@ public class UserService(
         };
 
         if (user.Role == Role.Student && IsStudyYearWrong(userRequest))
-            throw new BadHttpRequestException("Wrong study cycle year");
+            throw new BadRequestException("Wrong study cycle year");
 
         context.Users.Add(user);
         GenerateAccountTokenAndSendConfirmationMail(user);
@@ -44,7 +45,7 @@ public class UserService(
     public void ResendConfirmationEmail(string email)
     {
         var user = userUtil.GetUserByEmailOrThrow(email);
-        if (user.Confirmed) throw new BadHttpRequestException("User is already confirmed");
+        if (user.Confirmed) throw new BadRequestException("User is already confirmed");
 
         context.AccountConfirmationTokens.RemoveRange(
             context.AccountConfirmationTokens.Where(a => a.User.Email == user.Email)
@@ -59,9 +60,9 @@ public class UserService(
         var token = context.AccountConfirmationTokens
                         .Include(t => t.User)
                         .SingleOrDefault(t => t.Token == tokenValue)
-                    ?? throw new BadHttpRequestException("Invalid token");
+                    ?? throw new BadRequestException("Invalid token");
 
-        if (token.Expiration < DateTime.Now) throw new BadHttpRequestException("Invalid token");
+        if (token.Expiration < DateTime.Now) throw new BadRequestException("Invalid token");
 
         token.User.Confirmed = true;
         context.AccountConfirmationTokens.Remove(token);
@@ -73,11 +74,11 @@ public class UserService(
         var user = userUtil.GetUserByEmailOrThrow(email);
 
         if (!HashUtil.VerifyPassword(password, user.Password))
-            throw new UnauthorizedAccessException("Invalid password");
+            throw new UnauthorizedException("Invalid password");
         if (!user.Confirmed)
-            throw new UnauthorizedAccessException("Mail not confirmed");
+            throw new UnauthorizedException("Mail not confirmed");
         if (user.Banned)
-            throw new UnauthorizedAccessException("User banned");
+            throw new UnauthorizedException("User banned");
 
         return jwtUtil.GenerateToken(user.Email, user.Role.ToString());
     }
@@ -91,7 +92,7 @@ public class UserService(
     {
         var tokenValue = header["Bearer ".Length..].Trim();
         var jwtToken = jwtSecurityTokenHandler.ReadToken(tokenValue) as JwtSecurityToken ??
-                       throw new UnauthorizedAccessException("Unauthorized");
+                       throw new UnauthorizedException("Unauthorized");
 
         context.BlacklistedJwts.Add(new BlacklistedJwt { Token = tokenValue, Expiration = jwtToken.ValidTo });
         context.SaveChanges();
@@ -114,9 +115,9 @@ public class UserService(
         var token = context.PasswordResetTokens
                         .Include(t => t.User)
                         .SingleOrDefault(t => t.Token == tokenValue)
-                    ?? throw new BadHttpRequestException("Invalid token");
+                    ?? throw new BadRequestException("Invalid token");
 
-        if (token.Expiration < DateTime.Now) throw new BadHttpRequestException("Invalid token");
+        if (token.Expiration < DateTime.Now) throw new BadRequestException("Invalid token");
 
         token.User.Password = HashUtil.HashPassword(newPassword);
         context.PasswordResetTokens.Remove(token);
@@ -128,9 +129,9 @@ public class UserService(
         var user = userUtil.GetUserByEmailOrThrow(email);
 
         if (!HashUtil.VerifyPassword(oldPassword, user.Password))
-            throw new BadHttpRequestException("Invalid old password");
+            throw new BadRequestException("Invalid old password");
         if (user.Password == HashUtil.HashPassword(newPassword))
-            throw new BadHttpRequestException("Password cannot be same");
+            throw new BadRequestException("Password cannot be same");
 
         user.Password = HashUtil.HashPassword(newPassword);
         context.SaveChanges();

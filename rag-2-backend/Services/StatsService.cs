@@ -28,13 +28,14 @@ public class StatsService(IServiceProvider serviceProvider)
 
         var records = _context.RecordedGames
             .OrderBy(r => r.Started)
-            .Where(r => r.User.Id == userId).Include(recordedGame => recordedGame.Game)
+            .Where(r => r.User.Id == userId)
+            .Include(recordedGame => recordedGame.Game)
             .ToList();
 
         return new UserStatsResponse
         {
-            FirstPlayed = records[0].Started,
-            LastPlayed = records.Last().Ended,
+            FirstPlayed = records.Count > 0 ? records[0].Started : null,
+            LastPlayed = records.Count > 0 ? records.Last().Ended : null,
             Games = records.Select(r => r.Game.Id).Distinct().ToList().Count,
             Plays = records.Count,
             TotalStorageMb = GetSizeByUser(userId, 0)
@@ -65,8 +66,8 @@ public class StatsService(IServiceProvider serviceProvider)
 
         CachedGameStats[game.Id] = new GameStatsResponse
         {
-            FirstPlayed = records[0].Started,
-            LastPlayed = records.Last().Ended,
+            FirstPlayed = records.Count > 0 ? records[0].Started : null,
+            LastPlayed = records.Count > 0 ? records.Last().Ended : null,
             Plays = records.Count,
             TotalStorageMb = GetSizeByGame(gameId, 0),
             TotalPlayers = records.Select(r => r.User.Id).Distinct().Count(),

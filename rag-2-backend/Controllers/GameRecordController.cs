@@ -50,7 +50,7 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
         gameRecordService.AddGameRecord(request, UserUtil.GetPrincipalEmail(User));
     }
 
-    /// <summary>Remove game recording, admin can remove everyone's data (Auth)</summary>
+    /// <summary>Remove game recording (Auth)</summary>
     /// <response code="404">User or game record not found</response>
     /// <response code="403">Permission denied</response>
     [HttpDelete]

@@ -71,7 +71,7 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
         var user = userUtil.GetUserByEmailOrThrow(email);
         var recordedGame = GetRecordedGameById(gameRecordId);
 
-        if (user.Id != recordedGame.User.Id && user.Role != Role.Admin)
+        if (user.Id != recordedGame.User.Id)
             throw new BadRequestException("Permission denied");
 
         context.RecordedGames.Remove(recordedGame);

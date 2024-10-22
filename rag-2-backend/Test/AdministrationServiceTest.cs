@@ -106,17 +106,17 @@ public class AdministrationServiceTest
     {
         var response = new UserResponse
         {
-            Id = 2,
-            Email = "email2@stud.prz.edu.pl",
+            Id = 1,
+            Email = "email@prz.edu.pl",
             Name = "John",
-            Role = Role.Student,
+            Role = Role.Admin,
             StudyCycleYearA = 2022,
             StudyCycleYearB = 2023
         };
 
         Assert.Equal(
-            JsonConvert.SerializeObject(new List<UserResponse> { response }),
-            JsonConvert.SerializeObject(_administrationService.GetStudents(2022, 2023))
+            JsonConvert.SerializeObject(response),
+            JsonConvert.SerializeObject(_administrationService.GetStudents()[0])
         );
     }
 }

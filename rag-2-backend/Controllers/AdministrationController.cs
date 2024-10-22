@@ -45,12 +45,11 @@ public class AdministrationController(AdministrationService administrationServic
         return administrationService.GetUserDetails(UserUtil.GetPrincipalEmail(User), userId);
     }
 
-    /// <summary>Get students list by study year cycle (Admin, Teacher)</summary>
+    /// <summary>Get all users list (Admin, Teacher)</summary>
     [HttpGet("students")]
     [Authorize(Roles = "Admin, Teacher")]
-    public List<UserResponse> GetStudents([FromQuery] [Required] int studyCycleYearA,
-        [FromQuery] [Required] int studyCycleYearB)
+    public List<UserResponse> GetStudents()
     {
-        return administrationService.GetStudents(studyCycleYearA, studyCycleYearB);
+        return administrationService.GetStudents();
     }
 }

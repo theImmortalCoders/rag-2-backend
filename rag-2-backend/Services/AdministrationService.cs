@@ -45,13 +45,9 @@ public class AdministrationService(DatabaseContext context, UserUtil userUtil)
         return UserMapper.MapDetails(userUtil.GetUserByIdOrThrow(userId));
     }
 
-    public List<UserResponse> GetStudents(int studyCycleYearA, int studyCycleYearB)
+    public List<UserResponse> GetStudents()
     {
         return context.Users
-            .Where(u => u.Role == Role.Student &&
-                        u.StudyCycleYearA == studyCycleYearA &&
-                        u.StudyCycleYearB == studyCycleYearB)
-            .OrderBy(u => u.Email)
             .Select(u => UserMapper.Map(u))
             .ToList();
     }

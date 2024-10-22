@@ -46,7 +46,7 @@ public class AdministrationController(AdministrationService administrationServic
     }
 
     /// <summary>Get all users list (Admin, Teacher)</summary>
-    [HttpGet("students")]
+    [HttpGet("users")]
     [Authorize(Roles = "Admin, Teacher")]
     public List<UserResponse> GetStudents()
     {

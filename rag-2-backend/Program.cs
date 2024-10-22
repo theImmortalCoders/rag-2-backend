@@ -1,6 +1,7 @@
 #region
 
 using System.Text;
+using HttpExceptions.Exceptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -44,7 +45,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 var token = header["Bearer ".Length..].Trim();
 
                 if (!string.IsNullOrEmpty(token) && await tokenBlacklistService.IsTokenBlacklistedAsync(token))
-                    throw new UnauthorizedAccessException("Token is not valid");
+                    throw new UnauthorizedException("Token is not valid");
             }
         };
     });

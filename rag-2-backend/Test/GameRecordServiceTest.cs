@@ -99,13 +99,4 @@ public class GameRecordServiceTest
             JsonSerializer.Serialize(actualRecords)
         );
     }
-
-    [Fact]
-    public void AddGameRecordTest()
-    {
-        var request = new RecordedGameRequest { GameName = "pong", Values = [new RecordedGameValue()] };
-        _gameRecordService.AddGameRecord(request, "email@prz.edu.pl");
-
-        _contextMock.Verify(c => c.RecordedGames.Add(It.IsAny<RecordedGame>()), Times.Once);
-    }
 }

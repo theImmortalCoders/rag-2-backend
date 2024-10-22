@@ -12,7 +12,7 @@ using rag_2_backend.Config;
 namespace rag_2_backend.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20241022144559_Base")]
+    [Migration("20241022191021_Base")]
     partial class Base
     {
         /// <inheritdoc />

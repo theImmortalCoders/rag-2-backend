@@ -19,20 +19,8 @@ public abstract class UserMapper
             StudyCycleYearA = user.StudyCycleYearA,
             StudyCycleYearB = user.StudyCycleYearB,
             Name = user.Name,
+            LastPlayed = user.LastPlayed.Equals(DateTime.MinValue) ? null : user.LastPlayed,
             Banned = user.Banned
-        };
-    }
-
-    public static UserResponse MapDetails(User user)
-    {
-        return new UserResponse
-        {
-            Id = user.Id,
-            Email = user.Email,
-            Role = user.Role,
-            StudyCycleYearA = user.StudyCycleYearA,
-            StudyCycleYearB = user.StudyCycleYearB,
-            Name = user.Name
         };
     }
 }

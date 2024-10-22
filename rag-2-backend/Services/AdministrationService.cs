@@ -42,7 +42,7 @@ public class AdministrationService(DatabaseContext context, UserUtil userUtil)
         if (principal.Role is Role.Student or Role.Special && userId != principal.Id)
             throw new ForbiddenException("Cannot view details");
 
-        return UserMapper.MapDetails(userUtil.GetUserByIdOrThrow(userId));
+        return UserMapper.Map(userUtil.GetUserByIdOrThrow(userId));
     }
 
     public List<UserResponse> GetStudents()

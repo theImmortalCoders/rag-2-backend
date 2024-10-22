@@ -50,7 +50,8 @@ namespace rag_2_backend.Migrations
                     Confirmed = table.Column<bool>(type: "boolean", nullable: false),
                     StudyCycleYearA = table.Column<int>(type: "integer", nullable: false),
                     StudyCycleYearB = table.Column<int>(type: "integer", nullable: false),
-                    Banned = table.Column<bool>(type: "boolean", nullable: false)
+                    Banned = table.Column<bool>(type: "boolean", nullable: false),
+                    LastPlayed = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {

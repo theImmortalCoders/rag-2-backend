@@ -14,4 +14,5 @@ public class UserResponse
     public required string Name { get; init; }
     public required int StudyCycleYearA { get; set; }
     public required int StudyCycleYearB { get; set; }
+    public DateTime? LastPlayed { get; set; }
 }

@@ -62,7 +62,9 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
 
         UpdateTimestamps(request, recordedGame);
 
+        user.LastPlayed = recordedGame.Ended;
         context.RecordedGames.Add(recordedGame);
+        context.Users.Update(user);
         context.SaveChanges();
     }
 

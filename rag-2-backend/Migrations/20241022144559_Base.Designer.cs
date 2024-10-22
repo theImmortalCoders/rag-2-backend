@@ -12,7 +12,7 @@ using rag_2_backend.Config;
 namespace rag_2_backend.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240923095846_Base")]
+    [Migration("20241022144559_Base")]
     partial class Base
     {
         /// <inheritdoc />
@@ -95,6 +95,9 @@ namespace rag_2_backend.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("LastPlayed")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()

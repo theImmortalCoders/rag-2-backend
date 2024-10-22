@@ -2,9 +2,10 @@
 
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+using Npgsql;
 using rag_2_backend.Config;
 using rag_2_backend.DTO.RecordedGame;
 using rag_2_backend.Mapper;
@@ -37,35 +38,57 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
         if (user.Id != recordedGame.User.Id && user.Role != Role.Admin && user.Role != Role.Teacher)
             throw new BadRequestException("Permission denied");
 
-        return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(recordedGame));
+        return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(recordedGame));
     }
 
     public void AddGameRecord(RecordedGameRequest request, string email)
     {
-        var user = userUtil.GetUserByEmailOrThrow(email);
-
-        if (GetSizeByUser(user.Id, request.Values.Count) > configuration.GetValue<int>("UserDataLimitMb"))
-            throw new BadRequestException("Space limit exceeded");
-
-        var game = context.Games.SingleOrDefault(g => Equals(g.Name.ToLower(), request.GameName.ToLower()))
-                   ?? throw new NotFoundException("Game not found");
-
-        var recordedGame = new RecordedGame
+        using var transaction = context.Database.BeginTransaction();
+        try
         {
-            Game = game,
-            Values = request.Values,
-            User = user,
-            Players = request.Values[0].Players,
-            OutputSpec = request.Values[0].OutputSpec,
-            EndState = request.Values[^1].State?.ToString()
-        };
+            var user = userUtil.GetUserByEmailOrThrow(email);
 
-        UpdateTimestamps(request, recordedGame);
+            if (GetSizeByUser(user.Id, request.Values.Count) > configuration.GetValue<int>("UserDataLimitMb"))
+                throw new BadRequestException("Space limit exceeded");
 
-        user.LastPlayed = recordedGame.Ended;
-        context.RecordedGames.Add(recordedGame);
-        context.Users.Update(user);
-        context.SaveChanges();
+            var game = context.Games.SingleOrDefault(g => Equals(g.Name.ToLower(), request.GameName.ToLower()))
+                       ?? throw new NotFoundException("Game not found");
+
+            var recordedGame = new RecordedGame
+            {
+                Game = game,
+                Values = request.Values,
+                User = user,
+                Players = request.Values[0].Players,
+                OutputSpec = request.Values[0].OutputSpec,
+                EndState = request.Values[^1].State?.ToString()
+            };
+
+            UpdateTimestamps(request, recordedGame);
+            user.LastPlayed = recordedGame.Ended;
+            
+
+            context.Database.ExecuteSqlRaw(
+                "SELECT InsertRecordedGame(@GameId, @Values, @UserId, @Players, @OutputSpec, @EndState, @Started, @Ended)",
+                new NpgsqlParameter("@GameId", game.Id),
+                new NpgsqlParameter("@Values", JsonSerializer.Serialize(recordedGame.Values)),
+                new NpgsqlParameter("@UserId", user.Id),
+                new NpgsqlParameter("@Players", JsonSerializer.Serialize(recordedGame.Players)),
+                new NpgsqlParameter("@OutputSpec", recordedGame.OutputSpec),
+                new NpgsqlParameter("@EndState", recordedGame.EndState),
+                new NpgsqlParameter("@Started", recordedGame.Started),
+                new NpgsqlParameter("@Ended", recordedGame.Ended)
+            );
+
+            context.Users.Update(user);
+            context.SaveChanges();
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 
     public void RemoveGameRecord(int gameRecordId, string email)

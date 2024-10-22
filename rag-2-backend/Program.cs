@@ -20,7 +20,10 @@ var jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.AddDbContext<DatabaseContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), b =>
+    {
+        // b.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+    });
 });
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

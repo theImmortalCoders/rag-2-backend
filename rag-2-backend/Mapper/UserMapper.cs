@@ -18,7 +18,8 @@ public abstract class UserMapper
             Role = user.Role,
             StudyCycleYearA = user.StudyCycleYearA,
             StudyCycleYearB = user.StudyCycleYearB,
-            Name = user.Name
+            Name = user.Name,
+            Banned = user.Banned
         };
     }
 

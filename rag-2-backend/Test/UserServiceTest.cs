@@ -2,18 +2,18 @@
 
 using System.IdentityModel.Tokens.Jwt;
 using HttpExceptions.Exceptions;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
 using Newtonsoft.Json;
-using rag_2_backend.Config;
-using rag_2_backend.DTO.User;
-using rag_2_backend.Models;
-using rag_2_backend.models.entity;
-using rag_2_backend.Models.Entity;
-using rag_2_backend.Services;
-using rag_2_backend.Utils;
+using rag_2_backend.Infrastructure.Common.Model;
+using rag_2_backend.Infrastructure.Dao;
+using rag_2_backend.Infrastructure.Database;
+using rag_2_backend.Infrastructure.Database.Entity;
+using rag_2_backend.Infrastructure.Module.Email;
+using rag_2_backend.Infrastructure.Module.User;
+using rag_2_backend.Infrastructure.Module.User.Dto;
+using rag_2_backend.Infrastructure.Util;
 using Xunit;
 
 #endregion
@@ -60,7 +60,7 @@ public class UserServiceTest
             Token = HashUtil.HashPassword("password")
         };
 
-        Mock<UserUtil> userMock = new(_contextMock.Object);
+        Mock<UserDao> userMock = new(_contextMock.Object);
         userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
         userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
 
@@ -74,7 +74,7 @@ public class UserServiceTest
         _contextMock.Setup(c => c.BlacklistedJwts)
             .Returns(() => new List<BlacklistedJwt>().AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.RecordedGames)
-            .Returns(() => new List<RecordedGame>().AsQueryable().BuildMockDbSet().Object);
+            .Returns(() => new List<GameRecord>().AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.PasswordResetTokens)
             .Returns(() => new List<PasswordResetToken> { _passwordToken }.AsQueryable().BuildMockDbSet().Object);
         _jwtUtilMock.Setup(j => j.GenerateToken(It.IsAny<string>(), It.IsAny<string>())).Verifiable();

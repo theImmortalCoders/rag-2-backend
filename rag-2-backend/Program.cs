@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using rag_2_backend.Config;
-using rag_2_backend.Models;
-using rag_2_backend.Utils;
+using rag_2_backend.Infrastructure.Common.Model;
+using rag_2_backend.Infrastructure.Database;
+using rag_2_backend.Infrastructure.Util;
 
 #endregion
 

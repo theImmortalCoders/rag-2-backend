@@ -46,5 +46,4 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
                 v => JsonSerializer.Deserialize<List<Player>>(v, (JsonSerializerOptions)null!)!)
             .Metadata.SetValueComparer(playerComparer);
     }
-
 }

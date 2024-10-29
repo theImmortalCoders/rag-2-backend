@@ -2,14 +2,16 @@
 
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+using Npgsql;
 using rag_2_backend.Config;
 using rag_2_backend.DTO.RecordedGame;
 using rag_2_backend.Mapper;
 using rag_2_backend.Models;
 using rag_2_backend.models.entity;
+using rag_2_backend.Models.Entity;
 using rag_2_backend.Utils;
 
 #endregion
@@ -37,7 +39,7 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
         if (user.Id != recordedGame.User.Id && user.Role != Role.Admin && user.Role != Role.Teacher)
             throw new BadRequestException("Permission denied");
 
-        return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(recordedGame));
+        return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(recordedGame));
     }
 
     public void AddGameRecord(RecordedGameRequest request, string email)
@@ -62,8 +64,9 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
 
         UpdateTimestamps(request, recordedGame);
 
-        context.RecordedGames.Add(recordedGame);
-        context.SaveChanges();
+        var executionStrategy = context.Database.CreateExecutionStrategy();
+
+        executionStrategy.Execute(() => { PerformGameRecordTransaction(game, recordedGame, user); });
     }
 
     public void RemoveGameRecord(int gameRecordId, string email)
@@ -109,5 +112,30 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
             recordedGame.Started = DateTime.Parse(startTimestamp, null, DateTimeStyles.RoundtripKind);
         if (endTimestamp is not null)
             recordedGame.Ended = DateTime.Parse(endTimestamp, null, DateTimeStyles.RoundtripKind);
+    }
+
+    private void PerformGameRecordTransaction(Game game, RecordedGame recordedGame, User user)
+    {
+        using var transaction = context.Database.BeginTransaction();
+        try
+        {
+            context.Database.ExecuteSqlRaw(
+                "SELECT InsertRecordedGame(@GameId, @Values, @UserId, @Players, @OutputSpec, @EndState, @Started, @Ended)",
+                new NpgsqlParameter("@GameId", game.Id),
+                new NpgsqlParameter("@Values", JsonSerializer.Serialize(recordedGame.Values)),
+                new NpgsqlParameter("@UserId", user.Id),
+                new NpgsqlParameter("@Players", JsonSerializer.Serialize(recordedGame.Players)),
+                new NpgsqlParameter("@OutputSpec", recordedGame.OutputSpec),
+                new NpgsqlParameter("@EndState", recordedGame.EndState),
+                new NpgsqlParameter("@Started", recordedGame.Started),
+                new NpgsqlParameter("@Ended", recordedGame.Ended)
+            );
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 }

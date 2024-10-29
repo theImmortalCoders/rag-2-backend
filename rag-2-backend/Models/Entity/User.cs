@@ -34,4 +34,5 @@ public class User
     public int StudyCycleYearA { get; init; }
     public int StudyCycleYearB { get; init; }
     public bool Banned { get; set; }
+    public DateTime LastPlayed { get; set; }
 }

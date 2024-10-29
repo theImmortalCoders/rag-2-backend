@@ -21,7 +21,7 @@ public class StatsService(IServiceProvider serviceProvider)
     {
         var principal = _context.Users.FirstOrDefault(u => u.Email == email)
                         ?? throw new NotFoundException("User not found");
-        
+
         var user = _context.Users.FirstOrDefault(u => u.Id == userId)
                    ?? throw new NotFoundException("User not found");
 

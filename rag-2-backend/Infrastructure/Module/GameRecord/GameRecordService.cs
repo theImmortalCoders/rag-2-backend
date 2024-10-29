@@ -42,8 +42,10 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
 
     public void AddGameRecord(RecordedGameRequest request, string email)
     {
-        var user = userDao.GetUserByEmailOrThrow(email);
+        if (request.Values.Count == 0 || request.Values[^1].State == null)
+            throw new BadRequestException("Value state cannot be empty");
 
+        var user = userDao.GetUserByEmailOrThrow(email);
         if (GetSizeByUser(user.Id, request.Values.Count) > configuration.GetValue<int>("UserDataLimitMb"))
             throw new BadRequestException("Space limit exceeded");
 
@@ -56,7 +58,7 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
             Values = request.Values,
             User = user,
             Players = request.Values[0].Players,
-            OutputSpec = request.Values[0].OutputSpec,
+            OutputSpec = request.Values[0].OutputSpec ?? "",
             EndState = request.Values[^1].State?.ToString()
         };
 

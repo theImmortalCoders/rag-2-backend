@@ -41,7 +41,7 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
 
     /// <summary>Add game recording, limits are present (Auth)</summary>
     /// <response code="404">User or game not found</response>
-    /// <response code="400">Space limit exceeded</response>
+    /// <response code="400">Space limit exceeded or values state cannot be empty</response>
     [HttpPost]
     [Authorize]
     public void AddGameRecord([FromBody] [Required] RecordedGameRequest request)

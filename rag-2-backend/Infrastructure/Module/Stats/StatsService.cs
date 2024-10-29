@@ -19,10 +19,13 @@ public class StatsService(IServiceProvider serviceProvider)
 
     public UserStatsResponse GetStatsForUser(string email, int userId)
     {
+        var principal = _context.Users.FirstOrDefault(u => u.Email == email)
+                        ?? throw new NotFoundException("User not found");
+        
         var user = _context.Users.FirstOrDefault(u => u.Id == userId)
                    ?? throw new NotFoundException("User not found");
 
-        if (user.Email != email && user.Role == Role.Student)
+        if (user.Email != email && principal.Role == Role.Student)
             throw new ForbiddenException("Permission denied");
 
         var records = _context.RecordedGames

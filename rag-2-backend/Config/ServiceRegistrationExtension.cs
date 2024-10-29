@@ -3,8 +3,15 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
-using rag_2_backend.Services;
-using rag_2_backend.Utils;
+using rag_2_backend.Infrastructure.Dao;
+using rag_2_backend.Infrastructure.Module.Administration;
+using rag_2_backend.Infrastructure.Module.Background;
+using rag_2_backend.Infrastructure.Module.Email;
+using rag_2_backend.Infrastructure.Module.Game;
+using rag_2_backend.Infrastructure.Module.GameRecord;
+using rag_2_backend.Infrastructure.Module.Stats;
+using rag_2_backend.Infrastructure.Module.User;
+using rag_2_backend.Infrastructure.Util;
 
 #endregion
 
@@ -12,7 +19,7 @@ namespace rag_2_backend.Config;
 
 public static class ServiceRegistrationExtension
 {
-    public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
+    public static void RegisterServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddCors(options =>
         {
@@ -28,9 +35,9 @@ public static class ServiceRegistrationExtension
 
         ConfigServices(services);
         ConfigSwagger(services);
-
-        return services;
     }
+
+    //
 
     private static void ConfigServices(IServiceCollection services)
     {
@@ -43,7 +50,7 @@ public static class ServiceRegistrationExtension
         services.AddScoped<EmailService>();
         services.AddScoped<JwtSecurityTokenHandler>();
         services.AddScoped<AdministrationService>();
-        services.AddScoped<UserUtil>();
+        services.AddScoped<UserDao>();
 
         services.AddSingleton<StatsService>();
     }

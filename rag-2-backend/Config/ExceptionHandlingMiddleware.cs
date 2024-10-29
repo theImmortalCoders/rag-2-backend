@@ -24,6 +24,8 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         }
     }
 
+    //
+
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         logger.LogError(exception, "An unexpected error occurred.");

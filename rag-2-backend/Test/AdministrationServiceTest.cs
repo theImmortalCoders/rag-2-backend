@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
 using Newtonsoft.Json;
-using rag_2_backend.Config;
-using rag_2_backend.DTO.User;
-using rag_2_backend.Models;
-using rag_2_backend.Models.Entity;
-using rag_2_backend.Services;
-using rag_2_backend.Utils;
+using rag_2_backend.Infrastructure.Common.Model;
+using rag_2_backend.Infrastructure.Dao;
+using rag_2_backend.Infrastructure.Database;
+using rag_2_backend.Infrastructure.Database.Entity;
+using rag_2_backend.Infrastructure.Module.Administration;
+using rag_2_backend.Infrastructure.Module.User.Dto;
 using Xunit;
 
 #endregion
@@ -44,14 +44,14 @@ public class AdministrationServiceTest
         StudyCycleYearB = 2023
     };
 
-    private readonly Mock<UserUtil> _userMock;
+    private readonly Mock<UserDao> _userMock;
 
     public AdministrationServiceTest()
     {
         _contextMock.Setup(c => c.Users).Returns(
             new List<User> { _admin, _user }.AsQueryable().BuildMockDbSet().Object
         );
-        _userMock = new Mock<UserUtil>(_contextMock.Object);
+        _userMock = new Mock<UserDao>(_contextMock.Object);
         _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
         _userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_admin);
         _administrationService = new AdministrationService(_contextMock.Object, _userMock.Object);
@@ -106,17 +106,17 @@ public class AdministrationServiceTest
     {
         var response = new UserResponse
         {
-            Id = 2,
-            Email = "email2@stud.prz.edu.pl",
+            Id = 1,
+            Email = "email@prz.edu.pl",
             Name = "John",
-            Role = Role.Student,
+            Role = Role.Admin,
             StudyCycleYearA = 2022,
             StudyCycleYearB = 2023
         };
 
         Assert.Equal(
-            JsonConvert.SerializeObject(new List<UserResponse> { response }),
-            JsonConvert.SerializeObject(_administrationService.GetStudents(2022, 2023))
+            JsonConvert.SerializeObject(response),
+            JsonConvert.SerializeObject(_administrationService.GetStudents()[0])
         );
     }
 }

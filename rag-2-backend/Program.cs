@@ -1,12 +1,14 @@
 #region
 
 using System.Text;
+using HttpExceptions.Exceptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using rag_2_backend.Config;
-using rag_2_backend.Models;
-using rag_2_backend.Utils;
+using rag_2_backend.Infrastructure.Common.Model;
+using rag_2_backend.Infrastructure.Database;
+using rag_2_backend.Infrastructure.Util;
 
 #endregion
 
@@ -19,7 +21,8 @@ var jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.AddDbContext<DatabaseContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        b => { b.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null); });
 });
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -44,7 +47,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 var token = header["Bearer ".Length..].Trim();
 
                 if (!string.IsNullOrEmpty(token) && await tokenBlacklistService.IsTokenBlacklistedAsync(token))
-                    throw new UnauthorizedAccessException("Token is not valid");
+                    throw new UnauthorizedException("Token is not valid");
             }
         };
     });

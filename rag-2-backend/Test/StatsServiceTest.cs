@@ -3,12 +3,12 @@
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
-using rag_2_backend.Config;
-using rag_2_backend.Models;
-using rag_2_backend.models.entity;
-using rag_2_backend.Models.Entity;
-using rag_2_backend.Services;
-using rag_2_backend.Utils;
+using rag_2_backend.Infrastructure.Common.Model;
+using rag_2_backend.Infrastructure.Dao;
+using rag_2_backend.Infrastructure.Database;
+using rag_2_backend.Infrastructure.Database.Entity;
+using rag_2_backend.Infrastructure.Module.Stats;
+using rag_2_backend.Infrastructure.Util;
 using Xunit;
 
 #endregion
@@ -27,9 +27,9 @@ public class StatsServiceTests
         Name = "pong"
     };
 
-    private readonly Mock<UserUtil> _mockUserUtil;
+    private readonly Mock<UserDao> _mockUserUtil;
 
-    private readonly List<RecordedGame> _recordedGames = [];
+    private readonly List<GameRecord> _recordedGames = [];
     private readonly StatsService _statsService;
 
     private readonly User _user = new("email@prz.edu.pl")
@@ -43,7 +43,7 @@ public class StatsServiceTests
 
     public StatsServiceTests()
     {
-        _mockUserUtil = new Mock<UserUtil>(_contextMock.Object);
+        _mockUserUtil = new Mock<UserDao>(_contextMock.Object);
 
         var serviceProvider = MockServiceProvider();
 
@@ -59,13 +59,13 @@ public class StatsServiceTests
             new List<Game> { _game }.AsQueryable().BuildMockDbSet().Object
         );
 
-        _recordedGames.Add(new RecordedGame
+        _recordedGames.Add(new GameRecord
         {
             Id = 1,
             Game = _game,
             Values =
             [
-                new RecordedGameValue()
+                new GameRecordValue()
             ],
             User = _user
         });

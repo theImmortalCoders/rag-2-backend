@@ -1,17 +1,19 @@
 #region
 
 using System.IdentityModel.Tokens.Jwt;
+using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
 using Newtonsoft.Json;
-using rag_2_backend.Config;
-using rag_2_backend.DTO.User;
-using rag_2_backend.Models;
-using rag_2_backend.models.entity;
-using rag_2_backend.Models.Entity;
-using rag_2_backend.Services;
-using rag_2_backend.Utils;
+using rag_2_backend.Infrastructure.Common.Model;
+using rag_2_backend.Infrastructure.Dao;
+using rag_2_backend.Infrastructure.Database;
+using rag_2_backend.Infrastructure.Database.Entity;
+using rag_2_backend.Infrastructure.Module.Email;
+using rag_2_backend.Infrastructure.Module.User;
+using rag_2_backend.Infrastructure.Module.User.Dto;
+using rag_2_backend.Infrastructure.Util;
 using Xunit;
 
 #endregion
@@ -58,7 +60,7 @@ public class UserServiceTest
             Token = HashUtil.HashPassword("password")
         };
 
-        Mock<UserUtil> userMock = new(_contextMock.Object);
+        Mock<UserDao> userMock = new(_contextMock.Object);
         userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
         userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
 
@@ -72,7 +74,7 @@ public class UserServiceTest
         _contextMock.Setup(c => c.BlacklistedJwts)
             .Returns(() => new List<BlacklistedJwt>().AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.RecordedGames)
-            .Returns(() => new List<RecordedGame>().AsQueryable().BuildMockDbSet().Object);
+            .Returns(() => new List<GameRecord>().AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.PasswordResetTokens)
             .Returns(() => new List<PasswordResetToken> { _passwordToken }.AsQueryable().BuildMockDbSet().Object);
         _jwtUtilMock.Setup(j => j.GenerateToken(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
@@ -95,7 +97,7 @@ public class UserServiceTest
         _contextMock.Verify(c => c.AccountConfirmationTokens.Add(It.IsAny<AccountConfirmationToken>()), Times.Once);
         _emailService.Verify(e => e.SendConfirmationEmail(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
 
-        Assert.Throws<BadHttpRequestException>(
+        Assert.Throws<BadRequestException>(
             () => _userService.RegisterUser(new UserRequest
                 {
                     Email = "email1@stud.prz.edu.pl", Password = "pass", StudyCycleYearA = 2020, StudyCycleYearB = 2023,
@@ -114,7 +116,7 @@ public class UserServiceTest
         _emailService.Verify(e => e.SendConfirmationEmail(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
 
         _user.Confirmed = true;
-        Assert.Throws<BadHttpRequestException>(() => _userService.ResendConfirmationEmail("email@prz.edu.pl"));
+        Assert.Throws<BadRequestException>(() => _userService.ResendConfirmationEmail("email@prz.edu.pl"));
     }
 
     [Fact]
@@ -123,19 +125,19 @@ public class UserServiceTest
         _userService.ConfirmAccount(_accountToken.Token);
         _contextMock.Verify(c => c.AccountConfirmationTokens.Remove(It.IsAny<AccountConfirmationToken>()), Times.Once);
 
-        Assert.Throws<BadHttpRequestException>(() => _userService.ConfirmAccount("token")); //wrong token
+        Assert.Throws<BadRequestException>(() => _userService.ConfirmAccount("token")); //wrong token
         _accountToken.Expiration = DateTime.Now.AddDays(-7);
-        Assert.Throws<BadHttpRequestException>(() => _userService.ConfirmAccount(_accountToken.Token)); //invalid date
+        Assert.Throws<BadRequestException>(() => _userService.ConfirmAccount(_accountToken.Token)); //invalid date
     }
 
     [Fact]
     public void ShouldLoginUser()
     {
-        Assert.Throws<UnauthorizedAccessException>(
+        Assert.Throws<UnauthorizedException>(
             () => _userService.LoginUser("email@prz.edu.pl", "pass")
         ); //wrong password
 
-        Assert.Throws<UnauthorizedAccessException>(
+        Assert.Throws<UnauthorizedException>(
             () => _userService.LoginUser("email@prz.edu.pl", "password")
         ); //not confirmed
 
@@ -184,9 +186,9 @@ public class UserServiceTest
         _userService.ResetPassword(_passwordToken.Token, "pass");
         _contextMock.Verify(c => c.PasswordResetTokens.Remove(It.IsAny<PasswordResetToken>()), Times.Once);
 
-        Assert.Throws<BadHttpRequestException>(() => _userService.ResetPassword("token1", "pass")); //wrong token
+        Assert.Throws<BadRequestException>(() => _userService.ResetPassword("token1", "pass")); //wrong token
         _passwordToken.Expiration = DateTime.Now.AddDays(-7);
-        Assert.Throws<BadHttpRequestException>(() =>
+        Assert.Throws<BadRequestException>(() =>
             _userService.ResetPassword(_passwordToken.Token, "pass")); //invalid date
     }
 
@@ -195,7 +197,7 @@ public class UserServiceTest
     {
         _userService.ChangePassword("email@prz.edu.pl", "password", "pass2");
 
-        Assert.Throws<BadHttpRequestException>(() => _userService.ChangePassword("email@prz.edu.pl", "pa4ss2", "pas2"));
+        Assert.Throws<BadRequestException>(() => _userService.ChangePassword("email@prz.edu.pl", "pa4ss2", "pas2"));
     }
 
     [Fact]

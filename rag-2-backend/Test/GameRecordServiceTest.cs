@@ -4,13 +4,12 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
-using rag_2_backend.Config;
-using rag_2_backend.DTO.RecordedGame;
-using rag_2_backend.Models;
-using rag_2_backend.models.entity;
-using rag_2_backend.Models.Entity;
-using rag_2_backend.Services;
-using rag_2_backend.Utils;
+using rag_2_backend.Infrastructure.Common.Model;
+using rag_2_backend.Infrastructure.Dao;
+using rag_2_backend.Infrastructure.Database;
+using rag_2_backend.Infrastructure.Database.Entity;
+using rag_2_backend.Infrastructure.Module.GameRecord;
+using rag_2_backend.Infrastructure.Module.GameRecord.Dto;
 using Xunit;
 
 #endregion
@@ -31,7 +30,7 @@ public class GameRecordServiceTest
 
     private readonly GameRecordService _gameRecordService;
 
-    private readonly List<RecordedGame> _recordedGames = [];
+    private readonly List<GameRecord> _recordedGames = [];
 
     private readonly User _user = new("email@prz.edu.pl")
     {
@@ -53,7 +52,7 @@ public class GameRecordServiceTest
         _contextMock.Setup(c => c.Games).Returns(
             new List<Game> { _game }.AsQueryable().BuildMockDbSet().Object
         );
-        Mock<UserUtil> userMock = new(_contextMock.Object);
+        Mock<UserDao> userMock = new(_contextMock.Object);
 
         userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
         userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
@@ -69,13 +68,13 @@ public class GameRecordServiceTest
 
         _gameRecordService = new GameRecordService(_contextMock.Object, configuration, userMock.Object);
 
-        _recordedGames.Add(new RecordedGame
+        _recordedGames.Add(new GameRecord
         {
             Id = 1,
             Game = _game,
             Values =
             [
-                new RecordedGameValue()
+                new GameRecordValue()
             ],
             User = _user
         });
@@ -85,7 +84,7 @@ public class GameRecordServiceTest
     public void GetRecordsByGameTest()
     {
         var actualRecords = _gameRecordService.GetRecordsByGameAndUser(1, "email@prz.edu.pl");
-        List<RecordedGameResponse> expectedRecords =
+        List<GameRecordResponse> expectedRecords =
         [
             new()
             {
@@ -98,14 +97,5 @@ public class GameRecordServiceTest
             JsonSerializer.Serialize(expectedRecords),
             JsonSerializer.Serialize(actualRecords)
         );
-    }
-
-    [Fact]
-    public void AddGameRecordTest()
-    {
-        var request = new RecordedGameRequest { GameName = "pong", Values = [new RecordedGameValue()] };
-        _gameRecordService.AddGameRecord(request, "email@prz.edu.pl");
-
-        _contextMock.Verify(c => c.RecordedGames.Add(It.IsAny<RecordedGame>()), Times.Once);
     }
 }

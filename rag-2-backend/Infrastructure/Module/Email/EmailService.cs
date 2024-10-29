@@ -1,7 +1,3 @@
-#region
-
-#endregion
-
 namespace rag_2_backend.Infrastructure.Module.Email;
 
 public class EmailService(EmailSendingUtil emailSendingUtil, IConfiguration config)

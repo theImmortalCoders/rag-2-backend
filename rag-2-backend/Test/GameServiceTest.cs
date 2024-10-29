@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
 using Newtonsoft.Json;
-using rag_2_backend.Config;
-using rag_2_backend.DTO.Game;
-using rag_2_backend.Mapper;
-using rag_2_backend.models.entity;
-using rag_2_backend.Services;
+using rag_2_backend.Infrastructure.Common.Mapper;
+using rag_2_backend.Infrastructure.Database;
+using rag_2_backend.Infrastructure.Database.Entity;
+using rag_2_backend.Infrastructure.Module.Game;
+using rag_2_backend.Infrastructure.Module.Game.Dto;
 using Xunit;
 
 #endregion
@@ -35,7 +35,7 @@ public class GameServiceTest
         _gameService = new GameService(_contextMock.Object);
         _contextMock.Setup(c => c.Games).Returns(_games.AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.RecordedGames)
-            .Returns(new List<RecordedGame>().AsQueryable().BuildMockDbSet().Object);
+            .Returns(new List<GameRecord>().AsQueryable().BuildMockDbSet().Object);
     }
 
     [Fact]

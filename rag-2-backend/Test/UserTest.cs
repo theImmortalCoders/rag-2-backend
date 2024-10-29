@@ -1,7 +1,7 @@
 #region
 
-using rag_2_backend.Models;
-using rag_2_backend.Models.Entity;
+using rag_2_backend.Infrastructure.Common.Model;
+using rag_2_backend.Infrastructure.Database.Entity;
 using Xunit;
 
 #endregion

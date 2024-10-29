@@ -11,6 +11,7 @@ using rag_2_backend.DTO.RecordedGame;
 using rag_2_backend.Mapper;
 using rag_2_backend.Models;
 using rag_2_backend.models.entity;
+using rag_2_backend.Models.Entity;
 using rag_2_backend.Utils;
 
 #endregion
@@ -43,48 +44,29 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
 
     public void AddGameRecord(RecordedGameRequest request, string email)
     {
-        using var transaction = context.Database.BeginTransaction();
-        try
+        var user = userUtil.GetUserByEmailOrThrow(email);
+
+        if (GetSizeByUser(user.Id, request.Values.Count) > configuration.GetValue<int>("UserDataLimitMb"))
+            throw new BadRequestException("Space limit exceeded");
+
+        var game = context.Games.SingleOrDefault(g => Equals(g.Name.ToLower(), request.GameName.ToLower()))
+                   ?? throw new NotFoundException("Game not found");
+
+        var recordedGame = new RecordedGame
         {
-            var user = userUtil.GetUserByEmailOrThrow(email);
+            Game = game,
+            Values = request.Values,
+            User = user,
+            Players = request.Values[0].Players,
+            OutputSpec = request.Values[0].OutputSpec,
+            EndState = request.Values[^1].State?.ToString()
+        };
 
-            if (GetSizeByUser(user.Id, request.Values.Count) > configuration.GetValue<int>("UserDataLimitMb"))
-                throw new BadRequestException("Space limit exceeded");
+        UpdateTimestamps(request, recordedGame);
 
-            var game = context.Games.SingleOrDefault(g => Equals(g.Name.ToLower(), request.GameName.ToLower()))
-                       ?? throw new NotFoundException("Game not found");
+        var executionStrategy = context.Database.CreateExecutionStrategy();
 
-            var recordedGame = new RecordedGame
-            {
-                Game = game,
-                Values = request.Values,
-                User = user,
-                Players = request.Values[0].Players,
-                OutputSpec = request.Values[0].OutputSpec,
-                EndState = request.Values[^1].State?.ToString()
-            };
-
-            UpdateTimestamps(request, recordedGame);
-
-            context.Database.ExecuteSqlRaw(
-                "SELECT InsertRecordedGame(@GameId, @Values, @UserId, @Players, @OutputSpec, @EndState, @Started, @Ended)",
-                new NpgsqlParameter("@GameId", game.Id),
-                new NpgsqlParameter("@Values", JsonSerializer.Serialize(recordedGame.Values)),
-                new NpgsqlParameter("@UserId", user.Id),
-                new NpgsqlParameter("@Players", JsonSerializer.Serialize(recordedGame.Players)),
-                new NpgsqlParameter("@OutputSpec", recordedGame.OutputSpec),
-                new NpgsqlParameter("@EndState", recordedGame.EndState),
-                new NpgsqlParameter("@Started", recordedGame.Started),
-                new NpgsqlParameter("@Ended", recordedGame.Ended)
-            );
-
-            transaction.Commit();
-        }
-        catch
-        {
-            transaction.Rollback();
-            throw;
-        }
+        executionStrategy.Execute(() => { PerformGameRecordTransaction(game, recordedGame, user); });
     }
 
     public void RemoveGameRecord(int gameRecordId, string email)
@@ -130,5 +112,30 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
             recordedGame.Started = DateTime.Parse(startTimestamp, null, DateTimeStyles.RoundtripKind);
         if (endTimestamp is not null)
             recordedGame.Ended = DateTime.Parse(endTimestamp, null, DateTimeStyles.RoundtripKind);
+    }
+
+    private void PerformGameRecordTransaction(Game game, RecordedGame recordedGame, User user)
+    {
+        using var transaction = context.Database.BeginTransaction();
+        try
+        {
+            context.Database.ExecuteSqlRaw(
+                "SELECT InsertRecordedGame(@GameId, @Values, @UserId, @Players, @OutputSpec, @EndState, @Started, @Ended)",
+                new NpgsqlParameter("@GameId", game.Id),
+                new NpgsqlParameter("@Values", JsonSerializer.Serialize(recordedGame.Values)),
+                new NpgsqlParameter("@UserId", user.Id),
+                new NpgsqlParameter("@Players", JsonSerializer.Serialize(recordedGame.Players)),
+                new NpgsqlParameter("@OutputSpec", recordedGame.OutputSpec),
+                new NpgsqlParameter("@EndState", recordedGame.EndState),
+                new NpgsqlParameter("@Started", recordedGame.Started),
+                new NpgsqlParameter("@Ended", recordedGame.Ended)
+            );
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 }

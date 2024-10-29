@@ -65,8 +65,6 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
             };
 
             UpdateTimestamps(request, recordedGame);
-            user.LastPlayed = recordedGame.Ended;
-            
 
             context.Database.ExecuteSqlRaw(
                 "SELECT InsertRecordedGame(@GameId, @Values, @UserId, @Players, @OutputSpec, @EndState, @Started, @Ended)",
@@ -80,8 +78,6 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
                 new NpgsqlParameter("@Ended", recordedGame.Ended)
             );
 
-            context.Users.Update(user);
-            context.SaveChanges();
             transaction.Commit();
         }
         catch

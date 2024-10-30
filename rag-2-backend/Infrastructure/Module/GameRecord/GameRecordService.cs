@@ -86,6 +86,7 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
     private Database.Entity.GameRecord GetRecordedGameById(int recordedGameId)
     {
         return context.RecordedGames.Include(recordedGame => recordedGame.User)
+                   .Include(r => r.Game)
                    .SingleOrDefault(g => g.Id == recordedGameId)
                ?? throw new NotFoundException("Game record not found");
     }

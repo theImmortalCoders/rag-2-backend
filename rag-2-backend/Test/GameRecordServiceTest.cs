@@ -88,7 +88,8 @@ public class GameRecordServiceTest
         [
             new()
             {
-                Id = 1
+                Id = 1,
+                GameName = "pong"
             }
         ];
 

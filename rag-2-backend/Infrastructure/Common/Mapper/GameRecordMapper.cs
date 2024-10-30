@@ -14,6 +14,7 @@ public abstract class GameRecordMapper
         return new GameRecordResponse
         {
             Id = gameRecord.Id,
+            GameName = gameRecord.Game.Name,
             Players = gameRecord.Players,
             Ended = gameRecord.Ended,
             Started = gameRecord.Started,

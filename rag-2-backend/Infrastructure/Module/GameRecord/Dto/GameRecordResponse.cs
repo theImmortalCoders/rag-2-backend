@@ -9,6 +9,7 @@ namespace rag_2_backend.Infrastructure.Module.GameRecord.Dto;
 public class GameRecordResponse
 {
     public int Id { get; set; }
+    public required string GameName { get; set; }
     public List<Player>? Players { get; set; }
     public DateTime Started { get; set; }
     public DateTime Ended { get; set; }

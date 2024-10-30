@@ -72,7 +72,12 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.UseCors();
+app.UseCors(b =>
+    b.WithOrigins(app.Configuration.GetValue<string>("AllowedOrigins") ?? string.Empty)
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .WithExposedHeaders("Content-Disposition"));
+
 app.UseHttpsRedirection();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();

@@ -1,6 +1,5 @@
 #region
 
-using System.IdentityModel.Tokens.Jwt;
 using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.Infrastructure.Common.Mapper;
@@ -20,8 +19,8 @@ public class UserService(
     DatabaseContext context,
     JwtUtil jwtUtil,
     EmailService emailService,
-    JwtSecurityTokenHandler jwtSecurityTokenHandler,
-    UserDao userDao)
+    UserDao userDao,
+    RefreshTokenDao refreshTokenDao)
 {
     public void RegisterUser(UserRequest userRequest)
     {
@@ -71,7 +70,7 @@ public class UserService(
         context.SaveChanges();
     }
 
-    public string LoginUser(string email, string password)
+    public UserLoginResponse LoginUser(string email, string password, double refreshTokenExpirationTimeDays)
     {
         var user = userDao.GetUserByEmailOrThrow(email);
 
@@ -82,6 +81,31 @@ public class UserService(
         if (user.Banned)
             throw new UnauthorizedException("User banned");
 
+        var refreshToken = new RefreshToken
+        {
+            User = user,
+            Expiration = DateTime.Now.AddDays(refreshTokenExpirationTimeDays),
+            Token = Guid.NewGuid().ToString()
+        };
+        refreshTokenDao.RemoveTokensForUser(user);
+        context.RefreshTokens.Add(refreshToken);
+        context.SaveChanges();
+
+        return new UserLoginResponse
+        {
+            JwtToken = jwtUtil.GenerateToken(user.Email, user.Role.ToString()),
+            RefreshToken = refreshToken.Token
+        };
+    }
+
+    public string RefreshToken(string refreshToken)
+    {
+        var token = context.RefreshTokens
+                        .Include(t => t.User)
+                        .SingleOrDefault(t => t.Token == refreshToken && t.Expiration > DateTime.Now)
+                    ?? throw new UnauthorizedException("Invalid refresh token");
+        var user = token.User;
+
         return jwtUtil.GenerateToken(user.Email, user.Role.ToString());
     }
 
@@ -90,14 +114,10 @@ public class UserService(
         return UserMapper.Map(userDao.GetUserByEmailOrThrow(email));
     }
 
-    public void LogoutUser(string header)
+    public void LogoutUser(string email)
     {
-        var tokenValue = header["Bearer ".Length..].Trim();
-        var jwtToken = jwtSecurityTokenHandler.ReadToken(tokenValue) as JwtSecurityToken ??
-                       throw new UnauthorizedException("Unauthorized");
-
-        context.BlacklistedJwts.Add(new BlacklistedJwt { Token = tokenValue, Expiration = jwtToken.ValidTo });
-        context.SaveChanges();
+        var user = userDao.GetUserByEmailOrThrow(email);
+        refreshTokenDao.RemoveTokensForUser(user);
     }
 
     public void RequestPasswordReset(string email)

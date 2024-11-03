@@ -3,7 +3,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using rag_2_backend.Infrastructure.Database;
 
@@ -35,10 +34,5 @@ public class JwtUtil(IConfiguration config, DatabaseContext context)
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-    public async Task<bool> IsTokenBlacklistedAsync(string token)
-    {
-        return await context.BlacklistedJwts.AnyAsync(bt => bt.Token == token);
     }
 }

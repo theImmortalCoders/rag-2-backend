@@ -46,8 +46,16 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
             throw new BadRequestException("Value state cannot be empty");
 
         var user = userDao.GetUserByEmailOrThrow(email);
-        if (GetSizeByUser(user.Id, request.Values.Count) > configuration.GetValue<int>("UserDataLimitMb"))
-            throw new BadRequestException("Space limit exceeded");
+
+        switch (user.Role)
+        {
+            case Role.Student when GetSizeByUser(user.Id, request.Values.Count) >
+                                   configuration.GetValue<int>("StudentDataLimitMb"):
+                throw new BadRequestException("Space limit exceeded");
+            case Role.Teacher when GetSizeByUser(user.Id, request.Values.Count) >
+                                   configuration.GetValue<int>("TeacherDataLimitMb"):
+                throw new BadRequestException("Space limit exceeded");
+        }
 
         var game = context.Games.SingleOrDefault(g => Equals(g.Name.ToLower(), request.GameName.ToLower()))
                    ?? throw new NotFoundException("Game not found");

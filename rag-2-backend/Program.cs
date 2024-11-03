@@ -39,15 +39,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
         options.Events = new JwtBearerEvents
         {
-            OnMessageReceived = async context =>
+            OnMessageReceived = context =>
             {
                 var tokenBlacklistService = context.HttpContext.RequestServices.GetRequiredService<JwtUtil>();
                 var header = context.HttpContext.Request.Headers.Authorization.FirstOrDefault();
-                if (header == null) return;
+                if (header == null) return Task.CompletedTask;
                 var token = header["Bearer ".Length..].Trim();
 
-                if (!string.IsNullOrEmpty(token) && await tokenBlacklistService.IsTokenBlacklistedAsync(token))
+                if (string.IsNullOrEmpty(token))
                     throw new UnauthorizedException("Token is not valid");
+
+                return Task.CompletedTask;
             }
         };
     });

@@ -1,6 +1,7 @@
 #region
 
 using System.ComponentModel.DataAnnotations;
+using HttpExceptions.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rag_2_backend.Infrastructure.Dao;
@@ -12,7 +13,7 @@ namespace rag_2_backend.Infrastructure.Module.User;
 
 [ApiController]
 [Route("api/[controller]/auth")]
-public class UserController(UserService userService) : ControllerBase
+public class UserController(UserService userService, IConfiguration config) : ControllerBase
 {
     /// <summary>Register new user</summary>
     /// <response code="400">User already exists or wrong study cycle year</response>
@@ -27,7 +28,23 @@ public class UserController(UserService userService) : ControllerBase
     [HttpPost("login")]
     public string Login([FromBody] [Required] UserLoginRequest loginRequest)
     {
-        return userService.LoginUser(loginRequest.Email, loginRequest.Password);
+        var response = userService.LoginUser(
+            loginRequest.Email,
+            loginRequest.Password,
+            double.Parse(config["RefreshToken:ExpireDays"] ?? "30")
+        );
+
+        HttpContext.Response.Cookies.Append("refreshToken", response.RefreshToken,
+            new CookieOptions
+            {
+                Expires = DateTimeOffset.UtcNow.AddDays(
+                    double.Parse(config["RefreshToken:ExpireDays"] ?? "30")),
+                HttpOnly = true
+                // IsEssential = true,
+                // Secure = true,
+                // SameSite = SameSiteMode.None
+            });
+        return response.JwtToken;
     }
 
     /// <summary>Resend confirmation email to specified email</summary>
@@ -62,15 +79,24 @@ public class UserController(UserService userService) : ControllerBase
         userService.ResetPassword(tokenValue, newPassword);
     }
 
+    /// <summary>Refresh token</summary>
+    /// <response code="401">Invalid refresh token</response>
+    [HttpPost("refresh-token")]
+    public string RefreshToken()
+    {
+        HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
+        if (refreshToken == null)
+            throw new UnauthorizedException("Invalid refresh token");
+
+        return userService.RefreshToken(refreshToken);
+    }
+
     /// <summary>Logout current user (Auth)</summary>
     [HttpPost("logout")]
     [Authorize]
     public void Logout()
     {
-        var header = HttpContext.Request.Headers.Authorization.FirstOrDefault() ??
-                     throw new UnauthorizedAccessException("Unauthorized");
-
-        userService.LogoutUser(header);
+        userService.LogoutUser(UserDao.GetPrincipalEmail(User));
     }
 
     /// <summary>Get current user details (Auth)</summary>

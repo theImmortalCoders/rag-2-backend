@@ -61,18 +61,19 @@ public class UserServiceTest
         };
 
         Mock<UserDao> userMock = new(_contextMock.Object);
+        Mock<RefreshTokenDao> refreshTokenDaoMock = new(_contextMock.Object);
         userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
         userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
 
         _userService = new UserService(_contextMock.Object, _jwtUtilMock.Object, _emailService.Object,
-            _jwtSecurityTokenHandlerMock.Object, userMock.Object);
+            userMock.Object, refreshTokenDaoMock.Object);
 
         _contextMock.Setup(c => c.Users).Returns(() => new List<User> { _user }
             .AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.AccountConfirmationTokens)
             .Returns(() => new List<AccountConfirmationToken> { _accountToken }.AsQueryable().BuildMockDbSet().Object);
-        _contextMock.Setup(c => c.BlacklistedJwts)
-            .Returns(() => new List<BlacklistedJwt>().AsQueryable().BuildMockDbSet().Object);
+        _contextMock.Setup(c => c.RefreshTokens)
+            .Returns(() => new List<RefreshToken>().AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.RecordedGames)
             .Returns(() => new List<GameRecord>().AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.PasswordResetTokens)
@@ -134,15 +135,15 @@ public class UserServiceTest
     public void ShouldLoginUser()
     {
         Assert.Throws<UnauthorizedException>(
-            () => _userService.LoginUser("email@prz.edu.pl", "pass")
+            () => _userService.LoginUser("email@prz.edu.pl", "pass", 30)
         ); //wrong password
 
         Assert.Throws<UnauthorizedException>(
-            () => _userService.LoginUser("email@prz.edu.pl", "password")
+            () => _userService.LoginUser("email@prz.edu.pl", "password", 30)
         ); //not confirmed
 
         _user.Confirmed = true;
-        _userService.LoginUser("email@prz.edu.pl", "password");
+        _userService.LoginUser("email@prz.edu.pl", "password", 30);
         _jwtUtilMock.Verify(j => j.GenerateToken(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
@@ -150,8 +151,6 @@ public class UserServiceTest
     public void ShouldLogoutUser()
     {
         _userService.LogoutUser("Bearer header");
-
-        _contextMock.Verify(c => c.BlacklistedJwts.Add(It.IsAny<BlacklistedJwt>()), Times.Once);
     }
 
     [Fact]

@@ -51,6 +51,7 @@ public static class ServiceRegistrationExtension
         services.AddScoped<JwtSecurityTokenHandler>();
         services.AddScoped<AdministrationService>();
         services.AddScoped<UserDao>();
+        services.AddScoped<RefreshTokenDao>();
 
         services.AddSingleton<StatsService>();
     }

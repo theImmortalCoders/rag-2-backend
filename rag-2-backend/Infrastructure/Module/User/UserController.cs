@@ -46,10 +46,10 @@ public class UserController(UserService userService, IConfiguration config) : Co
             {
                 Expires = DateTimeOffset.UtcNow.AddDays(
                     double.Parse(config["RefreshToken:ExpireDays"] ?? "30")),
-                HttpOnly = true
+                HttpOnly = true,
                 // IsEssential = true,
-                // Secure = true,
-                // SameSite = SameSiteMode.None
+                Secure = false,
+                SameSite = SameSiteMode.None
             });
         return response.JwtToken;
     }

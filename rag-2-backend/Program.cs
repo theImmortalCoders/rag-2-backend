@@ -78,6 +78,7 @@ var allowedOrigins = app.Configuration.GetSection("AllowedOrigins").Get<string[]
 app.UseCors(b =>
     b.WithOrigins(allowedOrigins ?? [])
         .AllowAnyMethod()
+        .AllowCredentials()
         .AllowAnyHeader()
         .WithExposedHeaders("Content-Disposition"));
 

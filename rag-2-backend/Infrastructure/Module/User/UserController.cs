@@ -49,7 +49,7 @@ public class UserController(UserService userService, IConfiguration config) : Co
                 HttpOnly = true,
                 // IsEssential = true,
                 Secure = false,
-                SameSite = SameSiteMode.None
+                // SameSite = SameSiteMode.None
             });
         return response.JwtToken;
     }

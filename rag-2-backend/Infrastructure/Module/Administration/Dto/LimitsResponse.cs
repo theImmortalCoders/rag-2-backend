@@ -4,4 +4,5 @@ public class LimitsResponse
 {
     public required int StudentLimitMb { get; set; }
     public required int TeacherLimitMb { get; set; }
+    public required int AdminLimitMb { get; set; }
 }

@@ -56,7 +56,8 @@ public class AdministrationController(
         return new LimitsResponse
         {
             StudentLimitMb = int.Parse(config["StudentDataLimitMb"] ?? "30"),
-            TeacherLimitMb = int.Parse(config["TeacherDataLimitMb"] ?? "30")
+            TeacherLimitMb = int.Parse(config["TeacherDataLimitMb"] ?? "30"),
+            AdminLimitMb = int.Parse(config["AdminDataLimitMb"] ?? "30")
         };
     }
 

@@ -23,9 +23,12 @@ public static class ServiceRegistrationExtension
     {
         services.AddCors(options =>
         {
+            var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
             options.AddDefaultPolicy(b =>
-                b.WithOrigins(configuration.GetValue<string>("AllowedOrigins") ?? string.Empty)
-                    .AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+                b.WithOrigins(allowedOrigins ?? [])
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials());
         });
         services.AddEndpointsApiExplorer();
         services.AddControllers().AddJsonOptions(options =>

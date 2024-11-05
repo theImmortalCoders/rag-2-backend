@@ -22,6 +22,13 @@ public class UserController(UserService userService, IConfiguration config) : Co
     {
         userService.RegisterUser(userRequest);
     }
+    
+    /// <summary>Verify JWT token</summary>
+    /// <response code="401">Token invalid</response>
+    [HttpGet("verify")]
+    [Authorize]
+    public void VerifyToken()
+    { }
 
     /// <summary>Authenticate</summary>
     /// <response code="401">Invalid password or mail not confirmed or user banned</response>

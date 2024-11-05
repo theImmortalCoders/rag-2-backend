@@ -74,8 +74,9 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+var allowedOrigins = app.Configuration.GetSection("AllowedOrigins").Get<string[]>();
 app.UseCors(b =>
-    b.WithOrigins(app.Configuration.GetValue<string>("AllowedOrigins") ?? string.Empty)
+    b.WithOrigins(allowedOrigins ?? [])
         .AllowAnyMethod()
         .AllowAnyHeader()
         .WithExposedHeaders("Content-Disposition"));

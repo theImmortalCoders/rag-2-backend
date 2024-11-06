@@ -23,13 +23,18 @@ public static class ServiceRegistrationExtension
     {
         services.AddCors(options =>
         {
-            var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
-            options.AddDefaultPolicy(b =>
-                b.WithOrigins(allowedOrigins ?? [])
+            var allowedOrigins = configuration.GetValue<string>("AllowedOrigins")?.Split(',');
+        
+            options.AddPolicy("AllowSpecificOrigins", builder =>
+            {
+                builder.WithOrigins(allowedOrigins ?? [])
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .AllowCredentials());
+                    .AllowCredentials()
+                    .SetIsOriginAllowedToAllowWildcardSubdomains();
+            });
         });
+
         services.AddEndpointsApiExplorer();
         services.AddControllers().AddJsonOptions(options =>
         {
@@ -39,6 +44,7 @@ public static class ServiceRegistrationExtension
         ConfigServices(services);
         ConfigSwagger(services);
     }
+
 
     //
 

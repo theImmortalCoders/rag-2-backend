@@ -42,6 +42,7 @@
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Infrastructure\Common\"/>
+        <Folder Include="Infrastructure\Module\Auth\Dto\"/>
         <Folder Include="Migrations\"/>
     </ItemGroup>
 

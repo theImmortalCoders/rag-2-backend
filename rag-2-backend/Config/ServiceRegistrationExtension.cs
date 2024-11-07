@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Module.Administration;
+using rag_2_backend.Infrastructure.Module.Auth;
 using rag_2_backend.Infrastructure.Module.Background;
 using rag_2_backend.Infrastructure.Module.Email;
 using rag_2_backend.Infrastructure.Module.Game;
@@ -24,7 +25,7 @@ public static class ServiceRegistrationExtension
         services.AddCors(options =>
         {
             var allowedOrigins = configuration.GetValue<string>("AllowedOrigins")?.Split(',');
-        
+
             options.AddPolicy("AllowSpecificOrigins", builder =>
             {
                 builder.WithOrigins(allowedOrigins ?? [])
@@ -61,6 +62,7 @@ public static class ServiceRegistrationExtension
         services.AddScoped<AdministrationService>();
         services.AddScoped<UserDao>();
         services.AddScoped<RefreshTokenDao>();
+        services.AddScoped<AuthService>();
 
         services.AddSingleton<StatsService>();
     }

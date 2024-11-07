@@ -44,7 +44,7 @@ public class AdministrationController(
     [Authorize]
     public UserResponse GetUserDetails([Required] int userId)
     {
-        return administrationService.GetUserDetails(UserDao.GetPrincipalEmail(User), userId);
+        return administrationService.GetUserDetails(AuthDao.GetPrincipalEmail(User), userId);
     }
 
     /// <summary>Get current limits for roles (Auth)</summary>

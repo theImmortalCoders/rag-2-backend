@@ -1,6 +1,5 @@
 #region
 
-using System.Security.Claims;
 using HttpExceptions.Exceptions;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
@@ -21,10 +20,5 @@ public class UserDao(DatabaseContext context)
     {
         return context.Users.SingleOrDefault(u => u.Email == email) ??
                throw new NotFoundException("User not found");
-    }
-
-    public static string GetPrincipalEmail(ClaimsPrincipal user)
-    {
-        return user.FindFirst(ClaimTypes.Email)?.Value ?? throw new UnauthorizedException("Unauthorized");
     }
 }

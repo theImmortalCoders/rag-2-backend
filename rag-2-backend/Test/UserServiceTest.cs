@@ -5,8 +5,6 @@ using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
-using Newtonsoft.Json;
-using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
@@ -31,7 +29,7 @@ public class UserServiceTest
     private readonly Mock<EmailService> _emailService = new(null!, null!);
     private readonly Mock<JwtSecurityTokenHandler> _jwtSecurityTokenHandlerMock = new();
 
-    private readonly Mock<JwtUtil> _jwtUtilMock = new(null!, null!);
+    private readonly Mock<JwtUtil> _jwtUtilMock = new(null!);
     private readonly PasswordResetToken _passwordToken;
 
     private readonly User _user = new("email@prz.edu.pl")
@@ -78,7 +76,7 @@ public class UserServiceTest
             .Returns(() => new List<GameRecord>().AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.PasswordResetTokens)
             .Returns(() => new List<PasswordResetToken> { _passwordToken }.AsQueryable().BuildMockDbSet().Object);
-        _jwtUtilMock.Setup(j => j.GenerateToken(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
+        _jwtUtilMock.Setup(j => j.GenerateJwt(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         _emailService.Setup(e => e.SendConfirmationEmail(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         _emailService.Setup(e => e.SendPasswordResetMail(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         _jwtSecurityTokenHandlerMock.Setup(e => e.ReadToken(It.IsAny<string>())).Returns(() => new JwtSecurityToken());
@@ -129,45 +127,6 @@ public class UserServiceTest
         Assert.Throws<BadRequestException>(() => _userService.ConfirmAccount("token")); //wrong token
         _accountToken.Expiration = DateTime.Now.AddDays(-7);
         Assert.Throws<BadRequestException>(() => _userService.ConfirmAccount(_accountToken.Token)); //invalid date
-    }
-
-    [Fact]
-    public void ShouldLoginUser()
-    {
-        Assert.Throws<UnauthorizedException>(
-            () => _userService.LoginUser("email@prz.edu.pl", "pass", 30)
-        ); //wrong password
-
-        Assert.Throws<UnauthorizedException>(
-            () => _userService.LoginUser("email@prz.edu.pl", "password", 30)
-        ); //not confirmed
-
-        _user.Confirmed = true;
-        _userService.LoginUser("email@prz.edu.pl", "password", 30);
-        _jwtUtilMock.Verify(j => j.GenerateToken(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-    }
-
-    [Fact]
-    public void ShouldLogoutUser()
-    {
-        _userService.LogoutUser("Bearer header");
-    }
-
-    [Fact]
-    public void ShouldGetMe()
-    {
-        var userResponse = new UserResponse
-        {
-            Id = 1,
-            Name = "John",
-            Email = "email@prz.edu.pl",
-            Role = Role.Teacher,
-            StudyCycleYearA = 2022,
-            StudyCycleYearB = 2023
-        };
-
-        Assert.Equal(JsonConvert.SerializeObject(userResponse),
-            JsonConvert.SerializeObject(_userService.GetMe("email@prz.edu.pl")));
     }
 
     [Fact]

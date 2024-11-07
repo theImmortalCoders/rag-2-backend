@@ -1,5 +1,6 @@
 #region
 
+using HttpExceptions.Exceptions;
 using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Database.Entity;
 using Xunit;
@@ -23,7 +24,7 @@ public class UserTest
             new User("index@prz.edu.pl")
                 { Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023, Name = "John" }.Role
         );
-        Assert.Throws<BadHttpRequestException>(
+        Assert.Throws<BadRequestException>(
             () => new User("index@gmail.com")
                 { Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023, Name = "John" }
         );

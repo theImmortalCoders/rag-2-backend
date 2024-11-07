@@ -2,7 +2,6 @@
 
 using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using rag_2_backend.Infrastructure.Common.Mapper;
 using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Database;
@@ -70,56 +69,6 @@ public class UserService(
         context.SaveChanges();
     }
 
-    public UserLoginResponse LoginUser(string email, string password, double refreshTokenExpirationTimeDays)
-    {
-        var user = userDao.GetUserByEmailOrThrow(email);
-
-        if (!HashUtil.VerifyPassword(password, user.Password))
-            throw new UnauthorizedException("Invalid password");
-        if (!user.Confirmed)
-            throw new UnauthorizedException("Mail not confirmed");
-        if (user.Banned)
-            throw new UnauthorizedException("User banned");
-
-        var refreshToken = new RefreshToken
-        {
-            User = user,
-            Expiration = DateTime.Now.AddDays(refreshTokenExpirationTimeDays),
-            Token = Guid.NewGuid().ToString()
-        };
-        refreshTokenDao.RemoveTokensForUser(user);
-        context.RefreshTokens.Add(refreshToken);
-        context.SaveChanges();
-
-        return new UserLoginResponse
-        {
-            JwtToken = jwtUtil.GenerateToken(user.Email, user.Role.ToString()),
-            RefreshToken = refreshToken.Token
-        };
-    }
-
-    public string RefreshToken(string refreshToken)
-    {
-        var token = context.RefreshTokens
-                        .Include(t => t.User)
-                        .SingleOrDefault(t => t.Token == refreshToken && t.Expiration > DateTime.Now)
-                    ?? throw new UnauthorizedException("Invalid refresh token");
-        var user = token.User;
-
-        return jwtUtil.GenerateToken(user.Email, user.Role.ToString());
-    }
-
-    public UserResponse GetMe(string email)
-    {
-        return UserMapper.Map(userDao.GetUserByEmailOrThrow(email));
-    }
-
-    public void LogoutUser(string email)
-    {
-        var user = userDao.GetUserByEmailOrThrow(email);
-        refreshTokenDao.RemoveTokensForUser(user);
-    }
-
     public void RequestPasswordReset(string email)
     {
         var user = userDao.GetUserByEmailOrThrow(email);
@@ -179,7 +128,7 @@ public class UserService(
         context.Users.Remove(user);
         context.SaveChanges();
 
-        LogoutUser(header);
+        refreshTokenDao.RemoveTokensForUser(user);
     }
 
     //
@@ -194,7 +143,7 @@ public class UserService(
     {
         var token = new AccountConfirmationToken
         {
-            Token = TokenGenerationUtil.GenerateToken(15),
+            Token = Guid.NewGuid().ToString(),
             User = user,
             Expiration = DateTime.Now.AddDays(7)
         };
@@ -206,7 +155,7 @@ public class UserService(
     {
         var token = new PasswordResetToken
         {
-            Token = TokenGenerationUtil.GenerateToken(15),
+            Token = Guid.NewGuid().ToString(),
             User = user,
             Expiration = DateTime.Now.AddDays(2)
         };

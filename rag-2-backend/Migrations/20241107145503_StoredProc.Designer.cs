@@ -12,8 +12,8 @@ using rag_2_backend.Infrastructure.Database;
 namespace rag_2_backend.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20241103201358_RefreshToken")]
-    partial class RefreshToken
+    [Migration("20241107145503_StoredProc")]
+    partial class StoredProc
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

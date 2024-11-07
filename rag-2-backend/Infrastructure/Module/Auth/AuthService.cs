@@ -6,6 +6,7 @@ using rag_2_backend.Infrastructure.Common.Mapper;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
+using rag_2_backend.Infrastructure.Module.Auth.Dto;
 using rag_2_backend.Infrastructure.Module.User.Dto;
 using rag_2_backend.Infrastructure.Util;
 

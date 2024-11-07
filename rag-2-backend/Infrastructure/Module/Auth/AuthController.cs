@@ -5,6 +5,7 @@ using HttpExceptions.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rag_2_backend.Infrastructure.Dao;
+using rag_2_backend.Infrastructure.Module.Auth.Dto;
 using rag_2_backend.Infrastructure.Module.User.Dto;
 
 #endregion

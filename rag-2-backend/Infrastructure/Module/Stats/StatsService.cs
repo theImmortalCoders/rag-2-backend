@@ -38,7 +38,10 @@ public class StatsService(
             LastPlayed = records.Count > 0 ? records.Last().Ended : null,
             Games = records.Select(r => r.Game.Id).Distinct().ToList().Count,
             Plays = records.Count,
-            TotalStorageMb = gameRecordDao.CountGameRecordsSizeByUser(userId) / 1024.0
+            TotalStorageMb = gameRecordDao.GetGameRecordsByUserWithGame(userId)
+                .Select(r => r.SizeMb)
+                .ToList()
+                .Sum()
         };
     }
 
@@ -70,7 +73,10 @@ public class StatsService(
             FirstPlayed = records.Count > 0 ? records[0].Started : null,
             LastPlayed = records.Count > 0 ? records.Last().Ended : null,
             Plays = records.Count,
-            TotalStorageMb = gameRecordDao.CountGameRecordsSizeByGame(gameId) / 1024.0,
+            TotalStorageMb = gameRecordDao.GetGameRecordsByGameWithUser(gameId)
+                .Select(r => r.SizeMb)
+                .ToList()
+                .Sum(),
             TotalPlayers = records.Select(r => r.User.Id).Distinct().Count(),
             StatsUpdatedDate = DateTime.Now
         };

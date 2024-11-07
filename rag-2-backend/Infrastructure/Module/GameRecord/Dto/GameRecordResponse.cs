@@ -15,4 +15,5 @@ public class GameRecordResponse
     public DateTime Ended { get; set; }
     public string? OutputSpec { get; set; }
     public object? EndState { get; set; }
+    public double SizeMb { get; init; }
 }

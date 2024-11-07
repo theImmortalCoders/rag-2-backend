@@ -119,7 +119,7 @@ public class UserService(
             .Include(p => p.User)
             .Where(a => a.User.Email == email)
         );
-        context.RecordedGames.RemoveRange(context.RecordedGames
+        context.GameRecords.RemoveRange(context.GameRecords
             .Include(p => p.User)
             .Where(a => a.User.Email == email)
         );

@@ -12,8 +12,8 @@ using rag_2_backend.Infrastructure.Database;
 namespace rag_2_backend.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20241107145503_StoredProc")]
-    partial class StoredProc
+    [Migration("20241107192532_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -89,6 +89,9 @@ namespace rag_2_backend.Migrations
 
                     b.Property<string>("Players")
                         .HasColumnType("text");
+
+                    b.Property<double>("SizeMb")
+                        .HasColumnType("double precision");
 
                     b.Property<DateTime>("Started")
                         .HasColumnType("timestamp without time zone");

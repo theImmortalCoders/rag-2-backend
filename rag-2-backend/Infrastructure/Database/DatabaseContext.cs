@@ -13,7 +13,7 @@ namespace rag_2_backend.Infrastructure.Database;
 public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbContext(options)
 {
     public virtual required DbSet<Game> Games { get; init; }
-    public virtual required DbSet<GameRecord> RecordedGames { get; init; }
+    public virtual required DbSet<GameRecord> GameRecords { get; init; }
     public virtual required DbSet<User> Users { get; init; }
     public virtual required DbSet<AccountConfirmationToken> AccountConfirmationTokens { get; init; }
     public virtual required DbSet<RefreshToken> RefreshTokens { get; init; }
@@ -21,7 +21,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var recordedGameValueComparer = new ValueComparer<List<GameRecordValue>>(
+        var gameRecordValueComparer = new ValueComparer<List<GameRecordValue>>(
             (c1, c2) => c1!.SequenceEqual(c2!),
             c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
             c => c.ToList());
@@ -36,7 +36,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
                 v => JsonSerializer.Deserialize<List<GameRecordValue>>(v, (JsonSerializerOptions)null!)!)
-            .Metadata.SetValueComparer(recordedGameValueComparer);
+            .Metadata.SetValueComparer(gameRecordValueComparer);
 
         modelBuilder.Entity<GameRecord>()
             .Property(e => e.Players)

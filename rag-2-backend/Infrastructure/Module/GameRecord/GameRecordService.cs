@@ -38,27 +38,28 @@ public class GameRecordService(
         return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(recordedGame));
     }
 
-    public void AddGameRecord(RecordedGameRequest request, string email)
+    public void AddGameRecord(GameRecordRequest recordRequest, string email)
     {
-        if (request.Values.Count == 0 || request.Values[^1].State == null)
+        if (recordRequest.Values.Count == 0 || recordRequest.Values[^1].State == null)
             throw new BadRequestException("Value state cannot be empty");
 
         var user = userDao.GetUserByEmailOrThrow(email);
-        CheckUserDataLimit(request, user);
+        CheckUserDataLimit(recordRequest, user);
 
-        var game = gameDao.GetGameByNameOrThrow(request);
+        var game = gameDao.GetGameByNameOrThrow(recordRequest);
 
         var recordedGame = new Database.Entity.GameRecord
         {
             Game = game,
-            Values = request.Values,
+            Values = recordRequest.Values,
             User = user,
-            Players = request.Values[0].Players,
-            OutputSpec = request.Values[0].OutputSpec ?? "",
-            EndState = request.Values[^1].State?.ToString()
+            Players = recordRequest.Values[0].Players,
+            OutputSpec = recordRequest.Values[0].OutputSpec ?? "",
+            EndState = recordRequest.Values[^1].State?.ToString(),
+            SizeMb = JsonSerializer.Serialize(recordRequest.Values).Length / (1024.0 * 1024.0)
         };
 
-        UpdateTimestamps(request, recordedGame);
+        UpdateTimestamps(recordRequest, recordedGame);
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
         executionStrategy.Execute(() => gameRecordDao.PerformGameRecordTransaction(game, recordedGame, user));
@@ -72,23 +73,23 @@ public class GameRecordService(
         if (user.Id != recordedGame.User.Id)
             throw new BadRequestException("Permission denied");
 
-        context.RecordedGames.Remove(recordedGame);
+        context.GameRecords.Remove(recordedGame);
         context.SaveChanges();
     }
 
     //
 
-    private void CheckUserDataLimit(RecordedGameRequest request, Database.Entity.User user)
+    private void CheckUserDataLimit(GameRecordRequest recordRequest, Database.Entity.User user)
     {
         switch (user.Role)
         {
-            case Role.Student when GetSizeByUser(user.Id, request.Values.Count) >
+            case Role.Student when GetSizeByUser(user.Id, recordRequest.Values.Count) >
                                    configuration.GetValue<int>("StudentDataLimitMb"):
                 throw new BadRequestException("Space limit exceeded");
-            case Role.Teacher when GetSizeByUser(user.Id, request.Values.Count) >
+            case Role.Teacher when GetSizeByUser(user.Id, recordRequest.Values.Count) >
                                    configuration.GetValue<int>("TeacherDataLimitMb"):
                 throw new BadRequestException("Space limit exceeded");
-            case Role.Admin when GetSizeByUser(user.Id, request.Values.Count) >
+            case Role.Admin when GetSizeByUser(user.Id, recordRequest.Values.Count) >
                                  configuration.GetValue<int>("AdminDataLimitMb"):
                 throw new BadRequestException("Space limit exceeded");
             default:
@@ -98,17 +99,20 @@ public class GameRecordService(
 
     private double GetSizeByUser(int userId, double initialSizeBytes)
     {
-        var results = gameRecordDao.CountGameRecordsSizeByUser(userId);
+        var results = gameRecordDao.GetGameRecordsByUserWithGame(userId)
+            .Select(r => r.SizeMb)
+            .ToList()
+            .Sum();
         var totalBytes = results + initialSizeBytes;
-        return totalBytes / 1024.0;
+        return totalBytes;
     }
 
-    private static void UpdateTimestamps(RecordedGameRequest request, Database.Entity.GameRecord gameRecord)
+    private static void UpdateTimestamps(GameRecordRequest recordRequest, Database.Entity.GameRecord gameRecord)
     {
         try
         {
-            var startTimestamp = request.Values[0].Timestamp;
-            var endTimestamp = request.Values[^1].Timestamp;
+            var startTimestamp = recordRequest.Values[0].Timestamp;
+            var endTimestamp = recordRequest.Values[^1].Timestamp;
             if (startTimestamp is not null)
                 gameRecord.Started = DateTime.Parse(startTimestamp, null, DateTimeStyles.RoundtripKind);
             if (endTimestamp is not null)

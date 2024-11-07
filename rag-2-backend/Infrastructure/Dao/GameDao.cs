@@ -16,9 +16,9 @@ public class GameDao(DatabaseContext dbContext)
         return dbContext.Games.SingleOrDefault(g => g.Id == id) ?? throw new NotFoundException("Game not found");
     }
 
-    public Game GetGameByNameOrThrow(RecordedGameRequest request)
+    public Game GetGameByNameOrThrow(GameRecordRequest recordRequest)
     {
-        return dbContext.Games.SingleOrDefault(g => Equals(g.Name.ToLower(), request.GameName.ToLower()))
+        return dbContext.Games.SingleOrDefault(g => Equals(g.Name.ToLower(), recordRequest.GameName.ToLower()))
                ?? throw new NotFoundException("Game not found");
     }
 }

@@ -17,7 +17,7 @@ public class GameRecordDao(DatabaseContext dbContext)
 {
     public List<GameRecordResponse> GetRecordsByGameAndUser(int gameId, string email)
     {
-        return dbContext.RecordedGames
+        return dbContext.GameRecords
             .Include(r => r.Game)
             .Include(r => r.User)
             .Where(r => r.Game.Id == gameId && r.User.Email == email)
@@ -28,7 +28,7 @@ public class GameRecordDao(DatabaseContext dbContext)
 
     public List<GameRecord> GetGameRecordsByUserWithGame(int userId)
     {
-        return dbContext.RecordedGames
+        return dbContext.GameRecords
             .OrderBy(r => r.Started)
             .Where(r => r.User.Id == userId)
             .Include(recordedGame => recordedGame.Game)
@@ -37,34 +37,16 @@ public class GameRecordDao(DatabaseContext dbContext)
 
     public List<GameRecord> GetGameRecordsByGameWithUser(int gameId)
     {
-        return dbContext.RecordedGames
+        return dbContext.GameRecords
             .OrderBy(r => r.Started)
             .Where(r => r.Game.Id == gameId)
             .Include(recordedGame => recordedGame.User)
             .ToList();
     }
 
-    public int CountGameRecordsSizeByUser(int userId)
-    {
-        return dbContext.RecordedGames
-            .Where(e => e.User.Id == userId)
-            .Select(e => e.Values.Count)
-            .ToList()
-            .Sum();
-    }
-
-    public int CountGameRecordsSizeByGame(int gameId)
-    {
-        return dbContext.RecordedGames
-            .Where(e => e.Game.Id == gameId)
-            .Select(e => e.Values.Count)
-            .ToList()
-            .Sum();
-    }
-
     public GameRecord GetRecordedGameById(int recordedGameId)
     {
-        return dbContext.RecordedGames.Include(recordedGame => recordedGame.User)
+        return dbContext.GameRecords.Include(recordedGame => recordedGame.User)
                    .Include(r => r.Game)
                    .SingleOrDefault(g => g.Id == recordedGameId)
                ?? throw new NotFoundException("Game record not found");
@@ -77,7 +59,7 @@ public class GameRecordDao(DatabaseContext dbContext)
         try
         {
             dbContext.Database.ExecuteSqlRaw(
-                "SELECT InsertRecordedGame(@GameId, @Values, @UserId, @Players, @OutputSpec, @EndState, @Started, @Ended)",
+                "SELECT InsertRecordedGame(@GameId, @Values, @UserId, @Players, @OutputSpec, @EndState, @Started, @Ended, @SizeMb)",
                 new NpgsqlParameter("@GameId", game.Id),
                 new NpgsqlParameter("@Values", JsonSerializer.Serialize(gameRecord.Values)),
                 new NpgsqlParameter("@UserId", user.Id),
@@ -85,7 +67,8 @@ public class GameRecordDao(DatabaseContext dbContext)
                 new NpgsqlParameter("@OutputSpec", gameRecord.OutputSpec),
                 new NpgsqlParameter("@EndState", gameRecord.EndState),
                 new NpgsqlParameter("@Started", gameRecord.Started),
-                new NpgsqlParameter("@Ended", gameRecord.Ended)
+                new NpgsqlParameter("@Ended", gameRecord.Ended),
+                new NpgsqlParameter("@SizeMb", gameRecord.SizeMb)
             );
             transaction.Commit();
         }

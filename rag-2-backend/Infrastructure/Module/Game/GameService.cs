@@ -51,8 +51,8 @@ public class GameService(DatabaseContext context, GameDao gameDao)
     {
         var game = gameDao.GetGameByIdOrThrow(id);
 
-        var records = context.RecordedGames.Where(g => g.Game.Id == id).ToList();
-        foreach (var record in records) context.RecordedGames.Remove(record);
+        var records = context.GameRecords.Where(g => g.Game.Id == id).ToList();
+        foreach (var record in records) context.GameRecords.Remove(record);
 
         context.Games.Remove(game);
         context.SaveChanges();

@@ -32,15 +32,7 @@ public class AuthService(
         if (user.Banned)
             throw new UnauthorizedException("User banned");
 
-        var refreshToken = new RefreshToken
-        {
-            User = user,
-            Expiration = DateTime.Now.AddDays(refreshTokenExpirationTimeDays),
-            Token = Guid.NewGuid().ToString()
-        };
-        refreshTokenDao.RemoveTokensForUser(user);
-        databaseContext.RefreshTokens.Add(refreshToken);
-        databaseContext.SaveChanges();
+        var refreshToken = GenerateRefreshToken(refreshTokenExpirationTimeDays, user);
 
         return new UserLoginResponse
         {
@@ -69,5 +61,21 @@ public class AuthService(
     {
         var user = userDao.GetUserByEmailOrThrow(email);
         refreshTokenDao.RemoveTokensForUser(user);
+    }
+
+    //
+
+    private RefreshToken GenerateRefreshToken(double refreshTokenExpirationTimeDays, Database.Entity.User user)
+    {
+        var refreshToken = new RefreshToken
+        {
+            User = user,
+            Expiration = DateTime.Now.AddDays(refreshTokenExpirationTimeDays),
+            Token = Guid.NewGuid().ToString()
+        };
+        refreshTokenDao.RemoveTokensForUser(user);
+        databaseContext.RefreshTokens.Add(refreshToken);
+        databaseContext.SaveChanges();
+        return refreshToken;
     }
 }

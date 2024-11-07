@@ -9,6 +9,7 @@ using rag_2_backend.Config;
 using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Util;
+using StackExchange.Redis;
 
 #endregion
 
@@ -24,6 +25,10 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
         b => { b.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null); });
 });
+
+var redisConnectionString = builder.Configuration.GetSection("Redis:ConnectionString").Value ?? "";
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

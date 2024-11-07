@@ -16,7 +16,6 @@ namespace rag_2_backend.Infrastructure.Module.User;
 
 public class UserService(
     DatabaseContext context,
-    JwtUtil jwtUtil,
     EmailService emailService,
     UserDao userDao,
     RefreshTokenDao refreshTokenDao)

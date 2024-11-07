@@ -60,11 +60,12 @@ public static class ServiceRegistrationExtension
         services.AddScoped<EmailService>();
         services.AddScoped<JwtSecurityTokenHandler>();
         services.AddScoped<AdministrationService>();
+        services.AddScoped<AuthService>();
+        services.AddScoped<StatsService>();
         services.AddScoped<UserDao>();
         services.AddScoped<RefreshTokenDao>();
-        services.AddScoped<AuthService>();
-
-        services.AddSingleton<StatsService>();
+        services.AddScoped<GameDao>();
+        services.AddScoped<GameRecordDao>();
     }
 
     private static void ConfigSwagger(IServiceCollection services)

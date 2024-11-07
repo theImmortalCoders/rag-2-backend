@@ -87,6 +87,9 @@ namespace rag_2_backend.Migrations
                     b.Property<string>("Players")
                         .HasColumnType("text");
 
+                    b.Property<double>("SizeMb")
+                        .HasColumnType("double precision");
+
                     b.Property<DateTime>("Started")
                         .HasColumnType("timestamp without time zone");
 

@@ -19,7 +19,8 @@ public abstract class GameRecordMapper
             Ended = gameRecord.Ended,
             Started = gameRecord.Started,
             EndState = gameRecord.EndState,
-            OutputSpec = gameRecord.OutputSpec
+            OutputSpec = gameRecord.OutputSpec,
+            SizeMb = gameRecord.SizeMb
         };
     }
 }

@@ -78,7 +78,8 @@ namespace rag_2_backend.Migrations
                     Started = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Ended = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     OutputSpec = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    EndState = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
+                    EndState = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    SizeMb = table.Column<double>(type: "double precision", nullable: false)
                 },
                 constraints: table =>
                 {

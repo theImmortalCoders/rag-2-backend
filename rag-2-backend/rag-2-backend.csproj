@@ -22,6 +22,7 @@
         <PackageReference Include="MockQueryable.Moq" Version="7.0.1"/>
         <PackageReference Include="Moq" Version="4.20.70"/>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4"/>
+        <PackageReference Include="StackExchange.Redis" Version="2.8.16"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
         <PackageReference Include="System.Text.Json" Version="8.0.5"/>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6"/>
@@ -42,7 +43,6 @@
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Infrastructure\Common\"/>
-        <Folder Include="Infrastructure\Module\Auth\Dto\"/>
         <Folder Include="Migrations\"/>
     </ItemGroup>
 

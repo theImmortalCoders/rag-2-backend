@@ -26,6 +26,8 @@ public class BackgroundServiceImpl(IServiceProvider serviceProvider) : Backgroun
         }
     }
 
+    //
+
     private void DeleteUnusedAccountTokens()
     {
         var unconfirmedUsers = new List<Database.Entity.User>();
@@ -42,7 +44,7 @@ public class BackgroundServiceImpl(IServiceProvider serviceProvider) : Backgroun
         _dbContext.AccountConfirmationTokens.RemoveRange(unusedTokens);
         _dbContext.SaveChanges();
 
-        Console.WriteLine("Deleted " + unconfirmedUsers.Count + " unconfirmed accounts");
+        Console.WriteLine("Deleted " + unconfirmedUsers.Count + " unconfirmed accounts with tokens");
     }
 
     private void DeleteUnusedRefreshTokens()
@@ -51,7 +53,7 @@ public class BackgroundServiceImpl(IServiceProvider serviceProvider) : Backgroun
         _dbContext.RefreshTokens.RemoveRange(unusedTokens);
         _dbContext.SaveChanges();
 
-        Console.WriteLine("Deleted " + unusedTokens.Count + " blacklisted jwts");
+        Console.WriteLine("Deleted " + unusedTokens.Count + " expired refresh tokens");
     }
 
     private void DeleteUnusedPasswordResetTokens()
@@ -60,6 +62,6 @@ public class BackgroundServiceImpl(IServiceProvider serviceProvider) : Backgroun
         _dbContext.PasswordResetTokens.RemoveRange(unusedTokens);
         _dbContext.SaveChanges();
 
-        Console.WriteLine("Deleted " + unusedTokens.Count + " password reset tokens");
+        Console.WriteLine("Deleted " + unusedTokens.Count + " expired password reset tokens");
     }
 }

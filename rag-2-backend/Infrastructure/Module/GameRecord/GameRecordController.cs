@@ -44,9 +44,9 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     /// <response code="400">Space limit exceeded or values state cannot be empty</response>
     [HttpPost]
     [Authorize]
-    public void AddGameRecord([FromBody] [Required] RecordedGameRequest request)
+    public void AddGameRecord([FromBody] [Required] GameRecordRequest recordRequest)
     {
-        gameRecordService.AddGameRecord(request, AuthDao.GetPrincipalEmail(User));
+        gameRecordService.AddGameRecord(recordRequest, AuthDao.GetPrincipalEmail(User));
     }
 
     /// <summary>Remove game recording (Auth)</summary>

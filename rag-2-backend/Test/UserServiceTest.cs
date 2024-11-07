@@ -29,7 +29,6 @@ public class UserServiceTest
     private readonly Mock<EmailService> _emailService = new(null!, null!);
     private readonly Mock<JwtSecurityTokenHandler> _jwtSecurityTokenHandlerMock = new();
 
-    private readonly Mock<JwtUtil> _jwtUtilMock = new(null!);
     private readonly PasswordResetToken _passwordToken;
 
     private readonly User _user = new("email@prz.edu.pl")
@@ -63,7 +62,7 @@ public class UserServiceTest
         userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
         userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
 
-        _userService = new UserService(_contextMock.Object, _jwtUtilMock.Object, _emailService.Object,
+        _userService = new UserService(_contextMock.Object, _emailService.Object,
             userMock.Object, refreshTokenDaoMock.Object);
 
         _contextMock.Setup(c => c.Users).Returns(() => new List<User> { _user }
@@ -72,11 +71,10 @@ public class UserServiceTest
             .Returns(() => new List<AccountConfirmationToken> { _accountToken }.AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.RefreshTokens)
             .Returns(() => new List<RefreshToken>().AsQueryable().BuildMockDbSet().Object);
-        _contextMock.Setup(c => c.RecordedGames)
+        _contextMock.Setup(c => c.GameRecords)
             .Returns(() => new List<GameRecord>().AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.PasswordResetTokens)
             .Returns(() => new List<PasswordResetToken> { _passwordToken }.AsQueryable().BuildMockDbSet().Object);
-        _jwtUtilMock.Setup(j => j.GenerateJwt(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         _emailService.Setup(e => e.SendConfirmationEmail(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         _emailService.Setup(e => e.SendPasswordResetMail(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         _jwtSecurityTokenHandlerMock.Setup(e => e.ReadToken(It.IsAny<string>())).Returns(() => new JwtSecurityToken());

@@ -5,8 +5,6 @@ using System.Text;
 using System.Text.Json;
 using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using rag_2_backend.Infrastructure.Common.Mapper;
 using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Database;
@@ -16,109 +14,105 @@ using rag_2_backend.Infrastructure.Module.GameRecord.Dto;
 
 namespace rag_2_backend.Infrastructure.Module.GameRecord;
 
-public class GameRecordService(DatabaseContext context, IConfiguration configuration, UserDao userDao)
+public class GameRecordService(
+    DatabaseContext context,
+    IConfiguration configuration,
+    UserDao userDao,
+    GameRecordDao gameRecordDao,
+    GameDao gameDao
+)
 {
     public List<GameRecordResponse> GetRecordsByGameAndUser(int gameId, string email)
     {
-        return context.RecordedGames
-            .Include(r => r.Game)
-            .Include(r => r.User)
-            .Where(r => r.Game.Id == gameId && r.User.Email == email)
-            .ToList()
-            .Select(GameRecordMapper.Map)
-            .ToList();
+        return gameRecordDao.GetRecordsByGameAndUser(gameId, email);
     }
 
     public byte[] DownloadRecordData(int recordedGameId, string email)
     {
         var user = userDao.GetUserByEmailOrThrow(email);
-        var recordedGame = GetRecordedGameById(recordedGameId);
+        var recordedGame = gameRecordDao.GetRecordedGameById(recordedGameId);
 
-        if (user.Id != recordedGame.User.Id && user.Role != Role.Admin && user.Role != Role.Teacher)
+        if (user.Id != recordedGame.User.Id && user.Role.Equals(Role.Student))
             throw new BadRequestException("Permission denied");
 
         return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(recordedGame));
     }
 
-    public void AddGameRecord(RecordedGameRequest request, string email)
+    public void AddGameRecord(GameRecordRequest recordRequest, string email)
     {
-        if (request.Values.Count == 0 || request.Values[^1].State == null)
+        if (recordRequest.Values.Count == 0 || recordRequest.Values[^1].State == null)
             throw new BadRequestException("Value state cannot be empty");
 
         var user = userDao.GetUserByEmailOrThrow(email);
+        CheckUserDataLimit(recordRequest, user);
 
-        switch (user.Role)
-        {
-            case Role.Student when GetSizeByUser(user.Id, request.Values.Count) >
-                                   configuration.GetValue<int>("StudentDataLimitMb"):
-                throw new BadRequestException("Space limit exceeded");
-            case Role.Teacher when GetSizeByUser(user.Id, request.Values.Count) >
-                                   configuration.GetValue<int>("TeacherDataLimitMb"):
-                throw new BadRequestException("Space limit exceeded");
-        }
-
-        var game = context.Games.SingleOrDefault(g => Equals(g.Name.ToLower(), request.GameName.ToLower()))
-                   ?? throw new NotFoundException("Game not found");
+        var game = gameDao.GetGameByNameOrThrow(recordRequest);
 
         var recordedGame = new Database.Entity.GameRecord
         {
             Game = game,
-            Values = request.Values,
+            Values = recordRequest.Values,
             User = user,
-            Players = request.Values[0].Players,
-            OutputSpec = request.Values[0].OutputSpec ?? "",
-            EndState = request.Values[^1].State?.ToString()
+            Players = recordRequest.Values[0].Players,
+            OutputSpec = recordRequest.Values[0].OutputSpec ?? "",
+            EndState = recordRequest.Values[^1].State?.ToString(),
+            SizeMb = JsonSerializer.Serialize(recordRequest.Values).Length / (1024.0 * 1024.0)
         };
 
-        UpdateTimestamps(request, recordedGame);
+        UpdateTimestamps(recordRequest, recordedGame);
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
-
-        executionStrategy.Execute(() => { PerformGameRecordTransaction(game, recordedGame, user); });
+        executionStrategy.Execute(() => gameRecordDao.PerformGameRecordTransaction(game, recordedGame, user));
     }
 
     public void RemoveGameRecord(int gameRecordId, string email)
     {
         var user = userDao.GetUserByEmailOrThrow(email);
-        var recordedGame = GetRecordedGameById(gameRecordId);
+        var recordedGame = gameRecordDao.GetRecordedGameById(gameRecordId);
 
         if (user.Id != recordedGame.User.Id)
             throw new BadRequestException("Permission denied");
 
-        context.RecordedGames.Remove(recordedGame);
+        context.GameRecords.Remove(recordedGame);
         context.SaveChanges();
     }
 
     //
 
-    private Database.Entity.GameRecord GetRecordedGameById(int recordedGameId)
+    private void CheckUserDataLimit(GameRecordRequest recordRequest, Database.Entity.User user)
     {
-        return context.RecordedGames.Include(recordedGame => recordedGame.User)
-                   .Include(r => r.Game)
-                   .SingleOrDefault(g => g.Id == recordedGameId)
-               ?? throw new NotFoundException("Game record not found");
+        switch (user.Role)
+        {
+            case Role.Student when GetSizeByUser(user.Id, recordRequest.Values.Count) >
+                                   configuration.GetValue<int>("StudentDataLimitMb"):
+                throw new BadRequestException("Space limit exceeded");
+            case Role.Teacher when GetSizeByUser(user.Id, recordRequest.Values.Count) >
+                                   configuration.GetValue<int>("TeacherDataLimitMb"):
+                throw new BadRequestException("Space limit exceeded");
+            case Role.Admin when GetSizeByUser(user.Id, recordRequest.Values.Count) >
+                                 configuration.GetValue<int>("AdminDataLimitMb"):
+                throw new BadRequestException("Space limit exceeded");
+            default:
+                return;
+        }
     }
 
     private double GetSizeByUser(int userId, double initialSizeBytes)
     {
-        var results = context.RecordedGames
-            .Where(e => e.User.Id == userId)
-            .Select(e => new
-            {
-                StringFieldLength = e.Values.Count
-            })
-            .ToList();
-
-        var totalBytes = results.Sum(r => r.StringFieldLength) + initialSizeBytes;
-        return totalBytes / 1024.0;
+        var results = gameRecordDao.GetGameRecordsByUserWithGame(userId)
+            .Select(r => r.SizeMb)
+            .ToList()
+            .Sum();
+        var totalBytes = results + initialSizeBytes;
+        return totalBytes;
     }
 
-    private static void UpdateTimestamps(RecordedGameRequest request, Database.Entity.GameRecord gameRecord)
+    private static void UpdateTimestamps(GameRecordRequest recordRequest, Database.Entity.GameRecord gameRecord)
     {
         try
         {
-            var startTimestamp = request.Values[0].Timestamp;
-            var endTimestamp = request.Values[^1].Timestamp;
+            var startTimestamp = recordRequest.Values[0].Timestamp;
+            var endTimestamp = recordRequest.Values[^1].Timestamp;
             if (startTimestamp is not null)
                 gameRecord.Started = DateTime.Parse(startTimestamp, null, DateTimeStyles.RoundtripKind);
             if (endTimestamp is not null)
@@ -127,32 +121,6 @@ public class GameRecordService(DatabaseContext context, IConfiguration configura
         catch (Exception e)
         {
             throw new BadRequestException("Failed to update timestamps", e);
-        }
-    }
-
-    private void PerformGameRecordTransaction(Database.Entity.Game game, Database.Entity.GameRecord gameRecord,
-        Database.Entity.User user)
-    {
-        using var transaction = context.Database.BeginTransaction();
-        try
-        {
-            context.Database.ExecuteSqlRaw(
-                "SELECT InsertRecordedGame(@GameId, @Values, @UserId, @Players, @OutputSpec, @EndState, @Started, @Ended)",
-                new NpgsqlParameter("@GameId", game.Id),
-                new NpgsqlParameter("@Values", JsonSerializer.Serialize(gameRecord.Values)),
-                new NpgsqlParameter("@UserId", user.Id),
-                new NpgsqlParameter("@Players", JsonSerializer.Serialize(gameRecord.Players)),
-                new NpgsqlParameter("@OutputSpec", gameRecord.OutputSpec),
-                new NpgsqlParameter("@EndState", gameRecord.EndState),
-                new NpgsqlParameter("@Started", gameRecord.Started),
-                new NpgsqlParameter("@Ended", gameRecord.Ended)
-            );
-            transaction.Commit();
-        }
-        catch
-        {
-            transaction.Rollback();
-            throw;
         }
     }
 }

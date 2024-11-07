@@ -71,7 +71,7 @@ public class AuthServiceTest
             .Returns(() => new List<AccountConfirmationToken> { accountToken }.AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.RefreshTokens)
             .Returns(() => new List<RefreshToken>().AsQueryable().BuildMockDbSet().Object);
-        _contextMock.Setup(c => c.RecordedGames)
+        _contextMock.Setup(c => c.GameRecords)
             .Returns(() => new List<GameRecord>().AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.PasswordResetTokens)
             .Returns(() => new List<PasswordResetToken> { passwordToken }.AsQueryable().BuildMockDbSet().Object);

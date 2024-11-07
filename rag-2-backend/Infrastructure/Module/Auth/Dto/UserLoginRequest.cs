@@ -1,4 +1,4 @@
-namespace rag_2_backend.Infrastructure.Module.User.Dto;
+namespace rag_2_backend.Infrastructure.Module.Auth.Dto;
 
 public class UserLoginRequest
 {

@@ -16,7 +16,6 @@ namespace rag_2_backend.Infrastructure.Module.User;
 
 public class UserService(
     DatabaseContext context,
-    JwtUtil jwtUtil,
     EmailService emailService,
     UserDao userDao,
     RefreshTokenDao refreshTokenDao)
@@ -120,7 +119,7 @@ public class UserService(
             .Include(p => p.User)
             .Where(a => a.User.Email == email)
         );
-        context.RecordedGames.RemoveRange(context.RecordedGames
+        context.GameRecords.RemoveRange(context.GameRecords
             .Include(p => p.User)
             .Where(a => a.User.Email == email)
         );

@@ -19,14 +19,15 @@ namespace rag_2_backend.Migrations
                     p_output_spec TEXT,
                     p_end_state TEXT,
                     p_started TIMESTAMP,
-                    p_ended TIMESTAMP
+                    p_ended TIMESTAMP,
+                    p_sizeMb DOUBLE PRECISION
                 )
                 RETURNS VOID AS
                 $$
                 BEGIN
                     --'Procedura składowana'
-                    INSERT INTO ""game_record_table"" (""GameId"", ""Values"", ""UserId"", ""Players"", ""OutputSpec"", ""EndState"", ""Started"", ""Ended"")
-                    VALUES (p_game_id, p_values, p_user_id, p_players, p_output_spec, p_end_state, p_started, p_ended);
+                    INSERT INTO ""game_record_table"" (""GameId"", ""Values"", ""UserId"", ""Players"", ""OutputSpec"", ""EndState"", ""Started"", ""Ended"", ""SizeMb"")
+                    VALUES (p_game_id, p_values, p_user_id, p_players, p_output_spec, p_end_state, p_started, p_ended, p_sizeMb);
 
                     UPDATE ""user_table""
                     SET ""LastPlayed"" = p_ended

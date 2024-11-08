@@ -21,7 +21,7 @@ public class StatsController(StatsService statsService) : ControllerBase
     [Authorize]
     public UserStatsResponse GetStatsForUser([Required] [FromQuery] int userId)
     {
-        return statsService.GetStatsForUser(UserDao.GetPrincipalEmail(User), userId);
+        return statsService.GetStatsForUser(AuthDao.GetPrincipalEmail(User), userId);
     }
 
     /// <summary>Get stats for game</summary>

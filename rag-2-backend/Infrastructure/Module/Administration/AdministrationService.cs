@@ -39,7 +39,7 @@ public class AdministrationService(DatabaseContext context, UserDao userDao)
     {
         var principal = userDao.GetUserByEmailOrThrow(principalEmail);
 
-        if (principal.Role is Role.Student or Role.Special && userId != principal.Id)
+        if (principal.Role is Role.Student && userId != principal.Id)
             throw new ForbiddenException("Cannot view details");
 
         return UserMapper.Map(userDao.GetUserByIdOrThrow(userId));

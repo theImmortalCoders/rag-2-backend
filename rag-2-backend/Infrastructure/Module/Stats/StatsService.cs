@@ -1,38 +1,36 @@
 #region
 
 using HttpExceptions.Exceptions;
-using Microsoft.EntityFrameworkCore;
-using rag_2_backend.Infrastructure.Common.Model;
-using rag_2_backend.Infrastructure.Database;
+using Newtonsoft.Json;
+using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Module.Stats.Dto;
+using StackExchange.Redis;
+using IDatabase = StackExchange.Redis.IDatabase;
+using Role = rag_2_backend.Infrastructure.Common.Model.Role;
 
 #endregion
 
 namespace rag_2_backend.Infrastructure.Module.Stats;
 
-public class StatsService(IServiceProvider serviceProvider)
+public class StatsService(
+    IConnectionMultiplexer redisConnection,
+    UserDao userDao,
+    GameDao gameDao,
+    GameRecordDao gameRecordDao
+)
 {
-    private readonly DatabaseContext _context =
-        serviceProvider.CreateScope().ServiceProvider.GetRequiredService<DatabaseContext>();
-
-    private Dictionary<int, GameStatsResponse> CachedGameStats { get; } = new();
+    private const string RedisCacheKeyPrefix = "GameStats:";
+    private readonly IDatabase _redisDatabase = redisConnection.GetDatabase();
 
     public UserStatsResponse GetStatsForUser(string email, int userId)
     {
-        var principal = _context.Users.FirstOrDefault(u => u.Email == email)
-                        ?? throw new NotFoundException("User not found");
-
-        var user = _context.Users.FirstOrDefault(u => u.Id == userId)
-                   ?? throw new NotFoundException("User not found");
+        var principal = userDao.GetUserByEmailOrThrow(email);
+        var user = userDao.GetUserByIdOrThrow(userId);
 
         if (user.Email != email && principal.Role == Role.Student)
             throw new ForbiddenException("Permission denied");
 
-        var records = _context.RecordedGames
-            .OrderBy(r => r.Started)
-            .Where(r => r.User.Id == userId)
-            .Include(recordedGame => recordedGame.Game)
-            .ToList();
+        var records = gameRecordDao.GetGameRecordsByUserWithGame(userId);
 
         return new UserStatsResponse
         {
@@ -40,18 +38,26 @@ public class StatsService(IServiceProvider serviceProvider)
             LastPlayed = records.Count > 0 ? records.Last().Ended : null,
             Games = records.Select(r => r.Game.Id).Distinct().ToList().Count,
             Plays = records.Count,
-            TotalStorageMb = GetSizeByUser(userId, 0)
+            TotalStorageMb = gameRecordDao.GetGameRecordsByUserWithGame(userId)
+                .Select(r => r.SizeMb)
+                .ToList()
+                .Sum()
         };
     }
 
     public GameStatsResponse GetStatsForGame(int gameId)
     {
-        var game = _context.Games.FirstOrDefault(g => g.Id == gameId)
-                   ?? throw new NotFoundException("Game not found");
+        var game = gameDao.GetGameByIdOrThrow(gameId);
 
-        if (CachedGameStats.TryGetValue(game.Id, out var value)
-            && value.StatsUpdatedDate.AddDays(1) >= DateTime.Now)
-            return CachedGameStats[game.Id];
+        var cacheKey = $"{RedisCacheKeyPrefix}{game.Id}";
+        var cachedStatsJson = _redisDatabase.StringGet(cacheKey);
+
+        if (!string.IsNullOrEmpty(cachedStatsJson))
+        {
+            var cachedStats = JsonConvert.DeserializeObject<GameStatsResponse>(cachedStatsJson!);
+            if (cachedStats.StatsUpdatedDate.AddDays(1) >= DateTime.Now)
+                return cachedStats;
+        }
 
         return UpdateCachedStats(gameId, game);
     }
@@ -60,50 +66,26 @@ public class StatsService(IServiceProvider serviceProvider)
 
     private GameStatsResponse UpdateCachedStats(int gameId, Database.Entity.Game game)
     {
-        var records = _context.RecordedGames
-            .OrderBy(r => r.Started)
-            .Where(r => r.Game.Id == gameId)
-            .Include(recordedGame => recordedGame.User)
-            .ToList();
+        var records = gameRecordDao.GetGameRecordsByGameWithUser(gameId);
 
-        CachedGameStats[game.Id] = new GameStatsResponse
+        var gameStatsResponse = new GameStatsResponse
         {
             FirstPlayed = records.Count > 0 ? records[0].Started : null,
             LastPlayed = records.Count > 0 ? records.Last().Ended : null,
             Plays = records.Count,
-            TotalStorageMb = GetSizeByGame(gameId, 0),
+            TotalStorageMb = gameRecordDao.GetGameRecordsByGameWithUser(gameId)
+                .Select(r => r.SizeMb)
+                .ToList()
+                .Sum(),
             TotalPlayers = records.Select(r => r.User.Id).Distinct().Count(),
             StatsUpdatedDate = DateTime.Now
         };
 
-        return CachedGameStats[game.Id];
-    }
+        var cacheKey = $"{RedisCacheKeyPrefix}{game.Id}";
+        var serializedStats = JsonConvert.SerializeObject(gameStatsResponse);
 
-    private double GetSizeByGame(int gameId, double initialSizeBytes)
-    {
-        var results = _context.RecordedGames
-            .Where(e => e.Game.Id == gameId)
-            .Select(e => new
-            {
-                StringFieldLength = e.Values.Count
-            })
-            .ToList();
+        _redisDatabase.StringSet(cacheKey, serializedStats, TimeSpan.FromDays(1));
 
-        var totalBytes = results.Sum(r => r.StringFieldLength) + initialSizeBytes;
-        return totalBytes / 1024.0;
-    }
-
-    private double GetSizeByUser(int userId, double initialSizeBytes)
-    {
-        var results = _context.RecordedGames
-            .Where(e => e.User.Id == userId)
-            .Select(e => new
-            {
-                StringFieldLength = e.Values.Count
-            })
-            .ToList();
-
-        var totalBytes = results.Sum(r => r.StringFieldLength) + initialSizeBytes;
-        return totalBytes / 1024.0;
+        return gameStatsResponse;
     }
 }

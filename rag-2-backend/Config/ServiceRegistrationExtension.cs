@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Module.Administration;
+using rag_2_backend.Infrastructure.Module.Auth;
 using rag_2_backend.Infrastructure.Module.Background;
 using rag_2_backend.Infrastructure.Module.Email;
 using rag_2_backend.Infrastructure.Module.Game;
@@ -21,12 +22,6 @@ public static class ServiceRegistrationExtension
 {
     public static void RegisterServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddCors(options =>
-        {
-            options.AddDefaultPolicy(b =>
-                b.WithOrigins(configuration.GetValue<string>("AllowedOrigins") ?? string.Empty)
-                    .AllowAnyMethod().AllowAnyHeader().AllowCredentials());
-        });
         services.AddEndpointsApiExplorer();
         services.AddControllers().AddJsonOptions(options =>
         {
@@ -50,9 +45,12 @@ public static class ServiceRegistrationExtension
         services.AddScoped<EmailService>();
         services.AddScoped<JwtSecurityTokenHandler>();
         services.AddScoped<AdministrationService>();
+        services.AddScoped<AuthService>();
+        services.AddScoped<StatsService>();
         services.AddScoped<UserDao>();
-
-        services.AddSingleton<StatsService>();
+        services.AddScoped<RefreshTokenDao>();
+        services.AddScoped<GameDao>();
+        services.AddScoped<GameRecordDao>();
     }
 
     private static void ConfigSwagger(IServiceCollection services)

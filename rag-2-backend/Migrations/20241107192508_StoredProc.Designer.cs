@@ -12,8 +12,8 @@ using rag_2_backend.Infrastructure.Database;
 namespace rag_2_backend.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20241029092111_Base")]
-    partial class Base
+    [Migration("20241107192508_StoredProc")]
+    partial class StoredProc
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,20 +42,6 @@ namespace rag_2_backend.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("account_confirmation_token_table");
-                });
-
-            modelBuilder.Entity("rag_2_backend.Infrastructure.Database.Entity.BlacklistedJwt", b =>
-                {
-                    b.Property<string>("Token")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateTime>("Expiration")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("Token");
-
-                    b.ToTable("blacklisted_jwt_table");
                 });
 
             modelBuilder.Entity("rag_2_backend.Infrastructure.Database.Entity.Game", b =>
@@ -104,6 +90,9 @@ namespace rag_2_backend.Migrations
                     b.Property<string>("Players")
                         .HasColumnType("text");
 
+                    b.Property<double>("SizeMb")
+                        .HasColumnType("double precision");
+
                     b.Property<DateTime>("Started")
                         .HasColumnType("timestamp without time zone");
 
@@ -140,6 +129,25 @@ namespace rag_2_backend.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("password_reset_token_table");
+                });
+
+            modelBuilder.Entity("rag_2_backend.Infrastructure.Database.Entity.RefreshToken", b =>
+                {
+                    b.Property<string>("Token")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("Expiration")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Token");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("refresh_token_table");
                 });
 
             modelBuilder.Entity("rag_2_backend.Infrastructure.Database.Entity.User", b =>
@@ -219,6 +227,17 @@ namespace rag_2_backend.Migrations
                 });
 
             modelBuilder.Entity("rag_2_backend.Infrastructure.Database.Entity.PasswordResetToken", b =>
+                {
+                    b.HasOne("rag_2_backend.Infrastructure.Database.Entity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("rag_2_backend.Infrastructure.Database.Entity.RefreshToken", b =>
                 {
                     b.HasOne("rag_2_backend.Infrastructure.Database.Entity.User", "User")
                         .WithMany()

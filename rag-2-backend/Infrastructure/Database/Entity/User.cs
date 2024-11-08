@@ -2,6 +2,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using HttpExceptions.Exceptions;
 using rag_2_backend.Infrastructure.Common.Model;
 
 #endregion
@@ -20,7 +21,7 @@ public class User
         var domain = email.Split('@')[1];
 
         if (!domain.Equals("stud.prz.edu.pl") && !domain.Equals("prz.edu.pl"))
-            throw new BadHttpRequestException("Wrong domain");
+            throw new BadRequestException("Wrong domain");
 
         Role = domain.Equals("stud.prz.edu.pl") ? Role.Student : Role.Teacher;
         Email = email;

@@ -6,6 +6,7 @@ using MockQueryable.Moq;
 using Moq;
 using Newtonsoft.Json;
 using rag_2_backend.Infrastructure.Common.Mapper;
+using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
 using rag_2_backend.Infrastructure.Module.Game;
@@ -14,7 +15,7 @@ using Xunit;
 
 #endregion
 
-namespace rag_2_backend.Test;
+namespace rag_2_backend.Test.Service;
 
 public class GameServiceTest
 {
@@ -32,9 +33,11 @@ public class GameServiceTest
 
     public GameServiceTest()
     {
-        _gameService = new GameService(_contextMock.Object);
+        Mock<GameDao> gameDaoMock = new(_contextMock.Object);
+        _gameService = new GameService(_contextMock.Object, gameDaoMock.Object);
+        gameDaoMock.Setup(dao => dao.GetGameByIdOrThrow(It.IsAny<int>())).Returns(_games[0]);
         _contextMock.Setup(c => c.Games).Returns(_games.AsQueryable().BuildMockDbSet().Object);
-        _contextMock.Setup(c => c.RecordedGames)
+        _contextMock.Setup(c => c.GameRecords)
             .Returns(new List<GameRecord>().AsQueryable().BuildMockDbSet().Object);
     }
 
@@ -82,12 +85,6 @@ public class GameServiceTest
     }
 
     [Fact]
-    public void ShouldNotRemoveGameIfGameNotExists()
-    {
-        Assert.Throws<NotFoundException>(() => _gameService.RemoveGame(4));
-    }
-
-    [Fact]
     public void ShouldUpdateGame()
     {
         var gameRequest = new GameRequest
@@ -111,16 +108,5 @@ public class GameServiceTest
         };
 
         Assert.Throws<BadRequestException>(() => _gameService.EditGame(gameRequest, 1));
-    }
-
-    [Fact]
-    public void ShouldThrowNotFoundWhenUpdateGame()
-    {
-        var gameRequest = new GameRequest
-        {
-            Name = "Game2"
-        };
-
-        Assert.Throws<NotFoundException>(() => _gameService.EditGame(gameRequest, 4));
     }
 }

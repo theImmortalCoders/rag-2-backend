@@ -7,9 +7,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace rag_2_backend.Infrastructure.Database.Entity;
 
-[Table("blacklisted_jwt_table")]
-public class BlacklistedJwt
+[Table("refresh_token_table")]
+public class RefreshToken
 {
-    [Key] [MaxLength(500)] public required string Token { get; init; }
+    [Key] [MaxLength(100)] public required string Token { get; init; }
     public required DateTime Expiration { get; init; }
+    public required User User { get; init; }
 }

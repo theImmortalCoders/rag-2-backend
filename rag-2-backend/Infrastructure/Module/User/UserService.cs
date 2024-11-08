@@ -1,9 +1,7 @@
 #region
 
-using System.IdentityModel.Tokens.Jwt;
 using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using rag_2_backend.Infrastructure.Common.Mapper;
 using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Database;
@@ -18,10 +16,9 @@ namespace rag_2_backend.Infrastructure.Module.User;
 
 public class UserService(
     DatabaseContext context,
-    JwtUtil jwtUtil,
     EmailService emailService,
-    JwtSecurityTokenHandler jwtSecurityTokenHandler,
-    UserDao userDao)
+    UserDao userDao,
+    RefreshTokenDao refreshTokenDao)
 {
     public void RegisterUser(UserRequest userRequest)
     {
@@ -68,35 +65,6 @@ public class UserService(
 
         token.User.Confirmed = true;
         context.AccountConfirmationTokens.Remove(token);
-        context.SaveChanges();
-    }
-
-    public string LoginUser(string email, string password)
-    {
-        var user = userDao.GetUserByEmailOrThrow(email);
-
-        if (!HashUtil.VerifyPassword(password, user.Password))
-            throw new UnauthorizedException("Invalid password");
-        if (!user.Confirmed)
-            throw new UnauthorizedException("Mail not confirmed");
-        if (user.Banned)
-            throw new UnauthorizedException("User banned");
-
-        return jwtUtil.GenerateToken(user.Email, user.Role.ToString());
-    }
-
-    public UserResponse GetMe(string email)
-    {
-        return UserMapper.Map(userDao.GetUserByEmailOrThrow(email));
-    }
-
-    public void LogoutUser(string header)
-    {
-        var tokenValue = header["Bearer ".Length..].Trim();
-        var jwtToken = jwtSecurityTokenHandler.ReadToken(tokenValue) as JwtSecurityToken ??
-                       throw new UnauthorizedException("Unauthorized");
-
-        context.BlacklistedJwts.Add(new BlacklistedJwt { Token = tokenValue, Expiration = jwtToken.ValidTo });
         context.SaveChanges();
     }
 
@@ -151,7 +119,7 @@ public class UserService(
             .Include(p => p.User)
             .Where(a => a.User.Email == email)
         );
-        context.RecordedGames.RemoveRange(context.RecordedGames
+        context.GameRecords.RemoveRange(context.GameRecords
             .Include(p => p.User)
             .Where(a => a.User.Email == email)
         );
@@ -159,7 +127,7 @@ public class UserService(
         context.Users.Remove(user);
         context.SaveChanges();
 
-        LogoutUser(header);
+        refreshTokenDao.RemoveTokensForUser(user);
     }
 
     //
@@ -174,7 +142,7 @@ public class UserService(
     {
         var token = new AccountConfirmationToken
         {
-            Token = TokenGenerationUtil.GenerateToken(15),
+            Token = Guid.NewGuid().ToString(),
             User = user,
             Expiration = DateTime.Now.AddDays(7)
         };
@@ -186,7 +154,7 @@ public class UserService(
     {
         var token = new PasswordResetToken
         {
-            Token = TokenGenerationUtil.GenerateToken(15),
+            Token = Guid.NewGuid().ToString(),
             User = user,
             Expiration = DateTime.Now.AddDays(2)
         };

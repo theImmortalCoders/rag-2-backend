@@ -7,7 +7,7 @@ using rag_2_backend.Infrastructure.Common.Model;
 
 #endregion
 
-namespace rag_2_backend.Infrastructure.Module.Email;
+namespace rag_2_backend.Infrastructure.Util;
 
 public class EmailSendingUtil(IOptions<MailSettings> options)
 {

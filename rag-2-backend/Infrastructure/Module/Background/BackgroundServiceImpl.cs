@@ -19,12 +19,14 @@ public class BackgroundServiceImpl(IServiceProvider serviceProvider) : Backgroun
         while (!cancellationToken.IsCancellationRequested)
         {
             DeleteUnusedAccountTokens();
-            DeleteUnusedBlacklistedJwts();
+            DeleteUnusedRefreshTokens();
             DeleteUnusedPasswordResetTokens();
 
             await Task.Delay(TimeSpan.FromDays(1), cancellationToken);
         }
     }
+
+    //
 
     private void DeleteUnusedAccountTokens()
     {
@@ -42,16 +44,16 @@ public class BackgroundServiceImpl(IServiceProvider serviceProvider) : Backgroun
         _dbContext.AccountConfirmationTokens.RemoveRange(unusedTokens);
         _dbContext.SaveChanges();
 
-        Console.WriteLine("Deleted " + unconfirmedUsers.Count + " unconfirmed accounts");
+        Console.WriteLine("Deleted " + unconfirmedUsers.Count + " unconfirmed accounts with tokens");
     }
 
-    private void DeleteUnusedBlacklistedJwts()
+    private void DeleteUnusedRefreshTokens()
     {
-        var unusedTokens = _dbContext.BlacklistedJwts.Where(b => b.Expiration < DateTime.Now).ToList();
-        _dbContext.BlacklistedJwts.RemoveRange(unusedTokens);
+        var unusedTokens = _dbContext.RefreshTokens.Where(b => b.Expiration < DateTime.Now).ToList();
+        _dbContext.RefreshTokens.RemoveRange(unusedTokens);
         _dbContext.SaveChanges();
 
-        Console.WriteLine("Deleted " + unusedTokens.Count + " blacklisted jwts");
+        Console.WriteLine("Deleted " + unusedTokens.Count + " expired refresh tokens");
     }
 
     private void DeleteUnusedPasswordResetTokens()
@@ -60,6 +62,6 @@ public class BackgroundServiceImpl(IServiceProvider serviceProvider) : Backgroun
         _dbContext.PasswordResetTokens.RemoveRange(unusedTokens);
         _dbContext.SaveChanges();
 
-        Console.WriteLine("Deleted " + unusedTokens.Count + " password reset tokens");
+        Console.WriteLine("Deleted " + unusedTokens.Count + " expired password reset tokens");
     }
 }

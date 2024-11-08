@@ -20,7 +20,7 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     [Authorize]
     public List<GameRecordResponse> GetRecordsByGame([Required] int gameId)
     {
-        var email = UserDao.GetPrincipalEmail(User);
+        var email = AuthDao.GetPrincipalEmail(User);
 
         return gameRecordService.GetRecordsByGameAndUser(gameId, email);
     }
@@ -32,7 +32,7 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     [Authorize]
     public FileContentResult DownloadRecordData([Required] int recordedGameId)
     {
-        var email = UserDao.GetPrincipalEmail(User);
+        var email = AuthDao.GetPrincipalEmail(User);
         var fileName = "game_record_" + recordedGameId + "_" + email + ".json";
         var fileStream = gameRecordService.DownloadRecordData(recordedGameId, email);
 
@@ -44,9 +44,9 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     /// <response code="400">Space limit exceeded or values state cannot be empty</response>
     [HttpPost]
     [Authorize]
-    public void AddGameRecord([FromBody] [Required] RecordedGameRequest request)
+    public void AddGameRecord([FromBody] [Required] GameRecordRequest recordRequest)
     {
-        gameRecordService.AddGameRecord(request, UserDao.GetPrincipalEmail(User));
+        gameRecordService.AddGameRecord(recordRequest, AuthDao.GetPrincipalEmail(User));
     }
 
     /// <summary>Remove game recording (Auth)</summary>
@@ -56,6 +56,6 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     [Authorize]
     public void RemoveGameRecord([Required] int recordedGameId)
     {
-        gameRecordService.RemoveGameRecord(recordedGameId, UserDao.GetPrincipalEmail(User));
+        gameRecordService.RemoveGameRecord(recordedGameId, AuthDao.GetPrincipalEmail(User));
     }
 }

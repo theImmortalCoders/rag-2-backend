@@ -3,18 +3,16 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using rag_2_backend.Infrastructure.Database;
 
 #endregion
 
 namespace rag_2_backend.Infrastructure.Util;
 
-public class JwtUtil(IConfiguration config, DatabaseContext context)
+public class JwtUtil(IConfiguration config)
 
 {
-    public virtual string GenerateToken(string email, string role)
+    public virtual string GenerateJwt(string email, string role)
     {
         var jwtKey = config["Jwt:Key"];
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? ""));
@@ -35,10 +33,5 @@ public class JwtUtil(IConfiguration config, DatabaseContext context)
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-    public async Task<bool> IsTokenBlacklistedAsync(string token)
-    {
-        return await context.BlacklistedJwts.AnyAsync(bt => bt.Token == token);
     }
 }

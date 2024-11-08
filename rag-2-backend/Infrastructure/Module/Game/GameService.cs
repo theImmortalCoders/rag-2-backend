@@ -3,6 +3,7 @@
 using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.Infrastructure.Common.Mapper;
+using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Module.Game.Dto;
 
@@ -10,7 +11,7 @@ using rag_2_backend.Infrastructure.Module.Game.Dto;
 
 namespace rag_2_backend.Infrastructure.Module.Game;
 
-public class GameService(DatabaseContext context)
+public class GameService(DatabaseContext context, GameDao gameDao)
 {
     public async Task<IEnumerable<GameResponse>> GetGames()
     {
@@ -35,7 +36,7 @@ public class GameService(DatabaseContext context)
 
     public void EditGame(GameRequest request, int id)
     {
-        var game = context.Games.SingleOrDefault(g => g.Id == id) ?? throw new NotFoundException("Game not found");
+        var game = gameDao.GetGameByIdOrThrow(id);
 
         if (context.Games.Any(g => g.Name == request.Name && g.Name != game.Name))
             throw new BadRequestException("Game with this name already exists");
@@ -48,19 +49,12 @@ public class GameService(DatabaseContext context)
 
     public void RemoveGame(int id)
     {
-        var game = GetGameOrThrow(id);
+        var game = gameDao.GetGameByIdOrThrow(id);
 
-        var records = context.RecordedGames.Where(g => g.Game.Id == id).ToList();
-        foreach (var record in records) context.RecordedGames.Remove(record);
+        var records = context.GameRecords.Where(g => g.Game.Id == id).ToList();
+        foreach (var record in records) context.GameRecords.Remove(record);
 
         context.Games.Remove(game);
         context.SaveChanges();
-    }
-
-    //
-
-    private Database.Entity.Game GetGameOrThrow(int id)
-    {
-        return context.Games.SingleOrDefault(g => g.Id == id) ?? throw new NotFoundException("Game not found");
     }
 }

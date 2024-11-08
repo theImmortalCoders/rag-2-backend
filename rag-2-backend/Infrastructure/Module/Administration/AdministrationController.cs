@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Dao;
+using rag_2_backend.Infrastructure.Module.Administration.Dto;
 using rag_2_backend.Infrastructure.Module.User.Dto;
 
 #endregion
@@ -13,7 +14,9 @@ namespace rag_2_backend.Infrastructure.Module.Administration;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AdministrationController(AdministrationService administrationService) : ControllerBase
+public class AdministrationController(
+    AdministrationService administrationService,
+    IConfiguration config) : ControllerBase
 {
     /// <summary>Change ban status for any user by user ID despite admins (Admin)</summary>
     /// <response code="404">User not found</response>
@@ -41,7 +44,21 @@ public class AdministrationController(AdministrationService administrationServic
     [Authorize]
     public UserResponse GetUserDetails([Required] int userId)
     {
-        return administrationService.GetUserDetails(UserDao.GetPrincipalEmail(User), userId);
+        return administrationService.GetUserDetails(AuthDao.GetPrincipalEmail(User), userId);
+    }
+
+    /// <summary>Get current limits for roles (Auth)</summary>
+    /// <response code="403">Cannot view limits</response>
+    [HttpGet("limits")]
+    [Authorize]
+    public LimitsResponse GetCurrentLimits()
+    {
+        return new LimitsResponse
+        {
+            StudentLimitMb = int.Parse(config["StudentDataLimitMb"] ?? "30"),
+            TeacherLimitMb = int.Parse(config["TeacherDataLimitMb"] ?? "30"),
+            AdminLimitMb = int.Parse(config["AdminDataLimitMb"] ?? "30")
+        };
     }
 
     /// <summary>Get all users list (Admin, Teacher)</summary>

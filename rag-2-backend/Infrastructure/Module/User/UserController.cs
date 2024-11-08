@@ -11,7 +11,7 @@ using rag_2_backend.Infrastructure.Module.User.Dto;
 namespace rag_2_backend.Infrastructure.Module.User;
 
 [ApiController]
-[Route("api/[controller]/auth")]
+[Route("api/[controller]")]
 public class UserController(UserService userService) : ControllerBase
 {
     /// <summary>Register new user</summary>
@@ -20,14 +20,6 @@ public class UserController(UserService userService) : ControllerBase
     public void Register([FromBody] [Required] UserRequest userRequest)
     {
         userService.RegisterUser(userRequest);
-    }
-
-    /// <summary>Authenticate</summary>
-    /// <response code="401">Invalid password or mail not confirmed or user banned</response>
-    [HttpPost("login")]
-    public string Login([FromBody] [Required] UserLoginRequest loginRequest)
-    {
-        return userService.LoginUser(loginRequest.Email, loginRequest.Password);
     }
 
     /// <summary>Resend confirmation email to specified email</summary>
@@ -62,32 +54,13 @@ public class UserController(UserService userService) : ControllerBase
         userService.ResetPassword(tokenValue, newPassword);
     }
 
-    /// <summary>Logout current user (Auth)</summary>
-    [HttpPost("logout")]
-    [Authorize]
-    public void Logout()
-    {
-        var header = HttpContext.Request.Headers.Authorization.FirstOrDefault() ??
-                     throw new UnauthorizedAccessException("Unauthorized");
-
-        userService.LogoutUser(header);
-    }
-
-    /// <summary>Get current user details (Auth)</summary>
-    [HttpGet("me")]
-    [Authorize]
-    public UserResponse Me()
-    {
-        return userService.GetMe(UserDao.GetPrincipalEmail(User));
-    }
-
     /// <summary>Change current user's password (Auth)</summary>
     /// <response code="400">Invalid old password or given the same password as old</response>
     [HttpPost("change-password")]
     [Authorize]
     public void ChangePassword([Required] string oldPassword, [Required] string newPassword)
     {
-        userService.ChangePassword(UserDao.GetPrincipalEmail(User), oldPassword, newPassword);
+        userService.ChangePassword(AuthDao.GetPrincipalEmail(User), oldPassword, newPassword);
     }
 
     /// <summary>Permanently delete account and all data (Auth)</summary>
@@ -98,6 +71,6 @@ public class UserController(UserService userService) : ControllerBase
         var header = HttpContext.Request.Headers.Authorization.FirstOrDefault() ??
                      throw new UnauthorizedAccessException("Unauthorized");
 
-        userService.DeleteAccount(UserDao.GetPrincipalEmail(User), header);
+        userService.DeleteAccount(AuthDao.GetPrincipalEmail(User), header);
     }
 }

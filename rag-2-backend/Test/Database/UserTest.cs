@@ -7,7 +7,7 @@ using Xunit;
 
 #endregion
 
-namespace rag_2_backend.Test;
+namespace rag_2_backend.Test.Database;
 
 public class UserTest
 {

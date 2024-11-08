@@ -9,7 +9,7 @@ namespace rag_2_backend.Infrastructure.Dao;
 
 public class RefreshTokenDao(DatabaseContext context)
 {
-    public void RemoveTokensForUser(User user)
+    public virtual void RemoveTokensForUser(User user)
     {
         var unusedTokens = context.RefreshTokens.Where(r => r.User.Id == user.Id).ToList();
         context.RefreshTokens.RemoveRange(unusedTokens);

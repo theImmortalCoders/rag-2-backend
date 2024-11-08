@@ -81,15 +81,18 @@ public class GameRecordService(
 
     private void CheckUserDataLimit(GameRecordRequest recordRequest, Database.Entity.User user)
     {
+        var initialSizeMb = JsonSerializer.Serialize(recordRequest.Values).Length / (1024.0 * 1024.0);
+        var totalSizeMb = GetSizeByUser(user.Id, initialSizeMb);
+        
         switch (user.Role)
         {
-            case Role.Student when GetSizeByUser(user.Id, recordRequest.Values.Count) >
+            case Role.Student when totalSizeMb >
                                    configuration.GetValue<int>("StudentDataLimitMb"):
                 throw new BadRequestException("Space limit exceeded");
-            case Role.Teacher when GetSizeByUser(user.Id, recordRequest.Values.Count) >
+            case Role.Teacher when totalSizeMb >
                                    configuration.GetValue<int>("TeacherDataLimitMb"):
                 throw new BadRequestException("Space limit exceeded");
-            case Role.Admin when GetSizeByUser(user.Id, recordRequest.Values.Count) >
+            case Role.Admin when totalSizeMb >
                                  configuration.GetValue<int>("AdminDataLimitMb"):
                 throw new BadRequestException("Space limit exceeded");
             default:

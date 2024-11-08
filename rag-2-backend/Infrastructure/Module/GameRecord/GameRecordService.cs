@@ -46,7 +46,7 @@ public class GameRecordService(
         var user = userDao.GetUserByEmailOrThrow(email);
         CheckUserDataLimit(recordRequest, user);
 
-        var game = gameDao.GetGameByNameOrThrow(recordRequest);
+        var game = gameDao.GetGameByNameOrThrow(recordRequest.GameName);
 
         var recordedGame = new Database.Entity.GameRecord
         {
@@ -83,7 +83,7 @@ public class GameRecordService(
     {
         var initialSizeMb = JsonSerializer.Serialize(recordRequest.Values).Length / (1024.0 * 1024.0);
         var totalSizeMb = GetSizeByUser(user.Id, initialSizeMb);
-        
+
         switch (user.Role)
         {
             case Role.Student when totalSizeMb >

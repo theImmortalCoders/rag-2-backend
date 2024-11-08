@@ -15,7 +15,7 @@ namespace rag_2_backend.Infrastructure.Dao;
 
 public class GameRecordDao(DatabaseContext dbContext)
 {
-    public List<GameRecordResponse> GetRecordsByGameAndUser(int gameId, string email)
+    public virtual List<GameRecordResponse> GetRecordsByGameAndUser(int gameId, string email)
     {
         return dbContext.GameRecords
             .Include(r => r.Game)
@@ -26,7 +26,7 @@ public class GameRecordDao(DatabaseContext dbContext)
             .ToList();
     }
 
-    public List<GameRecord> GetGameRecordsByUserWithGame(int userId)
+    public virtual List<GameRecord> GetGameRecordsByUserWithGame(int userId)
     {
         return dbContext.GameRecords
             .OrderBy(r => r.Started)
@@ -35,7 +35,7 @@ public class GameRecordDao(DatabaseContext dbContext)
             .ToList();
     }
 
-    public List<GameRecord> GetGameRecordsByGameWithUser(int gameId)
+    public virtual List<GameRecord> GetGameRecordsByGameWithUser(int gameId)
     {
         return dbContext.GameRecords
             .OrderBy(r => r.Started)
@@ -44,7 +44,7 @@ public class GameRecordDao(DatabaseContext dbContext)
             .ToList();
     }
 
-    public GameRecord GetRecordedGameById(int recordedGameId)
+    public virtual GameRecord GetRecordedGameById(int recordedGameId)
     {
         return dbContext.GameRecords.Include(recordedGame => recordedGame.User)
                    .Include(r => r.Game)
@@ -52,7 +52,7 @@ public class GameRecordDao(DatabaseContext dbContext)
                ?? throw new NotFoundException("Game record not found");
     }
 
-    public void PerformGameRecordTransaction(Game game, GameRecord gameRecord,
+    public virtual void PerformGameRecordTransaction(Game game, GameRecord gameRecord,
         User user)
     {
         using var transaction = dbContext.Database.BeginTransaction();

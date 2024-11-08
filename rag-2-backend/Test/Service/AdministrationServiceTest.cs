@@ -15,7 +15,7 @@ using Xunit;
 
 #endregion
 
-namespace rag_2_backend.Test;
+namespace rag_2_backend.Test.Service;
 
 public class AdministrationServiceTest
 {

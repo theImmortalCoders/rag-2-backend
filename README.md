@@ -1,4 +1,4 @@
-# RAG-2 resource server
+# RAG-2 auth & resource server
 
 ## License
 
@@ -8,10 +8,11 @@ The application was created as part of the work of the Human-Computer Interactio
 
 ## Description
 
-Resource server for RAG-2 (Rzeszów University of Technology AI Games - 2.0) - system for developing AI models for playing simple web games.
+Auth and resource server for RAG-2 (Rzeszów University of Technology AI Games 2) - system for integrating AI models with simple web minigames.
 
 ## Features
 
-- JWT stateless auth
-- SMTP Mailing
+- JWT system-global stateless authorization
 - API for game records management
+- SMTP Mailing service
+- Redis game stats cache

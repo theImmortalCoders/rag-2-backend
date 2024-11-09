@@ -2,25 +2,31 @@
 
 using Microsoft.EntityFrameworkCore;
 using rag_2_backend.Infrastructure.Database;
+using rag_2_backend.Infrastructure.Util;
 
 #endregion
 
 namespace rag_2_backend.Infrastructure.Module.Background;
 
-public class BackgroundServiceImpl(IServiceProvider serviceProvider) : BackgroundService
+public class BackgroundServiceImpl(
+    IServiceProvider serviceProvider
+) : BackgroundService
 {
     private DatabaseContext _dbContext = null!;
+    private StatsUtil _statsUtil = null!;
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         using var scope = serviceProvider.CreateScope();
         _dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        _statsUtil = scope.ServiceProvider.GetRequiredService<StatsUtil>();
 
         while (!cancellationToken.IsCancellationRequested)
         {
             DeleteUnusedAccountTokens();
             DeleteUnusedRefreshTokens();
             DeleteUnusedPasswordResetTokens();
+            UpdateCachedStats();
 
             await Task.Delay(TimeSpan.FromDays(1), cancellationToken);
         }
@@ -63,5 +69,15 @@ public class BackgroundServiceImpl(IServiceProvider serviceProvider) : Backgroun
         _dbContext.SaveChanges();
 
         Console.WriteLine("Deleted " + unusedTokens.Count + " expired password reset tokens");
+    }
+
+    private async void UpdateCachedStats()
+    {
+        var games = await _dbContext.Games.ToListAsync();
+        foreach (var game in games) _statsUtil.UpdateCachedGameStats(game);
+
+        _statsUtil.UpdateCachedStats();
+
+        Console.WriteLine("Stats updated.");
     }
 }

@@ -20,4 +20,9 @@ public class GameDao(DatabaseContext dbContext)
         return dbContext.Games.SingleOrDefault(g => Equals(g.Name.ToLower(), gameName.ToLower()))
                ?? throw new NotFoundException("Game not found");
     }
+
+    public virtual List<Game> GetAllGames()
+    {
+        return dbContext.Games.ToList();
+    }
 }

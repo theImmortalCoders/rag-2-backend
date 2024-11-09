@@ -21,4 +21,9 @@ public class UserDao(DatabaseContext context)
         return context.Users.SingleOrDefault(u => u.Email == email) ??
                throw new NotFoundException("User not found");
     }
+
+    public virtual int CountUsers()
+    {
+        return context.Users.Count();
+    }
 }

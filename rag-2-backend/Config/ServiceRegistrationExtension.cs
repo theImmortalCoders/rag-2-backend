@@ -51,6 +51,7 @@ public static class ServiceRegistrationExtension
         services.AddScoped<RefreshTokenDao>();
         services.AddScoped<GameDao>();
         services.AddScoped<GameRecordDao>();
+        services.AddScoped<StatsUtil>();
     }
 
     private static void ConfigSwagger(IServiceCollection services)

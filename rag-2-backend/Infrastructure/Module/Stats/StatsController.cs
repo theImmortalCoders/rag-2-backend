@@ -31,4 +31,11 @@ public class StatsController(StatsService statsService) : ControllerBase
     {
         return statsService.GetStatsForGame(gameId);
     }
+
+    /// <summary>Get overall stats</summary>
+    [HttpGet("all")]
+    public OverallStatsResponse GetOverallStats()
+    {
+        return statsService.GetOverallStats();
+    }
 }

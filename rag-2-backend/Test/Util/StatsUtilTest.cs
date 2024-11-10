@@ -13,6 +13,7 @@ namespace rag_2_backend.Test.Util;
 
 public class StatsUtilTests
 {
+    private readonly Mock<GameDao> _mockGameDao;
     private readonly Mock<GameRecordDao> _mockGameRecordDao;
     private readonly Mock<UserDao> _mockUserDao;
     private readonly StatsUtil _statsUtil;
@@ -24,6 +25,7 @@ public class StatsUtilTests
         Mock<IDatabase> mockRedisDatabase = new();
         _mockUserDao = new Mock<UserDao>(null!);
         _mockGameRecordDao = new Mock<GameRecordDao>(null!);
+        _mockGameDao = new Mock<GameDao>(null!);
 
         var mockSection = new Mock<IConfigurationSection>();
         mockSection.Setup(x => x.Value).Returns("game_stats");
@@ -37,6 +39,7 @@ public class StatsUtilTests
             mockConfiguration.Object,
             mockRedisConnection.Object,
             _mockUserDao.Object,
+            _mockGameDao.Object,
             _mockGameRecordDao.Object
         );
     }
@@ -82,6 +85,8 @@ public class StatsUtilTests
         };
 
         _mockGameRecordDao.Setup(dao => dao.GetGameRecordsByGameWithUser(game.Id)).Returns(gameRecords);
+        _mockGameRecordDao.Setup(dao => dao.CountAllGameRecords()).Returns(2);
+        _mockGameDao.Setup(dao => dao.GetAllGames()).Returns([game]);
 
         var result = _statsUtil.UpdateCachedGameStats(game);
 
@@ -98,6 +103,7 @@ public class StatsUtilTests
     {
         _mockUserDao.Setup(dao => dao.CountUsers()).Returns(100);
         _mockGameRecordDao.Setup(dao => dao.CountTotalStorageMb()).Returns(500);
+        _mockGameDao.Setup(dao => dao.GetAllGames()).Returns([]);
 
         var result = _statsUtil.UpdateCachedStats();
 

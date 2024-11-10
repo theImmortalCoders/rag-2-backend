@@ -60,6 +60,11 @@ public class GameRecordDao(DatabaseContext dbContext)
             .Sum();
     }
 
+    public virtual int CountAllGameRecords()
+    {
+        return dbContext.GameRecords.Count();
+    }
+
     public virtual void PerformGameRecordTransaction(Game game, GameRecord gameRecord,
         User user)
     {

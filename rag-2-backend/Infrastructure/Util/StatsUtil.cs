@@ -14,6 +14,7 @@ public class StatsUtil(
     IConfiguration configuration,
     IConnectionMultiplexer redisConnection,
     UserDao userDao,
+    GameDao gameDao,
     GameRecordDao gameRecordDao
 )
 {
@@ -50,6 +51,8 @@ public class StatsUtil(
         {
             PlayersAmount = userDao.CountUsers(),
             TotalMemoryMb = gameRecordDao.CountTotalStorageMb(),
+            GamesAmount = gameDao.GetAllGames().Count,
+            GameRecordsAmount = gameRecordDao.CountAllGameRecords(),
             StatsUpdatedDate = DateTime.Now
         };
 

@@ -36,7 +36,7 @@ public class StatsServiceTests
         _mockGameDao = new Mock<GameDao>(_contextMock.Object);
         _mockGameRecordDao = new Mock<GameRecordDao>(_contextMock.Object);
         Mock<StatsUtil> mockStatsUtil = new(configurationMock.Object, mockRedisConnection.Object, _mockUserDao.Object,
-            _mockGameRecordDao.Object);
+            _mockGameDao.Object, _mockGameRecordDao.Object);
 
         var mockSection = new Mock<IConfigurationSection>();
         mockSection.Setup(x => x.Value).Returns("game_stats");

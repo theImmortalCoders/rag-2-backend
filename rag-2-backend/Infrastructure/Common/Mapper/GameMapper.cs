@@ -14,7 +14,8 @@ public abstract class GameMapper
         return new GameResponse
         {
             Id = game.Id,
-            Name = game.Name
+            Name = game.Name,
+            Description = game.Description
         };
     }
 }

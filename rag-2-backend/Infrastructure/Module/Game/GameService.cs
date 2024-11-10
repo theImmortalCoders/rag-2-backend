@@ -27,7 +27,8 @@ public class GameService(DatabaseContext context, GameDao gameDao)
 
         var game = new Database.Entity.Game
         {
-            Name = request.Name
+            Name = request.Name,
+            Description = request.Description
         };
 
         context.Games.Add(game);
@@ -42,6 +43,7 @@ public class GameService(DatabaseContext context, GameDao gameDao)
             throw new BadRequestException("Game with this name already exists");
 
         game.Name = request.Name;
+        game.Description = request.Description;
 
         context.Games.Update(game);
         context.SaveChanges();

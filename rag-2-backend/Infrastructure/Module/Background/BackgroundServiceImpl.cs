@@ -28,7 +28,7 @@ public class BackgroundServiceImpl(
             DeleteUnusedPasswordResetTokens();
             UpdateCachedStats();
 
-            await Task.Delay(TimeSpan.FromDays(1), cancellationToken);
+            await Task.Delay(TimeSpan.FromHours(3), cancellationToken);
         }
     }
 

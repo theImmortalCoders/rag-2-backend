@@ -157,6 +157,12 @@ namespace rag_2_backend.Migrations
                 table: "game_table",
                 column: "Name",
                 unique: true);
+            
+            migrationBuilder.CreateIndex(
+                name: "IX_user_table_Email",
+                table: "user_table",
+                column: "Email",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_password_reset_token_table_UserId",

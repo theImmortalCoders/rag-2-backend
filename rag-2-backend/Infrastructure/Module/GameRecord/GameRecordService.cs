@@ -54,7 +54,7 @@ public class GameRecordService(
             Values = recordRequest.Values,
             User = user,
             Players = recordRequest.Values[0].Players,
-            OutputSpec = recordRequest.Values[0].OutputSpec ?? "",
+            OutputSpec = recordRequest.OutputSpec,
             EndState = recordRequest.Values[^1].State?.ToString(),
             SizeMb = JsonSerializer.Serialize(recordRequest.Values).Length / (1024.0 * 1024.0)
         };

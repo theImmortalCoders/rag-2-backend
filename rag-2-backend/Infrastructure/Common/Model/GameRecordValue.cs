@@ -6,5 +6,4 @@ public class GameRecordValue
     public object? State { get; init; }
     public List<Player>? Players { get; init; }
     public string? Timestamp { get; init; }
-    public string? OutputSpec { get; init; }
 }

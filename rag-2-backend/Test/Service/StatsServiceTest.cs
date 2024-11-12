@@ -7,6 +7,7 @@ using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
 using rag_2_backend.Infrastructure.Module.Stats;
 using rag_2_backend.Infrastructure.Module.Stats.Dto;
+using rag_2_backend.Infrastructure.Util;
 using StackExchange.Redis;
 using Xunit;
 using Role = rag_2_backend.Infrastructure.Common.Model.Role;
@@ -30,18 +31,28 @@ public class StatsServiceTests
     {
         Mock<IConnectionMultiplexer> mockRedisConnection = new();
         Mock<IDatabase> mockRedisDatabase = new();
+        Mock<IConfiguration> configurationMock = new();
         _mockUserDao = new Mock<UserDao>(_contextMock.Object);
         _mockGameDao = new Mock<GameDao>(_contextMock.Object);
         _mockGameRecordDao = new Mock<GameRecordDao>(_contextMock.Object);
+        Mock<StatsUtil> mockStatsUtil = new(configurationMock.Object, mockRedisConnection.Object, _mockUserDao.Object,
+            _mockGameDao.Object, _mockGameRecordDao.Object);
+
+        var mockSection = new Mock<IConfigurationSection>();
+        mockSection.Setup(x => x.Value).Returns("game_stats");
+        configurationMock.Setup(x => x.GetSection("Redis:Stats:Prefix")).Returns(mockSection.Object);
+        configurationMock.Setup(x => x.GetSection("Redis:Stats:OverallStatsKey")).Returns(mockSection.Object);
 
         mockRedisConnection.Setup(r => r.GetDatabase(It.IsAny<int>(), It.IsAny<object>()))
             .Returns(mockRedisDatabase.Object);
 
         _statsService = new StatsService(
+            configurationMock.Object,
             mockRedisConnection.Object,
             _mockUserDao.Object,
             _mockGameDao.Object,
-            _mockGameRecordDao.Object
+            _mockGameRecordDao.Object,
+            mockStatsUtil.Object
         );
     }
 

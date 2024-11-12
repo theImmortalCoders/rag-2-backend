@@ -52,6 +52,19 @@ public class GameRecordDao(DatabaseContext dbContext)
                ?? throw new NotFoundException("Game record not found");
     }
 
+    public virtual double CountTotalStorageMb()
+    {
+        return dbContext.GameRecords
+            .Select(r => r.SizeMb)
+            .ToList()
+            .Sum();
+    }
+
+    public virtual int CountAllGameRecords()
+    {
+        return dbContext.GameRecords.Count();
+    }
+
     public virtual void PerformGameRecordTransaction(Game game, GameRecord gameRecord,
         User user)
     {

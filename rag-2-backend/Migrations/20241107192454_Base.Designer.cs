@@ -192,6 +192,9 @@ namespace rag_2_backend.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+                    
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("user_table");
                 });

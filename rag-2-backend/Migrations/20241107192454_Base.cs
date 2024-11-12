@@ -18,7 +18,8 @@ namespace rag_2_backend.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -155,6 +156,12 @@ namespace rag_2_backend.Migrations
                 name: "IX_game_table_Name",
                 table: "game_table",
                 column: "Name",
+                unique: true);
+            
+            migrationBuilder.CreateIndex(
+                name: "IX_user_table_Email",
+                table: "user_table",
+                column: "Email",
                 unique: true);
 
             migrationBuilder.CreateIndex(

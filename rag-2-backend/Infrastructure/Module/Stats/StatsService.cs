@@ -4,6 +4,7 @@ using HttpExceptions.Exceptions;
 using Newtonsoft.Json;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Module.Stats.Dto;
+using rag_2_backend.Infrastructure.Util;
 using StackExchange.Redis;
 using IDatabase = StackExchange.Redis.IDatabase;
 using Role = rag_2_backend.Infrastructure.Common.Model.Role;
@@ -13,13 +14,14 @@ using Role = rag_2_backend.Infrastructure.Common.Model.Role;
 namespace rag_2_backend.Infrastructure.Module.Stats;
 
 public class StatsService(
+    IConfiguration configuration,
     IConnectionMultiplexer redisConnection,
     UserDao userDao,
     GameDao gameDao,
-    GameRecordDao gameRecordDao
+    GameRecordDao gameRecordDao,
+    StatsUtil statsUtil
 )
 {
-    private const string RedisCacheKeyPrefix = "GameStats:";
     private readonly IDatabase _redisDatabase = redisConnection.GetDatabase();
 
     public UserStatsResponse GetStatsForUser(string email, int userId)
@@ -49,43 +51,23 @@ public class StatsService(
     {
         var game = gameDao.GetGameByIdOrThrow(gameId);
 
-        var cacheKey = $"{RedisCacheKeyPrefix}{game.Id}";
+        var cacheKey = $"{configuration.GetValue<string>("Redis:Stats:Prefix")}{game.Id}";
         var cachedStatsJson = _redisDatabase.StringGet(cacheKey);
 
-        if (!string.IsNullOrEmpty(cachedStatsJson))
-        {
-            var cachedStats = JsonConvert.DeserializeObject<GameStatsResponse>(cachedStatsJson!);
-            if (cachedStats.StatsUpdatedDate.AddDays(1) >= DateTime.Now)
-                return cachedStats;
-        }
-
-        return UpdateCachedStats(gameId, game);
+        return !string.IsNullOrEmpty(cachedStatsJson)
+            ? JsonConvert.DeserializeObject<GameStatsResponse>(cachedStatsJson!)
+            : statsUtil.UpdateCachedGameStats(game);
     }
 
-    //
-
-    private GameStatsResponse UpdateCachedStats(int gameId, Database.Entity.Game game)
+    public OverallStatsResponse GetOverallStats()
     {
-        var records = gameRecordDao.GetGameRecordsByGameWithUser(gameId);
+        var cachedStatsJson = _redisDatabase.StringGet(
+            configuration.GetValue<string>("Redis:Stats:Prefix") +
+            configuration.GetValue<string>("Redis:Stats:OverallStatsKey")
+        );
 
-        var gameStatsResponse = new GameStatsResponse
-        {
-            FirstPlayed = records.Count > 0 ? records[0].Started : null,
-            LastPlayed = records.Count > 0 ? records.Last().Ended : null,
-            Plays = records.Count,
-            TotalStorageMb = gameRecordDao.GetGameRecordsByGameWithUser(gameId)
-                .Select(r => r.SizeMb)
-                .ToList()
-                .Sum(),
-            TotalPlayers = records.Select(r => r.User.Id).Distinct().Count(),
-            StatsUpdatedDate = DateTime.Now
-        };
-
-        var cacheKey = $"{RedisCacheKeyPrefix}{game.Id}";
-        var serializedStats = JsonConvert.SerializeObject(gameStatsResponse);
-
-        _redisDatabase.StringSet(cacheKey, serializedStats, TimeSpan.FromDays(1));
-
-        return gameStatsResponse;
+        return !string.IsNullOrEmpty(cachedStatsJson)
+            ? JsonConvert.DeserializeObject<OverallStatsResponse>(cachedStatsJson!)
+            : statsUtil.UpdateCachedStats();
     }
 }

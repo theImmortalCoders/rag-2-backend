@@ -3,6 +3,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using HttpExceptions.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using rag_2_backend.Infrastructure.Common.Model;
 
 #endregion
@@ -10,6 +11,7 @@ using rag_2_backend.Infrastructure.Common.Model;
 namespace rag_2_backend.Infrastructure.Database.Entity;
 
 [Table("user_table")]
+[Index(nameof(Email), IsUnique = true)]
 public class User
 {
     public User() //for ef

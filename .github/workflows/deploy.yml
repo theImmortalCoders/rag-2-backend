@@ -19,6 +19,7 @@ jobs:
             cd /home/project/rag-2-backend/rag-2-backend
             git checkout main
             git pull
-            docker build -t rag-2-backend .
             cd /home/project
-            docker compose up --build
+            docker compose up --build -d
+            echo "$(date): backend deployed successfully" >> deploy-log.txt 
+            docker system prune -f

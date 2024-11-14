@@ -18,7 +18,7 @@ jobs:
           script: |
             cd /home/project/rag-2-backend/rag-2-backend
             git checkout main
-            git pull
+            git pull || { echo "Error: git pull failed" >&2; exit 1; }
             cd /home/project
             docker compose up --build -d
             echo "$(date): backend deployed successfully" >> deploy-log.txt 

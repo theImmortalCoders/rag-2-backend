@@ -6,6 +6,7 @@ using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
+using rag_2_backend.Infrastructure.Common.Mapper;
 using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Database;
@@ -80,8 +81,11 @@ public class GameRecordServiceTests
         {
             Id = recordedGameId,
             User = user,
-            Game = null!,
-            Values = null!
+            Game = new Game
+            {
+                Name = "pong"
+            }!,
+            Values = []
         };
 
         _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).Returns(user);
@@ -89,7 +93,7 @@ public class GameRecordServiceTests
 
         var result = _gameRecordService.DownloadRecordData(recordedGameId, email);
 
-        Assert.Equal(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(recordedGame)), result);
+        Assert.Equal(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(GameRecordMapper.JsonMap(recordedGame))), result);
     }
 
     [Fact]

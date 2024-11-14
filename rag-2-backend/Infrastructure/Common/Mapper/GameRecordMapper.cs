@@ -23,4 +23,21 @@ public abstract class GameRecordMapper
             SizeMb = gameRecord.SizeMb
         };
     }
+
+    public static GameRecordJsonResponse JsonMap(GameRecord gameRecord)
+    {
+        return new GameRecordJsonResponse
+        {
+            Id = gameRecord.Id,
+            Game = GameMapper.Map(gameRecord.Game),
+            User = UserMapper.Map(gameRecord.User),
+            Players = gameRecord.Players,
+            Ended = gameRecord.Ended,
+            Started = gameRecord.Started,
+            EndState = gameRecord.EndState,
+            OutputSpec = gameRecord.OutputSpec,
+            SizeMb = gameRecord.SizeMb,
+            Values = gameRecord.Values
+        };
+    }
 }

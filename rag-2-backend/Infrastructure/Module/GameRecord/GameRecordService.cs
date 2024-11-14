@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using rag_2_backend.Infrastructure.Common.Mapper;
 using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Database;
@@ -35,7 +36,7 @@ public class GameRecordService(
         if (user.Id != recordedGame.User.Id && user.Role.Equals(Role.Student))
             throw new BadRequestException("Permission denied");
 
-        return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(recordedGame));
+        return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(GameRecordMapper.JsonMap(recordedGame)));
     }
 
     public void AddGameRecord(GameRecordRequest recordRequest, string email)

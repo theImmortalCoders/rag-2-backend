@@ -15,5 +15,5 @@ public class Player
     public required bool IsActive { get; set; }
     public required PlayerType PlayerType { get; set; }
     public object? InputData { get; set; }
-    [MaxLength(100)] public string? ExpectedDataDescription { get; set; }
+    [MaxLength(500)] public string? ExpectedDataDescription { get; set; }
 }

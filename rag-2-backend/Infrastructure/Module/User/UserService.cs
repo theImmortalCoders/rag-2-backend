@@ -28,13 +28,14 @@ public class UserService(
         Database.Entity.User user = new(userRequest.Email)
         {
             Name = userRequest.Name,
-            Password = HashUtil.HashPassword(userRequest.Password),
-            StudyCycleYearA = userRequest.StudyCycleYearA,
-            StudyCycleYearB = userRequest.StudyCycleYearB
+            Password = HashUtil.HashPassword(userRequest.Password)
         };
 
         if (user.Role == Role.Student && IsStudyYearWrong(userRequest))
             throw new BadRequestException("Wrong study cycle year");
+
+        user.StudyCycleYearA = userRequest.StudyCycleYearA ?? 0;
+        user.StudyCycleYearB = userRequest.StudyCycleYearB ?? 0;
 
         context.Users.Add(user);
         GenerateAccountTokenAndSendConfirmationMail(user);
@@ -134,7 +135,8 @@ public class UserService(
 
     private static bool IsStudyYearWrong(UserRequest userRequest)
     {
-        return userRequest.StudyCycleYearA == 0 || userRequest.StudyCycleYearB == 0 ||
+        return !userRequest.StudyCycleYearA.HasValue || !userRequest.StudyCycleYearB.HasValue ||
+               userRequest.StudyCycleYearA == 0 || userRequest.StudyCycleYearB == 0 ||
                userRequest.StudyCycleYearB - userRequest.StudyCycleYearA != 1;
     }
 

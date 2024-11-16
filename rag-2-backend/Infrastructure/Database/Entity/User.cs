@@ -35,8 +35,8 @@ public class User
     [MaxLength(100)] public required string Name { get; init; }
     public Role Role { get; set; }
     public bool Confirmed { get; set; }
-    public int StudyCycleYearA { get; init; }
-    public int StudyCycleYearB { get; init; }
+    public int StudyCycleYearA { get; set; }
+    public int StudyCycleYearB { get; set; }
     public bool Banned { get; set; }
     public DateTime LastPlayed { get; set; }
 }

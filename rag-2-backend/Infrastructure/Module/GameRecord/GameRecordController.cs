@@ -14,15 +14,15 @@ namespace rag_2_backend.Infrastructure.Module.GameRecord;
 [Route("api/[controller]")]
 public class GameRecordController(GameRecordService gameRecordService) : ControllerBase
 {
-    /// <summary>Get all recorded games for user by game ID and user (Auth)</summary>
+    /// <summary>Get all recorded games for user by game ID and user, admin and teacher can view everyone's data (Auth)</summary>
     /// <response code="404">User or game not found</response>
     [HttpGet]
     [Authorize]
-    public List<GameRecordResponse> GetRecordsByGame([Required] int gameId)
+    public List<GameRecordResponse> GetRecordsByGame([Required] int gameId, [Required] int userId)
     {
         var email = AuthDao.GetPrincipalEmail(User);
 
-        return gameRecordService.GetRecordsByGameAndUser(gameId, email);
+        return gameRecordService.GetRecordsByGameAndUser(gameId, userId, email);
     }
 
     /// <summary>Download JSON file from specific game, admin and teacher can download everyone's data (Auth)</summary>

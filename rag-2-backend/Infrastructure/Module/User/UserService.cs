@@ -18,7 +18,8 @@ public class UserService(
     DatabaseContext context,
     EmailService emailService,
     UserDao userDao,
-    RefreshTokenDao refreshTokenDao)
+    RefreshTokenDao refreshTokenDao,
+    CourseDao courseDao)
 {
     public void RegisterUser(UserRequest userRequest)
     {
@@ -31,11 +32,13 @@ public class UserService(
             Password = HashUtil.HashPassword(userRequest.Password)
         };
 
-        if (user.Role == Role.Student && IsStudyYearWrong(userRequest))
-            throw new BadRequestException("Wrong study cycle year");
+        if (user.Role == Role.Student)
+            CheckStudentData(userRequest);
 
         user.StudyCycleYearA = userRequest.StudyCycleYearA ?? 0;
         user.StudyCycleYearB = userRequest.StudyCycleYearB ?? 0;
+        user.Course = userRequest.CourseId != null ? courseDao.GetCourseByIdOrThrow(userRequest.CourseId.Value) : null;
+        user.Group = userRequest.Group;
 
         context.Users.Add(user);
         GenerateAccountTokenAndSendConfirmationMail(user);
@@ -133,11 +136,16 @@ public class UserService(
 
     //
 
-    private static bool IsStudyYearWrong(UserRequest userRequest)
+    private static void CheckStudentData(UserRequest userRequest)
     {
-        return !userRequest.StudyCycleYearA.HasValue || !userRequest.StudyCycleYearB.HasValue ||
-               userRequest.StudyCycleYearA == 0 || userRequest.StudyCycleYearB == 0 ||
-               userRequest.StudyCycleYearB - userRequest.StudyCycleYearA != 1;
+        if (!userRequest.StudyCycleYearA.HasValue || !userRequest.StudyCycleYearB.HasValue ||
+            userRequest.StudyCycleYearA == 0 || userRequest.StudyCycleYearB == 0 ||
+            userRequest.StudyCycleYearB - userRequest.StudyCycleYearA != 1)
+            throw new BadRequestException("Wrong study cycle year");
+
+        if (!userRequest.CourseId.HasValue) throw new BadRequestException("Wrong course id");
+
+        if (string.IsNullOrEmpty(userRequest.Group)) throw new BadRequestException("Wrong group");
     }
 
     private void GenerateAccountTokenAndSendConfirmationMail(Database.Entity.User user)

@@ -7,4 +7,6 @@ public class UserRequest
     public required string Name { get; init; }
     public int? StudyCycleYearA { get; init; }
     public int? StudyCycleYearB { get; init; }
+    public int? CourseId { get; init; }
+    public string? Group { get; init; }
 }

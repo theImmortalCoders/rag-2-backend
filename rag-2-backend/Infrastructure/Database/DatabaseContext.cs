@@ -18,6 +18,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     public virtual required DbSet<AccountConfirmationToken> AccountConfirmationTokens { get; init; }
     public virtual required DbSet<RefreshToken> RefreshTokens { get; init; }
     public virtual required DbSet<PasswordResetToken> PasswordResetTokens { get; init; }
+    public virtual DbSet<Course> Courses { get; init; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

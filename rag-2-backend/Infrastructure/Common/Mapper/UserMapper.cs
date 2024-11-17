@@ -20,7 +20,9 @@ public abstract class UserMapper
             StudyCycleYearB = user.StudyCycleYearB,
             Name = user.Name,
             LastPlayed = user.LastPlayed.Equals(DateTime.MinValue) ? null : user.LastPlayed,
-            Banned = user.Banned
+            Banned = user.Banned,
+            Course = user.Course,
+            Group = user.Group
         };
     }
 }

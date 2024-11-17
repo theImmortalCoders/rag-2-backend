@@ -39,4 +39,6 @@ public class User
     public int StudyCycleYearB { get; set; }
     public bool Banned { get; set; }
     public DateTime LastPlayed { get; set; }
+    public Course? Course { get; set; }
+    [MaxLength(100)] public string? Group { get; set; }
 }

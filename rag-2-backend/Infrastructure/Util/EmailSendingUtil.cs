@@ -32,7 +32,7 @@ public class EmailSendingUtil(IOptions<MailSettings> options)
                 var image = await emailBodyBuilder.LinkedResources.AddAsync(imagePath);
                 image.ContentId = "logo";
             }
-            
+
             emailMessage.Body = emailBodyBuilder.ToMessageBody();
 
             using var mailClient = new SmtpClient();

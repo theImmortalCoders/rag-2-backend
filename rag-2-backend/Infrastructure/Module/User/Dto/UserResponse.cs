@@ -1,6 +1,7 @@
 #region
 
 using rag_2_backend.Infrastructure.Common.Model;
+using rag_2_backend.Infrastructure.Database.Entity;
 
 #endregion
 
@@ -16,4 +17,6 @@ public class UserResponse
     public required int StudyCycleYearB { get; set; }
     public DateTime? LastPlayed { get; set; }
     public bool Banned { get; set; }
+    public Course? Course { get; set; }
+    public string? Group { get; set; }
 }

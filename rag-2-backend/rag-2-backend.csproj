@@ -43,6 +43,7 @@
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Infrastructure\Common\"/>
+        <Folder Include="Infrastructure\Module\Course\"/>
         <Folder Include="Migrations\"/>
     </ItemGroup>
 

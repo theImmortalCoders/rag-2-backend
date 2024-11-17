@@ -22,8 +22,8 @@ public class User
     {
         var domain = email.Split('@')[1];
 
-        // if (!domain.Equals("stud.prz.edu.pl") && !domain.Equals("prz.edu.pl"))
-        //     throw new BadRequestException("Wrong domain");
+        if (!domain.Equals("stud.prz.edu.pl") && !domain.Equals("prz.edu.pl"))
+            throw new BadRequestException("Wrong domain");
 
         Role = domain.Equals("stud.prz.edu.pl") ? Role.Student : Role.Teacher;
         Email = email;

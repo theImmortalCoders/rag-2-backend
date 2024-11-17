@@ -77,6 +77,18 @@ public class CourseServiceTest
     [Fact]
     public void ShouldRemoveCourse()
     {
+        var users = new List<User>
+        {
+            new()
+            {
+                Id = 1,
+                Name = "User1",
+                Password = null!,
+                Course = _courses[1]
+            }
+        };
+        
+        _contextMock.Setup(c => c.Users).Returns(users.AsQueryable().BuildMockDbSet().Object);
         _courseService.RemoveCourse(1);
 
         _contextMock.Verify(c => c.Courses.Remove(It.Is<Course>(course => course.Id == 1)), Times.Once);

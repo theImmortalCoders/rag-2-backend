@@ -15,7 +15,7 @@ public class EmailService(EmailSendingUtil emailSendingUtil, IConfiguration conf
                    address + "'>Confirm</a>";
 
         Task.Run(async () =>
-            await emailSendingUtil.SendMail(to, "Confirmation email", body));
+            await emailSendingUtil.SendMail(to, "[RAG-2] Confirmation email", body));
     }
 
     public virtual void SendPasswordResetMail(string to, string token)
@@ -25,6 +25,6 @@ public class EmailService(EmailSendingUtil emailSendingUtil, IConfiguration conf
                    address + "'>Reset</a>";
 
         Task.Run(async () =>
-            await emailSendingUtil.SendMail(to, "Password reset", body));
+            await emailSendingUtil.SendMail(to, "[RAG-2] Password reset", body));
     }
 }

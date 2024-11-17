@@ -1,6 +1,7 @@
 #region
 
 using HttpExceptions.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
 
@@ -18,7 +19,9 @@ public class UserDao(DatabaseContext context)
 
     public virtual User GetUserByEmailOrThrow(string email)
     {
-        return context.Users.SingleOrDefault(u => u.Email == email) ??
+        return context.Users
+                   .Include(u => u.Course)
+                   .SingleOrDefault(u => u.Email == email) ??
                throw new NotFoundException("User not found");
     }
 

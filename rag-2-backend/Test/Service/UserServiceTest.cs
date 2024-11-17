@@ -37,7 +37,9 @@ public class UserServiceTest
         Name = "John",
         Password = HashUtil.HashPassword("password"),
         StudyCycleYearA = 2022,
-        StudyCycleYearB = 2023
+        StudyCycleYearB = 2023,
+        Course = new Course(),
+        Group = "group"
     };
 
     private readonly UserService _userService;
@@ -59,12 +61,14 @@ public class UserServiceTest
 
         Mock<UserDao> userMock = new(_contextMock.Object);
         Mock<RefreshTokenDao> refreshTokenDaoMock = new(_contextMock.Object);
+        Mock<CourseDao> courseDaoMock = new(_contextMock.Object);
         userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
         userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
 
         _userService = new UserService(_contextMock.Object, _emailService.Object,
-            userMock.Object, refreshTokenDaoMock.Object);
+            userMock.Object, refreshTokenDaoMock.Object, courseDaoMock.Object);
 
+        courseDaoMock.Setup(c => c.GetCourseByIdOrThrow(It.IsAny<int>())).Returns(_user.Course);
         _contextMock.Setup(c => c.Users).Returns(() => new List<User> { _user }
             .AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.AccountConfirmationTokens)

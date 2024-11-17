@@ -73,7 +73,6 @@ public class AuthService(
             Expiration = DateTime.Now.AddDays(refreshTokenExpirationTimeDays),
             Token = Guid.NewGuid().ToString()
         };
-        refreshTokenDao.RemoveTokensForUser(user);
         databaseContext.RefreshTokens.Add(refreshToken);
         databaseContext.SaveChanges();
         return refreshToken;

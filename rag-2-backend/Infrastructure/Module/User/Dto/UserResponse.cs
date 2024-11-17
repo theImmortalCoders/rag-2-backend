@@ -16,4 +16,6 @@ public class UserResponse
     public required int StudyCycleYearB { get; set; }
     public DateTime? LastPlayed { get; set; }
     public bool Banned { get; set; }
+    public Database.Entity.Course? Course { get; set; }
+    public string? Group { get; set; }
 }

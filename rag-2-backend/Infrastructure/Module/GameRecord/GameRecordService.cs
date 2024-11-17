@@ -26,10 +26,10 @@ public class GameRecordService(
     public List<GameRecordResponse> GetRecordsByGameAndUser(int gameId, int userId, string email)
     {
         var principal = userDao.GetUserByEmailOrThrow(email);
-        
+
         if (principal.Id != userId && principal.Role.Equals(Role.Student))
             throw new BadRequestException("Permission denied");
-        
+
         return gameRecordDao.GetRecordsByGameAndUser(gameId, userId);
     }
 

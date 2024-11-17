@@ -57,10 +57,9 @@ public class AuthService(
         return UserMapper.Map(userDao.GetUserByEmailOrThrow(email));
     }
 
-    public void LogoutUser(string email)
+    public void LogoutUser(string token)
     {
-        var user = userDao.GetUserByEmailOrThrow(email);
-        refreshTokenDao.RemoveTokensForUser(user);
+        refreshTokenDao.RemoveTokenByToken(token);
     }
 
     //

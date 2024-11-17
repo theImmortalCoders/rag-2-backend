@@ -13,7 +13,7 @@ public class EmailSendingUtil(IOptions<MailSettings> options)
 {
     private readonly MailSettings _mailSettings = options.Value;
 
-    public async Task<bool> SendMail(string to, string subject, string body)
+    public async Task<bool> SendMail(string to, string subject, string body, string? imagePath = null)
     {
         try
         {
@@ -27,6 +27,12 @@ public class EmailSendingUtil(IOptions<MailSettings> options)
             {
                 HtmlBody = body
             };
+            if (imagePath != null && File.Exists(imagePath))
+            {
+                var image = await emailBodyBuilder.LinkedResources.AddAsync(imagePath);
+                image.ContentId = "logo";
+            }
+            
             emailMessage.Body = emailBodyBuilder.ToMessageBody();
 
             using var mailClient = new SmtpClient();
@@ -37,8 +43,9 @@ public class EmailSendingUtil(IOptions<MailSettings> options)
 
             return true;
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            Console.WriteLine(e);
             return false;
         }
     }

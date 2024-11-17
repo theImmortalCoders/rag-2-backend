@@ -87,7 +87,7 @@ public class CourseServiceTest
                 Course = _courses[1]
             }
         };
-        
+
         _contextMock.Setup(c => c.Users).Returns(users.AsQueryable().BuildMockDbSet().Object);
         _courseService.RemoveCourse(1);
 

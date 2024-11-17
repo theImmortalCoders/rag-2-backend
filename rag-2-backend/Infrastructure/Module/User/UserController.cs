@@ -39,6 +39,15 @@ public class UserController(UserService userService) : ControllerBase
         userService.ConfirmAccount(token);
     }
 
+    /// <summary>Edit account info</summary>
+    /// <response code="400">Wrong data</response>
+    [HttpPatch("update")]
+    [Authorize]
+    public void UpdateAccount([Required] UserEditRequest request)
+    {
+        userService.UpdateAccount(request, AuthDao.GetPrincipalEmail(User));
+    }
+
     /// <summary>Request password reset for given email</summary>
     [HttpPost("request-password-reset")]
     public void RequestPasswordReset([Required] string email)

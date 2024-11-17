@@ -15,4 +15,9 @@ public class CourseDao(DatabaseContext dbContext)
         return dbContext.Courses.SingleOrDefault(u => u.Id == id) ??
                throw new NotFoundException("Course not found");
     }
+
+    public virtual List<Course> GetAllCourses()
+    {
+        return dbContext.Courses.ToList();
+    }
 }

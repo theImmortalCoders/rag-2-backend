@@ -13,5 +13,5 @@ namespace rag_2_backend.Infrastructure.Database.Entity;
 public class Course
 {
     [Key] public int Id { get; init; }
-    [MaxLength(100)] public string Name { get; init; } = "";
+    [MaxLength(100)] public string Name { get; set; } = "";
 }

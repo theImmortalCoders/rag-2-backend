@@ -7,6 +7,7 @@ using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Module.Administration;
 using rag_2_backend.Infrastructure.Module.Auth;
 using rag_2_backend.Infrastructure.Module.Background;
+using rag_2_backend.Infrastructure.Module.Course;
 using rag_2_backend.Infrastructure.Module.Email;
 using rag_2_backend.Infrastructure.Module.Game;
 using rag_2_backend.Infrastructure.Module.GameRecord;
@@ -53,6 +54,7 @@ public static class ServiceRegistrationExtension
         services.AddScoped<GameRecordDao>();
         services.AddScoped<StatsUtil>();
         services.AddScoped<CourseDao>();
+        services.AddScoped<CourseService>();
     }
 
     private static void ConfigSwagger(IServiceCollection services)

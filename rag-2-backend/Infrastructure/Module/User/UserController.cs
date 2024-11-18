@@ -15,7 +15,7 @@ namespace rag_2_backend.Infrastructure.Module.User;
 public class UserController(UserService userService) : ControllerBase
 {
     /// <summary>Register new user</summary>
-    /// <response code="400">User already exists or wrong study cycle year</response>
+    /// <response code="400">User already exists or wrong data</response>
     [HttpPost("register")]
     public void Register([FromBody] [Required] UserRequest userRequest)
     {
@@ -39,7 +39,7 @@ public class UserController(UserService userService) : ControllerBase
         userService.ConfirmAccount(token);
     }
 
-    /// <summary>Edit account info</summary>
+    /// <summary>Edit account info (Auth)</summary>
     /// <response code="400">Wrong data</response>
     [HttpPatch("update")]
     [Authorize]

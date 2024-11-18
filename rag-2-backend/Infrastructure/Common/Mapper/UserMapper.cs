@@ -16,12 +16,12 @@ public abstract class UserMapper
             Id = user.Id,
             Email = user.Email,
             Role = user.Role,
-            StudyCycleYearA = user.StudyCycleYearA,
-            StudyCycleYearB = user.StudyCycleYearB,
+            StudyCycleYearA = user.StudyCycleYearA == 0 ? null : user.StudyCycleYearA,
+            StudyCycleYearB = user.StudyCycleYearB == 0 ? null : user.StudyCycleYearB,
             Name = user.Name,
             LastPlayed = user.LastPlayed.Equals(DateTime.MinValue) ? null : user.LastPlayed,
             Banned = user.Banned,
-            Course = user.Course,
+            Course = user.Course != null ? CourseMapper.Map(user.Course) : null,
             Group = user.Group
         };
     }

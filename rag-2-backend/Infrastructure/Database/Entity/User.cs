@@ -20,7 +20,15 @@ public class User
 
     public User(string email)
     {
-        var domain = email.Split('@')[1];
+        string domain;
+        try
+        {
+            domain = email.Split('@')[1];
+        }
+        catch (Exception)
+        {
+            throw new BadRequestException("Invalid email address");
+        }
 
         if (!domain.Equals("stud.prz.edu.pl") && !domain.Equals("prz.edu.pl"))
             throw new BadRequestException("Wrong domain");

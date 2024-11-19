@@ -28,6 +28,7 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     /// <summary>Download JSON file from specific game, admin and teacher can download everyone's data (Auth)</summary>
     /// <response code="404">User or game record not found</response>
     /// <response code="403">Permission denied</response>
+    /// <response code="400">Record is empty</response>
     [HttpGet("{recordedGameId:int}")]
     [Authorize]
     public FileContentResult DownloadRecordData([Required] int recordedGameId)

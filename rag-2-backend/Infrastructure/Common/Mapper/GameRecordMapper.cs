@@ -21,7 +21,8 @@ public abstract class GameRecordMapper
             EndState = gameRecord.EndState,
             OutputSpec = gameRecord.OutputSpec,
             SizeMb = gameRecord.SizeMb,
-            User = UserMapper.Map(gameRecord.User)
+            User = UserMapper.Map(gameRecord.User),
+            IsEmptyRecord = gameRecord.IsEmptyRecord
         };
     }
 

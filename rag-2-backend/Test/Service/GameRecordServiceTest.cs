@@ -143,7 +143,7 @@ public class GameRecordServiceTests
         _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).Returns(user);
         _gameRecordDaoMock.Setup(dao => dao.GetRecordedGameById(recordedGameId)).Returns(recordedGame);
 
-        Assert.Throws<BadRequestException>(() => _gameRecordService.DownloadRecordData(recordedGameId, email));
+        Assert.Throws<ForbiddenException>(() => _gameRecordService.DownloadRecordData(recordedGameId, email));
     }
 
     [Fact]

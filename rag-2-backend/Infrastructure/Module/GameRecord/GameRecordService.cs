@@ -39,18 +39,18 @@ public class GameRecordService(
         var recordedGame = gameRecordDao.GetRecordedGameById(recordedGameId);
 
         if (user.Id != recordedGame.User.Id && user.Role.Equals(Role.Student))
-            throw new BadRequestException("Permission denied");
+            throw new ForbiddenException("Permission denied");
+        if (recordedGame.IsEmptyRecord)
+            throw new BadRequestException("Record is empty");
 
         return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(GameRecordMapper.JsonMap(recordedGame)));
     }
 
     public void AddGameRecord(GameRecordRequest recordRequest, string email)
     {
-        if (recordRequest.Values.Count == 0 || recordRequest.Values[^1].State == null)
-            throw new BadRequestException("Value state cannot be empty");
-
         var user = userDao.GetUserByEmailOrThrow(email);
-        CheckUserDataLimit(recordRequest, user);
+        if (recordRequest.Values.Count > 0)
+            CheckUserDataLimit(recordRequest, user);
 
         var game = gameDao.GetGameByNameOrThrow(recordRequest.GameName);
 
@@ -59,10 +59,13 @@ public class GameRecordService(
             Game = game,
             Values = recordRequest.Values,
             User = user,
-            Players = recordRequest.Values[0].Players,
+            Players = recordRequest.Players,
             OutputSpec = recordRequest.OutputSpec,
-            EndState = recordRequest.Values[^1].State?.ToString(),
-            SizeMb = JsonSerializer.Serialize(recordRequest.Values).Length / (1024.0 * 1024.0)
+            EndState = recordRequest.Values.Count > 0 ? recordRequest.Values[^1].State?.ToString() : "{}",
+            SizeMb = recordRequest.Values.Count > 0
+                ? JsonSerializer.Serialize(recordRequest.Values).Length / (1024.0 * 1024.0)
+                : 0,
+            IsEmptyRecord = recordRequest.Values.Count == 0
         };
 
         UpdateTimestamps(recordRequest, recordedGame);
@@ -120,8 +123,12 @@ public class GameRecordService(
     {
         try
         {
-            var startTimestamp = recordRequest.Values[0].Timestamp;
-            var endTimestamp = recordRequest.Values[^1].Timestamp;
+            var startTimestamp = recordRequest.Values.Count > 0
+                ? recordRequest.Values[0].Timestamp
+                : DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            var endTimestamp = recordRequest.Values.Count > 0
+                ? recordRequest.Values[^1].Timestamp
+                : DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             if (startTimestamp is not null)
                 gameRecord.Started = DateTime.Parse(startTimestamp, null, DateTimeStyles.RoundtripKind);
             if (endTimestamp is not null)

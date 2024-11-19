@@ -18,4 +18,5 @@ public class GameRecordResponse
     public string? OutputSpec { get; set; }
     public object? EndState { get; set; }
     public double SizeMb { get; init; }
+    public bool IsEmptyRecord { get; init; }
 }

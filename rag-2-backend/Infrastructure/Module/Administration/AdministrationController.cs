@@ -38,10 +38,10 @@ public class AdministrationController(
         administrationService.ChangeRole(userId, role);
     }
 
-    /// <summary>Get details of any user by user ID, only yours if not admin or teacher (Auth)</summary>
+    /// <summary>Get details of any user by user ID (Admin, Teacher)</summary>
     /// <response code="403">Cannot view details</response>
     [HttpGet("{userId:int}/details")]
-    [Authorize]
+    [Authorize(Roles = "Admin,Teacher")]
     public UserResponse GetUserDetails([Required] int userId)
     {
         return administrationService.GetUserDetails(AuthDao.GetPrincipalEmail(User), userId);

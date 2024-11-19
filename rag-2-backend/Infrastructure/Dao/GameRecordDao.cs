@@ -72,7 +72,7 @@ public class GameRecordDao(DatabaseContext dbContext)
         try
         {
             dbContext.Database.ExecuteSqlRaw(
-                "SELECT InsertRecordedGame(@GameId, @Values, @UserId, @Players, @OutputSpec, @EndState, @Started, @Ended, @SizeMb)",
+                "SELECT InsertRecordedGame(@GameId, @Values, @UserId, @Players, @OutputSpec, @EndState, @Started, @Ended, @SizeMb, @IsEmptyRecord)",
                 new NpgsqlParameter("@GameId", game.Id),
                 new NpgsqlParameter("@Values", JsonSerializer.Serialize(gameRecord.Values)),
                 new NpgsqlParameter("@UserId", user.Id),
@@ -81,7 +81,8 @@ public class GameRecordDao(DatabaseContext dbContext)
                 new NpgsqlParameter("@EndState", gameRecord.EndState),
                 new NpgsqlParameter("@Started", gameRecord.Started),
                 new NpgsqlParameter("@Ended", gameRecord.Ended),
-                new NpgsqlParameter("@SizeMb", gameRecord.SizeMb)
+                new NpgsqlParameter("@SizeMb", gameRecord.SizeMb),
+                new NpgsqlParameter("@IsEmptyRecord", gameRecord.IsEmptyRecord)
             );
             transaction.Commit();
         }

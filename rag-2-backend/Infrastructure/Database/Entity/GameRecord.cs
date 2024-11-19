@@ -21,4 +21,5 @@ public class GameRecord
     [MaxLength(1000)] public string? OutputSpec { get; init; }
     [MaxLength(500)] public string? EndState { get; init; }
     public double SizeMb { get; init; }
+    public bool IsEmptyRecord { get; init; }
 }

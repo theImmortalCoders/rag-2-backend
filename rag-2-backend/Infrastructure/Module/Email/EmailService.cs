@@ -11,20 +11,22 @@ public class EmailService(EmailSendingUtil emailSendingUtil, IConfiguration conf
     public virtual void SendConfirmationEmail(string to, string token)
     {
         var address = config.GetValue<string>("FrontendURLs:MailConfirmationURL") + token;
-        var body = "Please confirm your email address by clicking this button: <a target='blank' href='" +
-                   address + "'>Confirm</a>";
+        var templatePath = Path.Combine(AppContext.BaseDirectory, "Templates", "confirmation.html");
+        var logoPath = Path.Combine(AppContext.BaseDirectory, "Templates/Images", "rag-2.png");
+        var body = File.ReadAllText(templatePath).Replace("{{address}}", address);
 
         Task.Run(async () =>
-            await emailSendingUtil.SendMail(to, "Confirmation email", body));
+            await emailSendingUtil.SendMail(to, "Confirmation email", body, logoPath));
     }
 
     public virtual void SendPasswordResetMail(string to, string token)
     {
         var address = config.GetValue<string>("FrontendURLs:PasswordResetURL") + token;
-        var body = "Reset your password by clicking this button: <a target='blank' href='" +
-                   address + "'>Reset</a>";
+        var templatePath = Path.Combine(AppContext.BaseDirectory, "Templates", "password-reset.html");
+        var logoPath = Path.Combine(AppContext.BaseDirectory, "Templates/Images", "rag-2.png");
+        var body = File.ReadAllText(templatePath).Replace("{{address}}", address);
 
         Task.Run(async () =>
-            await emailSendingUtil.SendMail(to, "Password reset", body));
+            await emailSendingUtil.SendMail(to, "Password reset", body, logoPath));
     }
 }

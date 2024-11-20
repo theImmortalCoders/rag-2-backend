@@ -18,7 +18,8 @@ public class UserService(
     DatabaseContext context,
     EmailService emailService,
     UserDao userDao,
-    RefreshTokenDao refreshTokenDao)
+    RefreshTokenDao refreshTokenDao,
+    CourseDao courseDao)
 {
     public void RegisterUser(UserRequest userRequest)
     {
@@ -31,14 +32,33 @@ public class UserService(
             Password = HashUtil.HashPassword(userRequest.Password)
         };
 
-        if (user.Role == Role.Student && IsStudyYearWrong(userRequest))
-            throw new BadRequestException("Wrong study cycle year");
-
-        user.StudyCycleYearA = userRequest.StudyCycleYearA ?? 0;
-        user.StudyCycleYearB = userRequest.StudyCycleYearB ?? 0;
+        UpdateUserProperties(
+            userRequest.StudyCycleYearA,
+            userRequest.StudyCycleYearB,
+            userRequest.CourseId,
+            userRequest.Group,
+            user
+        );
 
         context.Users.Add(user);
         GenerateAccountTokenAndSendConfirmationMail(user);
+        context.SaveChanges();
+    }
+
+    public void UpdateAccount(UserEditRequest request, string principalEmail)
+    {
+        var user = userDao.GetUserByEmailOrThrow(principalEmail);
+
+        UpdateUserProperties(
+            request.StudyCycleYearA,
+            request.StudyCycleYearB,
+            request.CourseId,
+            request.Group,
+            user
+        );
+        user.Name = request.Name;
+
+        context.Users.Update(user);
         context.SaveChanges();
     }
 
@@ -133,11 +153,33 @@ public class UserService(
 
     //
 
-    private static bool IsStudyYearWrong(UserRequest userRequest)
+    private void UpdateUserProperties(
+        int? studyCycleYearA, int? studyCycleYearB, int? courseId, string? group, Database.Entity.User user
+    )
     {
-        return !userRequest.StudyCycleYearA.HasValue || !userRequest.StudyCycleYearB.HasValue ||
-               userRequest.StudyCycleYearA == 0 || userRequest.StudyCycleYearB == 0 ||
-               userRequest.StudyCycleYearB - userRequest.StudyCycleYearA != 1;
+        if (user.Role == Role.Student && (
+                !studyCycleYearA.HasValue || !studyCycleYearB.HasValue || !courseId.HasValue ||
+                string.IsNullOrWhiteSpace(group))
+           ) throw new BadRequestException("Invalid data");
+
+        if ((studyCycleYearA.HasValue && !studyCycleYearB.HasValue) ||
+            (!studyCycleYearA.HasValue && studyCycleYearB.HasValue))
+            throw new BadRequestException("Invalid data");
+
+        if (studyCycleYearA.HasValue && studyCycleYearB.HasValue &&
+            !IsStudyCycleYearValid(studyCycleYearA.Value, studyCycleYearB.Value))
+            throw new BadRequestException("Invalid data");
+
+        user.StudyCycleYearA = studyCycleYearA ?? 0;
+        user.StudyCycleYearB = studyCycleYearB ?? 0;
+        user.Course = courseId != null ? courseDao.GetCourseByIdOrThrow(courseId.Value) : null;
+        user.Group = group;
+    }
+
+    private static bool IsStudyCycleYearValid(int studyCycleYearA, int studyCycleYearB)
+    {
+        return studyCycleYearA != 0 && studyCycleYearB != 0 &&
+               studyCycleYearB - studyCycleYearA == 1;
     }
 
     private void GenerateAccountTokenAndSendConfirmationMail(Database.Entity.User user)

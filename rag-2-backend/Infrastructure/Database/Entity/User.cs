@@ -20,7 +20,15 @@ public class User
 
     public User(string email)
     {
-        var domain = email.Split('@')[1];
+        string domain;
+        try
+        {
+            domain = email.Split('@')[1];
+        }
+        catch (Exception)
+        {
+            throw new BadRequestException("Invalid email address");
+        }
 
         if (!domain.Equals("stud.prz.edu.pl") && !domain.Equals("prz.edu.pl"))
             throw new BadRequestException("Wrong domain");
@@ -32,11 +40,13 @@ public class User
     [Key] public int Id { get; init; }
     [MaxLength(100)] public string Email { get; init; } = "";
     [MaxLength(100)] public required string Password { get; set; }
-    [MaxLength(100)] public required string Name { get; init; }
+    [MaxLength(100)] public required string Name { get; set; }
     public Role Role { get; set; }
     public bool Confirmed { get; set; }
     public int StudyCycleYearA { get; set; }
     public int StudyCycleYearB { get; set; }
     public bool Banned { get; set; }
     public DateTime LastPlayed { get; set; }
+    public Course? Course { get; set; }
+    [MaxLength(100)] public string? Group { get; set; }
 }

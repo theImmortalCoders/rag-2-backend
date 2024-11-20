@@ -51,6 +51,7 @@ public class GameRecordDaoTests
         };
         var user = new User
         {
+            Id = 1,
             Email = email,
             Password = null!,
             Name = null!
@@ -63,7 +64,7 @@ public class GameRecordDaoTests
         };
         SetUpGameRecordsDbSet(new List<GameRecord> { gameRecord });
 
-        var result = _gameRecordDao.GetRecordsByGameAndUser(gameId, email);
+        var result = _gameRecordDao.GetRecordsByGameAndUser(gameId, 1);
 
         Assert.Single(result);
     }

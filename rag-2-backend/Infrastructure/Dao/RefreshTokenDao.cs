@@ -15,4 +15,11 @@ public class RefreshTokenDao(DatabaseContext context)
         context.RefreshTokens.RemoveRange(unusedTokens);
         context.SaveChanges();
     }
+
+    public virtual void RemoveTokenByToken(string token)
+    {
+        var unusedTokens = context.RefreshTokens.Where(r => r.Token == token).ToList();
+        context.RefreshTokens.RemoveRange(unusedTokens);
+        context.SaveChanges();
+    }
 }

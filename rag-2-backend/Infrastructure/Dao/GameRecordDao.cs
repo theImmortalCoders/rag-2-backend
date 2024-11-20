@@ -15,12 +15,12 @@ namespace rag_2_backend.Infrastructure.Dao;
 
 public class GameRecordDao(DatabaseContext dbContext)
 {
-    public virtual List<GameRecordResponse> GetRecordsByGameAndUser(int gameId, string email)
+    public virtual List<GameRecordResponse> GetRecordsByGameAndUser(int gameId, int userId)
     {
         return dbContext.GameRecords
             .Include(r => r.Game)
             .Include(r => r.User)
-            .Where(r => r.Game.Id == gameId && r.User.Email == email)
+            .Where(r => r.Game.Id == gameId && r.User.Id == userId)
             .ToList()
             .Select(GameRecordMapper.Map)
             .ToList();
@@ -72,7 +72,7 @@ public class GameRecordDao(DatabaseContext dbContext)
         try
         {
             dbContext.Database.ExecuteSqlRaw(
-                "SELECT InsertRecordedGame(@GameId, @Values, @UserId, @Players, @OutputSpec, @EndState, @Started, @Ended, @SizeMb)",
+                "SELECT InsertRecordedGame(@GameId, @Values, @UserId, @Players, @OutputSpec, @EndState, @Started, @Ended, @SizeMb, @IsEmptyRecord)",
                 new NpgsqlParameter("@GameId", game.Id),
                 new NpgsqlParameter("@Values", JsonSerializer.Serialize(gameRecord.Values)),
                 new NpgsqlParameter("@UserId", user.Id),
@@ -81,7 +81,8 @@ public class GameRecordDao(DatabaseContext dbContext)
                 new NpgsqlParameter("@EndState", gameRecord.EndState),
                 new NpgsqlParameter("@Started", gameRecord.Started),
                 new NpgsqlParameter("@Ended", gameRecord.Ended),
-                new NpgsqlParameter("@SizeMb", gameRecord.SizeMb)
+                new NpgsqlParameter("@SizeMb", gameRecord.SizeMb),
+                new NpgsqlParameter("@IsEmptyRecord", gameRecord.IsEmptyRecord)
             );
             transaction.Commit();
         }

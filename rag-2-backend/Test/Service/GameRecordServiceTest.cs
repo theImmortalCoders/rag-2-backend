@@ -13,6 +13,7 @@ using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
 using rag_2_backend.Infrastructure.Module.GameRecord;
 using rag_2_backend.Infrastructure.Module.GameRecord.Dto;
+using rag_2_backend.Infrastructure.Module.User.Dto;
 using Xunit;
 
 #endregion
@@ -54,12 +55,29 @@ public class GameRecordServiceTests
         {
             new()
             {
-                GameName = null!
+                GameName = null!,
+                User = new UserResponse
+                {
+                    Id = 0,
+                    Email = null!,
+                    Name = null!,
+                    StudyCycleYearA = 0,
+                    StudyCycleYearB = 0
+                }
             }
         };
-        _gameRecordDaoMock.Setup(dao => dao.GetRecordsByGameAndUser(gameId, email)).Returns(records);
+        var user = new User
+        {
+            Id = 1,
+            Email = email,
+            Role = Role.Teacher,
+            Password = null!,
+            Name = null!
+        };
+        _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).Returns(user);
+        _gameRecordDaoMock.Setup(dao => dao.GetRecordsByGameAndUser(gameId, 1)).Returns(records);
 
-        var result = _gameRecordService.GetRecordsByGameAndUser(gameId, email);
+        var result = _gameRecordService.GetRecordsByGameAndUser(gameId, 1, email);
 
         Assert.Equal(records, result);
     }
@@ -84,7 +102,7 @@ public class GameRecordServiceTests
             Game = new Game
             {
                 Name = "pong"
-            }!,
+            },
             Values = []
         };
 
@@ -125,7 +143,7 @@ public class GameRecordServiceTests
         _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).Returns(user);
         _gameRecordDaoMock.Setup(dao => dao.GetRecordedGameById(recordedGameId)).Returns(recordedGame);
 
-        Assert.Throws<BadRequestException>(() => _gameRecordService.DownloadRecordData(recordedGameId, email));
+        Assert.Throws<ForbiddenException>(() => _gameRecordService.DownloadRecordData(recordedGameId, email));
     }
 
     [Fact]

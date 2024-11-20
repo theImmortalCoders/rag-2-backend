@@ -20,7 +20,9 @@ public abstract class GameRecordMapper
             Started = gameRecord.Started,
             EndState = gameRecord.EndState,
             OutputSpec = gameRecord.OutputSpec,
-            SizeMb = gameRecord.SizeMb
+            SizeMb = gameRecord.SizeMb,
+            User = UserMapper.Map(gameRecord.User),
+            IsEmptyRecord = gameRecord.IsEmptyRecord
         };
     }
 

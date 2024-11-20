@@ -29,10 +29,14 @@ public class AuthController(IConfiguration config, AuthService authService) : Co
     [HttpPost("login")]
     public string Login([FromBody] [Required] UserLoginRequest loginRequest)
     {
+        var refreshTokenExpiryDays = loginRequest.RememberMe
+            ? double.Parse(config["RefreshToken:ExpireDaysRememberMe"] ?? "10")
+            : double.Parse(config["RefreshToken:ExpireDays"] ?? "1");
+
         var response = authService.LoginUser(
             loginRequest.Email,
             loginRequest.Password,
-            double.Parse(config["RefreshToken:ExpireDays"] ?? "30")
+            refreshTokenExpiryDays
         );
 
         HttpContext.Response.Cookies.Append("refreshToken", response.RefreshToken,
@@ -65,7 +69,10 @@ public class AuthController(IConfiguration config, AuthService authService) : Co
     [Authorize]
     public void Logout()
     {
-        authService.LogoutUser(AuthDao.GetPrincipalEmail(User));
+        HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
+
+        if (refreshToken != null)
+            authService.LogoutUser(refreshToken);
     }
 
     /// <summary>Get current user details (Auth)</summary>

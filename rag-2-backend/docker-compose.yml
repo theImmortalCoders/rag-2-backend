@@ -17,7 +17,6 @@
       - "6379:6379"
     volumes:
       - redisdata:/data
-    restart: always
 volumes:
   pgdata: { }
   redisdata: { }

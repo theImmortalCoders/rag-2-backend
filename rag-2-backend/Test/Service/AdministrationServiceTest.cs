@@ -10,6 +10,7 @@ using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
 using rag_2_backend.Infrastructure.Module.Administration;
+using rag_2_backend.Infrastructure.Module.Administration.Dto;
 using rag_2_backend.Infrastructure.Module.User.Dto;
 using Xunit;
 
@@ -116,7 +117,7 @@ public class AdministrationServiceTest
 
         Assert.Equal(
             JsonConvert.SerializeObject(response),
-            JsonConvert.SerializeObject(_administrationService.GetStudents()[0])
+            JsonConvert.SerializeObject(_administrationService.GetUsers(SortDirection.Asc, UserSortByFields.Id)[0])
         );
     }
 }

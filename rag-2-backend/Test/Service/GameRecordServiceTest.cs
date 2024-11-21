@@ -75,9 +75,24 @@ public class GameRecordServiceTests
             Name = null!
         };
         _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).Returns(user);
-        _gameRecordDaoMock.Setup(dao => dao.GetRecordsByGameAndUser(gameId, 1)).Returns(records);
+        _gameRecordDaoMock.Setup(dao => dao.GetRecordsByGameAndUser(
+            gameId,
+            1,
+            null,
+            null,
+            null, SortDirection.Asc,
+            GameRecordSortByFields.Id
+        )).Returns(records);
 
-        var result = _gameRecordService.GetRecordsByGameAndUser(gameId, 1, email);
+        var result = _gameRecordService.GetRecordsByGameAndUser(
+            gameId,
+            1,
+            null,
+            null,
+            null, SortDirection.Asc,
+            GameRecordSortByFields.Id,
+            email
+        );
 
         Assert.Equal(records, result);
     }

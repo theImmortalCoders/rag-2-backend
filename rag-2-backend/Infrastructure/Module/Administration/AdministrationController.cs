@@ -61,10 +61,11 @@ public class AdministrationController(
         };
     }
 
-    /// <summary>Get all users list (Admin, Teacher)</summary>
+    /// <summary>Get all users list with optional filters and sorting (Admin, Teacher)</summary>
     [HttpGet("users")]
     [Authorize(Roles = "Admin, Teacher")]
     public List<UserResponse> GetUsers(
+        [Required] Role role,
         string? email,
         int? studyCycleYearA,
         int? studyCycleYearB,
@@ -75,6 +76,7 @@ public class AdministrationController(
     )
     {
         return administrationService.GetUsers(
+            role,
             email,
             studyCycleYearA,
             studyCycleYearB,

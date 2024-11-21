@@ -3,6 +3,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Module.GameRecord.Dto;
 
@@ -18,11 +19,28 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     /// <response code="404">User or game not found</response>
     [HttpGet]
     [Authorize]
-    public List<GameRecordResponse> GetRecordsByGame([Required] int gameId, [Required] int userId)
+    public List<GameRecordResponse> GetRecordsByGame(
+        [Required] int gameId,
+        [Required] int userId,
+        bool? isEmptyRecord,
+        DateTime? endDateFrom,
+        DateTime? endDateTo,
+        SortDirection sortDirection = SortDirection.Asc,
+        GameRecordSortByFields sortBy = GameRecordSortByFields.Id
+    )
     {
         var email = AuthDao.GetPrincipalEmail(User);
 
-        return gameRecordService.GetRecordsByGameAndUser(gameId, userId, email);
+        return gameRecordService.GetRecordsByGameAndUser(
+            gameId,
+            userId,
+            isEmptyRecord,
+            endDateFrom,
+            endDateTo,
+            sortDirection,
+            sortBy,
+            email
+        );
     }
 
     /// <summary>Download JSON file from specific game, admin and teacher can download everyone's data (Auth)</summary>

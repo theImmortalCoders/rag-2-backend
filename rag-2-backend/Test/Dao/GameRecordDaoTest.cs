@@ -3,9 +3,11 @@
 using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
+using rag_2_backend.Infrastructure.Module.GameRecord.Dto;
 using Xunit;
 
 #endregion
@@ -64,7 +66,14 @@ public class GameRecordDaoTests
         };
         SetUpGameRecordsDbSet(new List<GameRecord> { gameRecord });
 
-        var result = _gameRecordDao.GetRecordsByGameAndUser(gameId, 1);
+        var result = _gameRecordDao.GetRecordsByGameAndUser(
+            gameId,
+            1,
+            null,
+            null,
+            null, SortDirection.Asc,
+            GameRecordSortByFields.Id
+        );
 
         Assert.Single(result);
     }

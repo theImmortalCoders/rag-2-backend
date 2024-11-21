@@ -117,7 +117,8 @@ public class AdministrationServiceTest
 
         Assert.Equal(
             JsonConvert.SerializeObject(response),
-            JsonConvert.SerializeObject(_administrationService.GetUsers(SortDirection.Asc, UserSortByFields.Id)[0])
+            JsonConvert.SerializeObject(_administrationService.GetUsers(null, null, null, null, null, SortDirection.Asc,
+                UserSortByFields.Id)[0])
         );
     }
 }

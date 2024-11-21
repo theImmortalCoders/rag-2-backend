@@ -16,39 +16,39 @@ namespace rag_2_backend.Infrastructure.Module.Administration;
 
 public class AdministrationService(DatabaseContext context, UserDao userDao)
 {
-    public void ChangeBanStatus(int userId, bool isBanned)
+    public async Task ChangeBanStatus(int userId, bool isBanned)
     {
-        var user = userDao.GetUserByIdOrThrow(userId);
+        var user = await userDao.GetUserByIdOrThrow(userId);
 
         if (user.Role == Role.Admin)
             throw new BadRequestException("Cannot ban administrator");
 
         user.Banned = isBanned;
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
-    public void ChangeRole(int userId, Role role)
+    public async Task ChangeRole(int userId, Role role)
     {
-        var user = userDao.GetUserByIdOrThrow(userId);
+        var user = await userDao.GetUserByIdOrThrow(userId);
 
         if (user.Role == Role.Admin)
             throw new BadRequestException("Cannot change administrator's role");
 
         user.Role = role;
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
-    public UserResponse GetUserDetails(string principalEmail, int userId)
+    public async Task<UserResponse> GetUserDetails(string principalEmail, int userId)
     {
-        var principal = userDao.GetUserByEmailOrThrow(principalEmail);
+        var principal = await userDao.GetUserByEmailOrThrow(principalEmail);
 
         if (principal.Role is Role.Student && userId != principal.Id)
             throw new ForbiddenException("Cannot view details");
 
-        return UserMapper.Map(userDao.GetUserByIdOrThrow(userId));
+        return UserMapper.Map(await userDao.GetUserByIdOrThrow(userId));
     }
 
-    public List<UserResponse> GetUsers(
+    public async Task<List<UserResponse>> GetUsers(
         Role role,
         string? email,
         int? studyCycleYearA,
@@ -67,7 +67,7 @@ public class AdministrationService(DatabaseContext context, UserDao userDao)
         query = FilterUsers(email, studyCycleYearA, studyCycleYearB, group, courseName, query);
         query = SortUsers(sortDirection, sortBy, query);
 
-        return query.AsEnumerable().Select(UserMapper.Map).ToList();
+        return await Task.Run(() => query.AsEnumerable().Select(UserMapper.Map).ToList());
     }
 
     //

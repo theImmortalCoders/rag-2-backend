@@ -23,7 +23,7 @@ public class GameRecordService(
     GameDao gameDao
 )
 {
-    public List<GameRecordResponse> GetRecordsByGameAndUser(
+    public async Task<List<GameRecordResponse>> GetRecordsByGameAndUser(
         int gameId,
         int userId,
         bool? isEmptyRecord,
@@ -34,12 +34,12 @@ public class GameRecordService(
         string email
     )
     {
-        var principal = userDao.GetUserByEmailOrThrow(email);
+        var principal = await userDao.GetUserByEmailOrThrow(email);
 
         if (principal.Id != userId && principal.Role.Equals(Role.Student))
             throw new BadRequestException("Permission denied");
 
-        return gameRecordDao.GetRecordsByGameAndUser(
+        return await gameRecordDao.GetRecordsByGameAndUser(
             gameId,
             userId,
             isEmptyRecord,
@@ -50,10 +50,10 @@ public class GameRecordService(
         );
     }
 
-    public byte[] DownloadRecordData(int recordedGameId, string email)
+    public async Task<byte[]> DownloadRecordData(int recordedGameId, string email)
     {
-        var user = userDao.GetUserByEmailOrThrow(email);
-        var recordedGame = gameRecordDao.GetRecordedGameById(recordedGameId);
+        var user = await userDao.GetUserByEmailOrThrow(email);
+        var recordedGame = await gameRecordDao.GetRecordedGameById(recordedGameId);
 
         if (user.Id != recordedGame.User.Id && user.Role.Equals(Role.Student))
             throw new ForbiddenException("Permission denied");
@@ -63,13 +63,13 @@ public class GameRecordService(
         return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(GameRecordMapper.JsonMap(recordedGame)));
     }
 
-    public void AddGameRecord(GameRecordRequest recordRequest, string email)
+    public async Task AddGameRecord(GameRecordRequest recordRequest, string email)
     {
-        var user = userDao.GetUserByEmailOrThrow(email);
+        var user = await userDao.GetUserByEmailOrThrow(email);
         if (recordRequest.Values.Count > 0)
-            CheckUserDataLimit(recordRequest, user);
+            await CheckUserDataLimit(recordRequest, user);
 
-        var game = gameDao.GetGameByNameOrThrow(recordRequest.GameName);
+        var game = await gameDao.GetGameByNameOrThrow(recordRequest.GameName);
 
         var recordedGame = new Database.Entity.GameRecord
         {
@@ -91,24 +91,24 @@ public class GameRecordService(
         executionStrategy.Execute(() => gameRecordDao.PerformGameRecordTransaction(game, recordedGame, user));
     }
 
-    public void RemoveGameRecord(int gameRecordId, string email)
+    public async Task RemoveGameRecord(int gameRecordId, string email)
     {
-        var user = userDao.GetUserByEmailOrThrow(email);
-        var recordedGame = gameRecordDao.GetRecordedGameById(gameRecordId);
+        var user = await userDao.GetUserByEmailOrThrow(email);
+        var recordedGame = await gameRecordDao.GetRecordedGameById(gameRecordId);
 
         if (user.Id != recordedGame.User.Id)
             throw new BadRequestException("Permission denied");
 
         context.GameRecords.Remove(recordedGame);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
     //
 
-    private void CheckUserDataLimit(GameRecordRequest recordRequest, Database.Entity.User user)
+    private async Task CheckUserDataLimit(GameRecordRequest recordRequest, Database.Entity.User user)
     {
         var initialSizeMb = JsonSerializer.Serialize(recordRequest.Values).Length / (1024.0 * 1024.0);
-        var totalSizeMb = GetSizeByUser(user.Id, initialSizeMb);
+        var totalSizeMb = await GetSizeByUser(user.Id, initialSizeMb);
 
         switch (user.Role)
         {
@@ -126,9 +126,9 @@ public class GameRecordService(
         }
     }
 
-    private double GetSizeByUser(int userId, double initialSizeBytes)
+    private async Task<double> GetSizeByUser(int userId, double initialSizeBytes)
     {
-        var results = gameRecordDao.GetGameRecordsByUserWithGame(userId)
+        var results = (await gameRecordDao.GetGameRecordsByUserWithGame(userId))
             .Select(r => r.SizeMb)
             .ToList()
             .Sum();

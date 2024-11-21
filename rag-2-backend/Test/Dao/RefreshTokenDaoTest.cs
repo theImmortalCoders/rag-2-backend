@@ -38,7 +38,7 @@ public class RefreshTokenDaoTests
     }
 
     [Fact]
-    public void RemoveTokensForUser_ShouldRemoveAllTokensForSpecifiedUser()
+    public async Task RemoveTokensForUser_ShouldRemoveAllTokensForSpecifiedUser()
     {
         const int userId = 1;
         var user = new User
@@ -65,7 +65,7 @@ public class RefreshTokenDaoTests
 
         SetUpRefreshTokensDbSet(tokens);
 
-        _refreshTokenDao.RemoveTokensForUser(user);
+        await _refreshTokenDao.RemoveTokensForUser(user);
 
         _dbContextMock.Verify(db => db.RefreshTokens
             .RemoveRange(It.Is<IEnumerable<RefreshToken>>
@@ -74,7 +74,7 @@ public class RefreshTokenDaoTests
     }
 
     [Fact]
-    public void RemoveTokensForUser_ShouldNotThrow_WhenNoTokensExistForUser()
+    public async Task RemoveTokensForUser_ShouldNotThrow_WhenNoTokensExistForUser()
     {
         var user = new User
         {
@@ -84,7 +84,7 @@ public class RefreshTokenDaoTests
         };
         SetUpRefreshTokensDbSet(new List<RefreshToken>());
 
-        var exception = Record.Exception(() => _refreshTokenDao.RemoveTokensForUser(user));
+        var exception = await Record.ExceptionAsync(() => _refreshTokenDao.RemoveTokensForUser(user));
 
         Assert.Null(exception);
         _dbContextMock.Verify(db => db.RefreshTokens

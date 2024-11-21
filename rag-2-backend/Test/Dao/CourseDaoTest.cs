@@ -39,23 +39,23 @@ public class CourseDaoTest
     }
 
     [Fact]
-    public void GetCourseById_ShouldReturnCourse()
+    public async Task GetCourseById_ShouldReturnCourse()
     {
         var expectedCourse = new Course
         {
             Id = 1
         };
         SetUpCourses(new List<Course> { expectedCourse });
-        var result = _courseDao.GetCourseByIdOrThrow(1);
+        var result = await _courseDao.GetCourseByIdOrThrow(1);
 
         Assert.Equal(expectedCourse, result);
     }
 
     [Fact]
-    public void GetCourseById_ShouldThrowNotFound()
+    public async Task GetCourseById_ShouldThrowNotFound()
     {
         SetUpCourses(new List<Course>());
 
-        Assert.Throws<NotFoundException>(() => _courseDao.GetCourseByIdOrThrow(2));
+        await Assert.ThrowsAsync<NotFoundException>(() => _courseDao.GetCourseByIdOrThrow(2));
     }
 }

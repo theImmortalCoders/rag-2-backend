@@ -20,16 +20,16 @@ public class StatsUtil(
 {
     private readonly IDatabase _redisDatabase = redisConnection.GetDatabase();
 
-    public GameStatsResponse UpdateCachedGameStats(Game game)
+    public async Task<GameStatsResponse> UpdateCachedGameStats(Game game)
     {
-        var records = gameRecordDao.GetGameRecordsByGameWithUser(game.Id);
+        var records = await gameRecordDao.GetGameRecordsByGameWithUser(game.Id);
 
         var gameStatsResponse = new GameStatsResponse
         {
             FirstPlayed = records.Count > 0 ? records[0].Started : null,
             LastPlayed = records.Count > 0 ? records.Last().Ended : null,
             Plays = records.Count,
-            TotalStorageMb = gameRecordDao.GetGameRecordsByGameWithUser(game.Id)
+            TotalStorageMb = (await gameRecordDao.GetGameRecordsByGameWithUser(game.Id))
                 .Select(r => r.SizeMb)
                 .ToList()
                 .Sum(),
@@ -45,14 +45,14 @@ public class StatsUtil(
         return gameStatsResponse;
     }
 
-    public OverallStatsResponse UpdateCachedStats()
+    public async Task<OverallStatsResponse> UpdateCachedStats()
     {
         var overallStatsResponse = new OverallStatsResponse
         {
-            PlayersAmount = userDao.CountUsers(),
-            TotalMemoryMb = gameRecordDao.CountTotalStorageMb(),
-            GamesAmount = gameDao.GetAllGames().Count,
-            GameRecordsAmount = gameRecordDao.CountAllGameRecords(),
+            PlayersAmount = await userDao.CountUsers(),
+            TotalMemoryMb = await gameRecordDao.CountTotalStorageMb(),
+            GamesAmount = (await gameDao.GetAllGames()).Count,
+            GameRecordsAmount = await gameRecordDao.CountAllGameRecords(),
             StatsUpdatedDate = DateTime.Now
         };
 

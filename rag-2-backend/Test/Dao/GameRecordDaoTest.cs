@@ -42,7 +42,7 @@ public class GameRecordDaoTests
     }
 
     [Fact]
-    public void GetRecordsByGameAndUser_ShouldReturnRecords_WhenRecordsExist()
+    public async Task GetRecordsByGameAndUser_ShouldReturnRecords_WhenRecordsExist()
     {
         const int gameId = 1;
         const string email = "test@example.com";
@@ -66,7 +66,7 @@ public class GameRecordDaoTests
         };
         SetUpGameRecordsDbSet(new List<GameRecord> { gameRecord });
 
-        var result = _gameRecordDao.GetRecordsByGameAndUser(
+        var result = await _gameRecordDao.GetRecordsByGameAndUser(
             gameId,
             1,
             null,
@@ -79,7 +79,7 @@ public class GameRecordDaoTests
     }
 
     [Fact]
-    public void GetGameRecordsByUserWithGame_ShouldReturnRecords_WhenRecordsExist()
+    public async Task GetGameRecordsByUserWithGame_ShouldReturnRecords_WhenRecordsExist()
     {
         const int userId = 1;
         var user = new User
@@ -101,14 +101,14 @@ public class GameRecordDaoTests
         };
         SetUpGameRecordsDbSet(new List<GameRecord> { gameRecord });
 
-        var result = _gameRecordDao.GetGameRecordsByUserWithGame(userId);
+        var result = await _gameRecordDao.GetGameRecordsByUserWithGame(userId);
 
         Assert.Single(result);
         Assert.Equal(game.Id, result[0].Game.Id);
     }
 
     [Fact]
-    public void GetGameRecordsByGameWithUser_ShouldReturnRecords_WhenRecordsExist()
+    public async Task GetGameRecordsByGameWithUser_ShouldReturnRecords_WhenRecordsExist()
     {
         const int gameId = 1;
         var game = new Game
@@ -130,14 +130,14 @@ public class GameRecordDaoTests
         };
         SetUpGameRecordsDbSet(new List<GameRecord> { gameRecord });
 
-        var result = _gameRecordDao.GetGameRecordsByGameWithUser(gameId);
+        var result = await _gameRecordDao.GetGameRecordsByGameWithUser(gameId);
 
         Assert.Single(result);
         Assert.Equal(user.Id, result[0].User.Id);
     }
 
     [Fact]
-    public void GetRecordedGameById_ShouldReturnGameRecord_WhenRecordExists()
+    public async Task GetRecordedGameById_ShouldReturnGameRecord_WhenRecordExists()
     {
         const int recordId = 1;
         var gameRecord = new GameRecord
@@ -149,17 +149,17 @@ public class GameRecordDaoTests
         };
         SetUpGameRecordsDbSet(new List<GameRecord> { gameRecord });
 
-        var result = _gameRecordDao.GetRecordedGameById(recordId);
+        var result = await _gameRecordDao.GetRecordedGameById(recordId);
 
         Assert.Equal(recordId, result.Id);
     }
 
     [Fact]
-    public void GetRecordedGameById_ShouldThrowNotFoundException_WhenRecordDoesNotExist()
+    public async Task GetRecordedGameById_ShouldThrowNotFoundException_WhenRecordDoesNotExist()
     {
         const int recordId = 1;
         SetUpGameRecordsDbSet(new List<GameRecord>());
 
-        Assert.Throws<NotFoundException>(() => _gameRecordDao.GetRecordedGameById(recordId));
+        await Assert.ThrowsAsync<NotFoundException>(() => _gameRecordDao.GetRecordedGameById(recordId));
     }
 }

@@ -24,9 +24,9 @@ public class CourseController(CourseService courseService) : ControllerBase
     /// <response code="400">Course with this name already exists</response>
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public void Add([FromBody] [Required] CourseRequest request)
+    public async Task Add([FromBody] [Required] CourseRequest request)
     {
-        courseService.AddCourse(request);
+        await courseService.AddCourse(request);
     }
 
     /// <summary>Edit existing course (Admin)</summary>
@@ -34,9 +34,9 @@ public class CourseController(CourseService courseService) : ControllerBase
     /// <response code="400">Course with this name already exists</response>
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Admin")]
-    public void Edit([FromBody] [Required] CourseRequest request, int id)
+    public async Task Edit([FromBody] [Required] CourseRequest request, int id)
     {
-        courseService.EditCourse(request, id);
+        await courseService.EditCourse(request, id);
     }
 
     /// <summary>Remove existing course (Admin)</summary>
@@ -44,8 +44,8 @@ public class CourseController(CourseService courseService) : ControllerBase
     /// <response code="400">Cannot delete used course</response>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "Admin")]
-    public void Remove([Required] int id)
+    public async Task Remove([Required] int id)
     {
-        courseService.RemoveCourse(id);
+        await courseService.RemoveCourse(id);
     }
 }

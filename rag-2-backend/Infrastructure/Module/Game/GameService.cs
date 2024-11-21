@@ -20,9 +20,9 @@ public class GameService(DatabaseContext context, GameDao gameDao)
         return games.Select(GameMapper.Map);
     }
 
-    public void AddGame(GameRequest request)
+    public async Task AddGame(GameRequest request)
     {
-        if (context.Games.Any(g => g.Name == request.Name))
+        if (await context.Games.AnyAsync(g => g.Name == request.Name))
             throw new BadRequestException("Game with this name already exists");
 
         var game = new Database.Entity.Game
@@ -32,31 +32,31 @@ public class GameService(DatabaseContext context, GameDao gameDao)
         };
 
         context.Games.Add(game);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
-    public void EditGame(GameRequest request, int id)
+    public async Task EditGame(GameRequest request, int id)
     {
-        var game = gameDao.GetGameByIdOrThrow(id);
+        var game = await gameDao.GetGameByIdOrThrow(id);
 
-        if (context.Games.Any(g => g.Name == request.Name && g.Name != game.Name))
+        if (await context.Games.AnyAsync(g => g.Name == request.Name && g.Name != game.Name))
             throw new BadRequestException("Game with this name already exists");
 
         game.Name = request.Name;
         game.Description = request.Description;
 
         context.Games.Update(game);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
-    public void RemoveGame(int id)
+    public async Task RemoveGame(int id)
     {
-        var game = gameDao.GetGameByIdOrThrow(id);
+        var game = await gameDao.GetGameByIdOrThrow(id);
 
-        var records = context.GameRecords.Where(g => g.Game.Id == id).ToList();
+        var records = await context.GameRecords.Where(g => g.Game.Id == id).ToListAsync();
         foreach (var record in records) context.GameRecords.Remove(record);
 
         context.Games.Remove(game);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 }

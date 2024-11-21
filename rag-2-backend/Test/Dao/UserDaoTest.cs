@@ -39,7 +39,7 @@ public class UserDaoTests
     }
 
     [Fact]
-    public void GetUserByIdOrThrow_ShouldReturnUser_WhenUserExists()
+    public async Task GetUserByIdOrThrow_ShouldReturnUser_WhenUserExists()
     {
         const int userId = 1;
         var user = new User
@@ -51,23 +51,23 @@ public class UserDaoTests
         };
         SetUpUsersDbSet(new List<User> { user });
 
-        var result = _userDao.GetUserByIdOrThrow(userId);
+        var result = await _userDao.GetUserByIdOrThrow(userId);
 
         Assert.Equal(userId, result.Id);
         Assert.Equal("test@example.com", result.Email);
     }
 
     [Fact]
-    public void GetUserByIdOrThrow_ShouldThrowNotFoundException_WhenUserDoesNotExist()
+    public async Task GetUserByIdOrThrow_ShouldThrowNotFoundException_WhenUserDoesNotExist()
     {
         const int userId = 1;
         SetUpUsersDbSet(new List<User>());
 
-        Assert.Throws<NotFoundException>(() => _userDao.GetUserByIdOrThrow(userId));
+        await Assert.ThrowsAsync<NotFoundException>(() => _userDao.GetUserByIdOrThrow(userId));
     }
 
     [Fact]
-    public void GetUserByEmailOrThrow_ShouldReturnUser_WhenUserExists()
+    public async Task GetUserByEmailOrThrow_ShouldReturnUser_WhenUserExists()
     {
         const string email = "test@example.com";
         var user = new User
@@ -79,18 +79,18 @@ public class UserDaoTests
         };
         SetUpUsersDbSet(new List<User> { user });
 
-        var result = _userDao.GetUserByEmailOrThrow(email);
+        var result = await _userDao.GetUserByEmailOrThrow(email);
 
         Assert.Equal(email, result.Email);
         Assert.Equal(1, result.Id);
     }
 
     [Fact]
-    public void GetUserByEmailOrThrow_ShouldThrowNotFoundException_WhenUserDoesNotExist()
+    public async Task GetUserByEmailOrThrow_ShouldThrowNotFoundException_WhenUserDoesNotExist()
     {
         const string email = "test@example.com";
         SetUpUsersDbSet(new List<User>());
 
-        Assert.Throws<NotFoundException>(() => _userDao.GetUserByEmailOrThrow(email));
+        await Assert.ThrowsAsync<NotFoundException>(() => _userDao.GetUserByEmailOrThrow(email));
     }
 }

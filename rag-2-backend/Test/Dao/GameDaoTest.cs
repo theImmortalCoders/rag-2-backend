@@ -3,6 +3,7 @@
 using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using Moq.EntityFrameworkCore;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
@@ -27,15 +28,7 @@ public class GameDaoTests
 
     private void SetUpGameDbSet(IEnumerable<Game> games)
     {
-        var gamesQueryable = games.AsQueryable();
-        var gamesDbSetMock = new Mock<DbSet<Game>>();
-        gamesDbSetMock.As<IQueryable<Game>>().Setup(m => m.Provider).Returns(gamesQueryable.Provider);
-        gamesDbSetMock.As<IQueryable<Game>>().Setup(m => m.Expression).Returns(gamesQueryable.Expression);
-        gamesDbSetMock.As<IQueryable<Game>>().Setup(m => m.ElementType).Returns(gamesQueryable.ElementType);
-        using var enumerator = gamesQueryable.GetEnumerator();
-        gamesDbSetMock.As<IQueryable<Game>>().Setup(m => m.GetEnumerator()).Returns(enumerator);
-
-        _dbContextMock.Setup(db => db.Games).Returns(gamesDbSetMock.Object);
+        _dbContextMock.Setup(db => db.Games).ReturnsDbSet(games);
     }
 
     [Fact]

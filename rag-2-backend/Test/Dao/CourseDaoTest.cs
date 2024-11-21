@@ -3,6 +3,7 @@
 using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using Moq.EntityFrameworkCore;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
@@ -27,15 +28,7 @@ public class CourseDaoTest
 
     private void SetUpCourses(IEnumerable<Course> courses)
     {
-        var coursesQueryable = courses.AsQueryable();
-        var coursesDbSetMock = new Mock<DbSet<Course>>();
-        coursesDbSetMock.As<IQueryable<Course>>().Setup(m => m.Provider).Returns(coursesQueryable.Provider);
-        coursesDbSetMock.As<IQueryable<Course>>().Setup(m => m.Expression).Returns(coursesQueryable.Expression);
-        coursesDbSetMock.As<IQueryable<Course>>().Setup(m => m.ElementType).Returns(coursesQueryable.ElementType);
-        using var enumerator = coursesQueryable.GetEnumerator();
-        coursesDbSetMock.As<IQueryable<Course>>().Setup(m => m.GetEnumerator()).Returns(enumerator);
-
-        _dbContextMock.Setup(db => db.Courses).Returns(coursesDbSetMock.Object);
+        _dbContextMock.Setup(db => db.Courses).ReturnsDbSet(courses);
     }
 
     [Fact]

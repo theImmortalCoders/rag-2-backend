@@ -5,9 +5,11 @@ using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using rag_2_backend.Infrastructure.Common.Mapper;
+using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
 using rag_2_backend.Infrastructure.Module.GameRecord.Dto;
+using rag_2_backend.Infrastructure.Util;
 
 #endregion
 
@@ -15,13 +17,26 @@ namespace rag_2_backend.Infrastructure.Dao;
 
 public class GameRecordDao(DatabaseContext dbContext)
 {
-    public virtual List<GameRecordResponse> GetRecordsByGameAndUser(int gameId, int userId)
+    public virtual List<GameRecordResponse> GetRecordsByGameAndUser(
+        int gameId,
+        int userId,
+        bool? isEmptyRecord,
+        DateTime? endDateFrom,
+        DateTime? endDateTo,
+        SortDirection sortDirection,
+        GameRecordSortByFields sortBy
+    )
     {
-        return dbContext.GameRecords
+        var query = dbContext.GameRecords
             .Include(r => r.Game)
             .Include(r => r.User)
             .Where(r => r.Game.Id == gameId && r.User.Id == userId)
-            .ToList()
+            .AsQueryable();
+
+        query = FilterGameRecords(isEmptyRecord, endDateFrom, endDateTo, query);
+        query = SortGameRecords(sortDirection, sortBy, query);
+
+        return query.AsEnumerable()
             .Select(GameRecordMapper.Map)
             .ToList();
     }
@@ -91,5 +106,39 @@ public class GameRecordDao(DatabaseContext dbContext)
             transaction.Rollback();
             throw;
         }
+    }
+
+    //
+
+    private static IQueryable<GameRecord> FilterGameRecords(
+        bool? isEmptyRecord,
+        DateTime? endDateFrom,
+        DateTime? endDateTo,
+        IQueryable<GameRecord> query
+    )
+    {
+        if (isEmptyRecord.HasValue)
+            query = query.Where(u => u.IsEmptyRecord == isEmptyRecord);
+        if (endDateFrom.HasValue)
+            query = query.Where(u => u.Ended >= endDateFrom);
+        if (endDateTo.HasValue)
+            query = query.Where(u => u.Ended <= endDateTo);
+
+        return query;
+    }
+
+    private static IQueryable<GameRecord> SortGameRecords(
+        SortDirection sortDirection,
+        GameRecordSortByFields sortBy,
+        IQueryable<GameRecord> query
+    )
+    {
+        return sortBy switch
+        {
+            GameRecordSortByFields.Id => DataSortingUtil.ApplySorting(query, x => x.Id, sortDirection),
+            GameRecordSortByFields.Ended => DataSortingUtil.ApplySorting(query, x => x.Ended, sortDirection),
+            GameRecordSortByFields.SizeMb => DataSortingUtil.ApplySorting(query, x => x.SizeMb, sortDirection),
+            _ => query
+        };
     }
 }

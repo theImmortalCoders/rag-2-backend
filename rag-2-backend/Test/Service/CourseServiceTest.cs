@@ -35,28 +35,28 @@ public class CourseServiceTest
     {
         Mock<CourseDao> courseDaoMock = new(_contextMock.Object);
         _courseService = new CourseService(_contextMock.Object, courseDaoMock.Object);
-        courseDaoMock.Setup(dao => dao.GetCourseByIdOrThrow(It.IsAny<int>())).Returns(_courses[0]);
+        courseDaoMock.Setup(dao => dao.GetCourseByIdOrThrow(It.IsAny<int>())).ReturnsAsync(_courses[0]);
         _contextMock.Setup(c => c.Courses).Returns(_courses.AsQueryable().BuildMockDbSet().Object);
     }
 
     [Fact]
-    public void ShouldGetAllCourses()
+    public async Task ShouldGetAllCourses()
     {
-        var actualCourses = _courseService.GetCourses().Result;
+        var actualCourses = await _courseService.GetCourses();
 
         Assert.Equal(JsonConvert.SerializeObject(_courses.Select(CourseMapper.Map)),
             JsonConvert.SerializeObject(actualCourses));
     }
 
     [Fact]
-    public void ShouldAddCourse()
+    public async Task ShouldAddCourse()
     {
         var courseRequest = new CourseRequest
         {
             Name = "Course3"
         };
 
-        _courseService.AddCourse(courseRequest);
+        await _courseService.AddCourse(courseRequest);
 
         _contextMock.Verify(
             c => c.Courses.Add(It.Is<Course>(course => course.Name == courseRequest.Name)),
@@ -64,18 +64,18 @@ public class CourseServiceTest
     }
 
     [Fact]
-    public void ShouldNotAddCourseIfCourseAlreadyExists()
+    public async Task ShouldNotAddCourseIfCourseAlreadyExists()
     {
         var courseRequest = new CourseRequest
         {
             Name = "Course1"
         };
 
-        Assert.Throws<BadRequestException>(() => _courseService.AddCourse(courseRequest));
+        await Assert.ThrowsAsync<BadRequestException>(() => _courseService.AddCourse(courseRequest));
     }
 
     [Fact]
-    public void ShouldRemoveCourse()
+    public async Task ShouldRemoveCourse()
     {
         var users = new List<User>
         {
@@ -89,13 +89,13 @@ public class CourseServiceTest
         };
 
         _contextMock.Setup(c => c.Users).Returns(users.AsQueryable().BuildMockDbSet().Object);
-        _courseService.RemoveCourse(1);
+        await _courseService.RemoveCourse(1);
 
         _contextMock.Verify(c => c.Courses.Remove(It.Is<Course>(course => course.Id == 1)), Times.Once);
     }
 
     [Fact]
-    public void ShouldThrowWhenRemoveCourse()
+    public async Task ShouldThrowWhenRemoveCourse()
     {
         var users = new List<User>
         {
@@ -109,18 +109,18 @@ public class CourseServiceTest
         };
         _contextMock.Setup(c => c.Users).Returns(users.AsQueryable().BuildMockDbSet().Object);
 
-        Assert.Throws<BadRequestException>(() => _courseService.RemoveCourse(1));
+        await Assert.ThrowsAsync<BadRequestException>(() => _courseService.RemoveCourse(1));
     }
 
     [Fact]
-    public void ShouldUpdateCourse()
+    public async Task ShouldUpdateCourse()
     {
         var courseRequest = new CourseRequest
         {
             Name = "Course3"
         };
 
-        _courseService.EditCourse(courseRequest, 1);
+        await _courseService.EditCourse(courseRequest, 1);
 
         _contextMock.Verify(
             c => c.Courses.Update(It.Is<Course>(course => course.Name == courseRequest.Name)),
@@ -128,13 +128,13 @@ public class CourseServiceTest
     }
 
     [Fact]
-    public void ShouldNotUpdateCourseIfCourseAlreadyExists()
+    public async Task ShouldNotUpdateCourseIfCourseAlreadyExists()
     {
         var courseRequest = new CourseRequest
         {
             Name = "Course2"
         };
 
-        Assert.Throws<BadRequestException>(() => _courseService.EditCourse(courseRequest, 1));
+        await Assert.ThrowsAsync<BadRequestException>(() => _courseService.EditCourse(courseRequest, 1));
     }
 }

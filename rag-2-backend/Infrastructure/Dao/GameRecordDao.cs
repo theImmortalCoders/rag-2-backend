@@ -17,7 +17,7 @@ namespace rag_2_backend.Infrastructure.Dao;
 
 public class GameRecordDao(DatabaseContext dbContext)
 {
-    public virtual List<GameRecordResponse> GetRecordsByGameAndUser(
+    public virtual async Task<List<GameRecordResponse>> GetRecordsByGameAndUser(
         int gameId,
         int userId,
         bool? isEmptyRecord,
@@ -36,48 +36,48 @@ public class GameRecordDao(DatabaseContext dbContext)
         query = FilterGameRecords(isEmptyRecord, endDateFrom, endDateTo, query);
         query = SortGameRecords(sortDirection, sortBy, query);
 
-        return query.AsEnumerable()
+        return await Task.Run(() => query.AsEnumerable()
             .Select(GameRecordMapper.Map)
-            .ToList();
+            .ToList());
     }
 
-    public virtual List<GameRecord> GetGameRecordsByUserWithGame(int userId)
+    public virtual async Task<List<GameRecord>> GetGameRecordsByUserWithGame(int userId)
     {
-        return dbContext.GameRecords
+        return await dbContext.GameRecords
             .OrderBy(r => r.Started)
             .Where(r => r.User.Id == userId)
             .Include(recordedGame => recordedGame.Game)
-            .ToList();
+            .ToListAsync();
     }
 
-    public virtual List<GameRecord> GetGameRecordsByGameWithUser(int gameId)
+    public virtual async Task<List<GameRecord>> GetGameRecordsByGameWithUser(int gameId)
     {
-        return dbContext.GameRecords
+        return await dbContext.GameRecords
             .OrderBy(r => r.Started)
             .Where(r => r.Game.Id == gameId)
             .Include(recordedGame => recordedGame.User)
-            .ToList();
+            .ToListAsync();
     }
 
-    public virtual GameRecord GetRecordedGameById(int recordedGameId)
+    public virtual async Task<GameRecord> GetRecordedGameById(int recordedGameId)
     {
-        return dbContext.GameRecords.Include(recordedGame => recordedGame.User)
+        return await dbContext.GameRecords.Include(recordedGame => recordedGame.User)
                    .Include(r => r.Game)
-                   .SingleOrDefault(g => g.Id == recordedGameId)
+                   .SingleOrDefaultAsync(g => g.Id == recordedGameId)
                ?? throw new NotFoundException("Game record not found");
     }
 
-    public virtual double CountTotalStorageMb()
+    public virtual async Task<double> CountTotalStorageMb()
     {
-        return dbContext.GameRecords
-            .Select(r => r.SizeMb)
-            .ToList()
+        return (await dbContext.GameRecords
+                .Select(r => r.SizeMb)
+                .ToListAsync())
             .Sum();
     }
 
-    public virtual int CountAllGameRecords()
+    public virtual async Task<int> CountAllGameRecords()
     {
-        return dbContext.GameRecords.Count();
+        return await dbContext.GameRecords.CountAsync();
     }
 
     public virtual void PerformGameRecordTransaction(Game game, GameRecord gameRecord,

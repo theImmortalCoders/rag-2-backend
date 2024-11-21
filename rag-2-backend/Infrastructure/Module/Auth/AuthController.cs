@@ -20,20 +20,21 @@ public class AuthController(IConfiguration config, AuthService authService) : Co
     /// <response code="401">Token invalid</response>
     [HttpGet("verify")]
     [Authorize]
-    public void VerifyToken()
+    public Task VerifyToken()
     {
+        return Task.CompletedTask;
     }
 
     /// <summary>Authenticate</summary>
     /// <response code="401">Invalid password or mail not confirmed or user banned</response>
     [HttpPost("login")]
-    public string Login([FromBody] [Required] UserLoginRequest loginRequest)
+    public async Task<string> Login([FromBody] [Required] UserLoginRequest loginRequest)
     {
         var refreshTokenExpiryDays = loginRequest.RememberMe
             ? double.Parse(config["RefreshToken:ExpireDaysRememberMe"] ?? "10")
             : double.Parse(config["RefreshToken:ExpireDays"] ?? "1");
 
-        var response = authService.LoginUser(
+        var response = await authService.LoginUser(
             loginRequest.Email,
             loginRequest.Password,
             refreshTokenExpiryDays
@@ -55,31 +56,31 @@ public class AuthController(IConfiguration config, AuthService authService) : Co
     /// <summary>Refresh token</summary>
     /// <response code="401">Invalid refresh token</response>
     [HttpPost("refresh-token")]
-    public string RefreshToken()
+    public async Task<string> RefreshToken()
     {
         HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
         if (refreshToken == null)
             throw new UnauthorizedException("Invalid refresh token");
 
-        return authService.RefreshToken(refreshToken);
+        return await authService.RefreshToken(refreshToken);
     }
 
     /// <summary>Logout current user (Auth)</summary>
     [HttpPost("logout")]
     [Authorize]
-    public void Logout()
+    public async Task Logout()
     {
         HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
 
         if (refreshToken != null)
-            authService.LogoutUser(refreshToken);
+            await authService.LogoutUser(refreshToken);
     }
 
     /// <summary>Get current user details (Auth)</summary>
     [HttpGet("me")]
     [Authorize]
-    public UserResponse Me()
+    public async Task<UserResponse> Me()
     {
-        return authService.GetMe(AuthDao.GetPrincipalEmail(User));
+        return await authService.GetMe(AuthDao.GetPrincipalEmail(User));
     }
 }

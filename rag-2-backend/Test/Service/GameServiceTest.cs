@@ -35,30 +35,30 @@ public class GameServiceTest
     {
         Mock<GameDao> gameDaoMock = new(_contextMock.Object);
         _gameService = new GameService(_contextMock.Object, gameDaoMock.Object);
-        gameDaoMock.Setup(dao => dao.GetGameByIdOrThrow(It.IsAny<int>())).Returns(_games[0]);
+        gameDaoMock.Setup(dao => dao.GetGameByIdOrThrow(It.IsAny<int>())).ReturnsAsync(_games[0]);
         _contextMock.Setup(c => c.Games).Returns(_games.AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.GameRecords)
             .Returns(new List<GameRecord>().AsQueryable().BuildMockDbSet().Object);
     }
 
     [Fact]
-    public void ShouldGetAllGames()
+    public async Task ShouldGetAllGames()
     {
-        var actualGames = _gameService.GetGames().Result;
+        var actualGames = await _gameService.GetGames();
 
         Assert.Equal(JsonConvert.SerializeObject(_games.Select(GameMapper.Map)),
             JsonConvert.SerializeObject(actualGames));
     }
 
     [Fact]
-    public void ShouldAddGame()
+    public async Task ShouldAddGame()
     {
         var gameRequest = new GameRequest
         {
             Name = "Game3"
         };
 
-        _gameService.AddGame(gameRequest);
+        await _gameService.AddGame(gameRequest);
 
         _contextMock.Verify(
             c => c.Games.Add(It.Is<Game>(g => g.Name == gameRequest.Name)),
@@ -66,33 +66,33 @@ public class GameServiceTest
     }
 
     [Fact]
-    public void ShouldNotAddGameIfGameAlreadyExists()
+    public async Task ShouldNotAddGameIfGameAlreadyExists()
     {
         var gameRequest = new GameRequest
         {
             Name = "Game1"
         };
 
-        Assert.Throws<BadRequestException>(() => _gameService.AddGame(gameRequest));
+        await Assert.ThrowsAsync<BadRequestException>(() => _gameService.AddGame(gameRequest));
     }
 
     [Fact]
-    public void ShouldRemoveGame()
+    public async Task ShouldRemoveGame()
     {
-        _gameService.RemoveGame(1);
+        await _gameService.RemoveGame(1);
 
         _contextMock.Verify(c => c.Games.Remove(It.Is<Game>(g => g.Id == 1)), Times.Once);
     }
 
     [Fact]
-    public void ShouldUpdateGame()
+    public async Task ShouldUpdateGame()
     {
         var gameRequest = new GameRequest
         {
             Name = "Game3"
         };
 
-        _gameService.EditGame(gameRequest, 1);
+        await _gameService.EditGame(gameRequest, 1);
 
         _contextMock.Verify(
             c => c.Games.Update(It.Is<Game>(g => g.Name == gameRequest.Name)),
@@ -100,13 +100,13 @@ public class GameServiceTest
     }
 
     [Fact]
-    public void ShouldNotUpdateGameIfGameAlreadyExists()
+    public async Task ShouldNotUpdateGameIfGameAlreadyExists()
     {
         var gameRequest = new GameRequest
         {
             Name = "Game2"
         };
 
-        Assert.Throws<BadRequestException>(() => _gameService.EditGame(gameRequest, 1));
+        await Assert.ThrowsAsync<BadRequestException>(() => _gameService.EditGame(gameRequest, 1));
     }
 }

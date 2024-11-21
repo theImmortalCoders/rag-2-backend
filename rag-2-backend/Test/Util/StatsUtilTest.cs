@@ -45,7 +45,7 @@ public class StatsUtilTests
     }
 
     [Fact]
-    public void UpdateCachedGameStats_ShouldCacheAndReturnGameStats()
+    public async Task UpdateCachedGameStats_ShouldCacheAndReturnGameStats()
     {
         var game = new Game
         {
@@ -84,11 +84,11 @@ public class StatsUtilTests
             }
         };
 
-        _mockGameRecordDao.Setup(dao => dao.GetGameRecordsByGameWithUser(game.Id)).Returns(gameRecords);
-        _mockGameRecordDao.Setup(dao => dao.CountAllGameRecords()).Returns(2);
-        _mockGameDao.Setup(dao => dao.GetAllGames()).Returns([game]);
+        _mockGameRecordDao.Setup(dao => dao.GetGameRecordsByGameWithUser(game.Id)).ReturnsAsync(gameRecords);
+        _mockGameRecordDao.Setup(dao => dao.CountAllGameRecords()).ReturnsAsync(2);
+        _mockGameDao.Setup(dao => dao.GetAllGames()).ReturnsAsync([game]);
 
-        var result = _statsUtil.UpdateCachedGameStats(game);
+        var result = await _statsUtil.UpdateCachedGameStats(game);
 
         Assert.Equal(gameRecords[0].Started, result.FirstPlayed);
         Assert.Equal(gameRecords[1].Ended, result.LastPlayed);
@@ -99,13 +99,13 @@ public class StatsUtilTests
     }
 
     [Fact]
-    public void UpdateCachedStats_ShouldCacheAndReturnOverallStats()
+    public async Task UpdateCachedStats_ShouldCacheAndReturnOverallStats()
     {
-        _mockUserDao.Setup(dao => dao.CountUsers()).Returns(100);
-        _mockGameRecordDao.Setup(dao => dao.CountTotalStorageMb()).Returns(500);
-        _mockGameDao.Setup(dao => dao.GetAllGames()).Returns([]);
+        _mockUserDao.Setup(dao => dao.CountUsers()).ReturnsAsync(100);
+        _mockGameRecordDao.Setup(dao => dao.CountTotalStorageMb()).ReturnsAsync(500);
+        _mockGameDao.Setup(dao => dao.GetAllGames()).ReturnsAsync([]);
 
-        var result = _statsUtil.UpdateCachedStats();
+        var result = await _statsUtil.UpdateCachedStats();
 
         Assert.Equal(100, result.PlayersAmount);
         Assert.Equal(500, result.TotalMemoryMb);

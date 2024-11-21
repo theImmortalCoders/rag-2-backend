@@ -59,8 +59,8 @@ public class AuthServiceTest
 
         Mock<UserDao> userMock = new(_contextMock.Object);
         Mock<RefreshTokenDao> refreshTokenDaoMock = new(_contextMock.Object);
-        userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
-        userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
+        userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).ReturnsAsync(_user);
+        userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).ReturnsAsync(_user);
 
         _authService = new AuthService(userMock.Object, refreshTokenDaoMock.Object, _contextMock.Object,
             _jwtUtilMock.Object);
@@ -82,29 +82,29 @@ public class AuthServiceTest
     }
 
     [Fact]
-    public void ShouldLoginUser()
+    public async Task ShouldLoginUser()
     {
-        Assert.Throws<UnauthorizedException>(
+        await Assert.ThrowsAsync<UnauthorizedException>(
             () => _authService.LoginUser("email@prz.edu.pl", "pass", 30)
         ); //wrong password
 
-        Assert.Throws<UnauthorizedException>(
+        await Assert.ThrowsAsync<UnauthorizedException>(
             () => _authService.LoginUser("email@prz.edu.pl", "password", 30)
         ); //not confirmed
 
         _user.Confirmed = true;
-        _authService.LoginUser("email@prz.edu.pl", "password", 30);
+        await _authService.LoginUser("email@prz.edu.pl", "password", 30);
         _jwtUtilMock.Verify(j => j.GenerateJwt(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
     [Fact]
-    public void ShouldLogoutUser()
+    public async Task ShouldLogoutUser()
     {
-        _authService.LogoutUser("Bearer header");
+        await _authService.LogoutUser("Bearer header");
     }
 
     [Fact]
-    public void ShouldGetMe()
+    public async Task ShouldGetMe()
     {
         var userResponse = new UserResponse
         {
@@ -117,6 +117,6 @@ public class AuthServiceTest
         };
 
         Assert.Equal(JsonConvert.SerializeObject(userResponse),
-            JsonConvert.SerializeObject(_authService.GetMe("email@prz.edu.pl")));
+            JsonConvert.SerializeObject(await _authService.GetMe("email@prz.edu.pl")));
     }
 }

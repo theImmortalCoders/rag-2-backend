@@ -53,37 +53,37 @@ public class AdministrationServiceTest
             new List<User> { _admin, _user }.AsQueryable().BuildMockDbSet().Object
         );
         _userMock = new Mock<UserDao>(_contextMock.Object);
-        _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
-        _userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_admin);
+        _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).ReturnsAsync(_user);
+        _userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).ReturnsAsync(_admin);
         _administrationService = new AdministrationService(_contextMock.Object, _userMock.Object);
     }
 
     [Fact]
-    public void ShouldBanUser()
+    public async Task ShouldBanUser()
     {
-        _administrationService.ChangeBanStatus(2, true);
+        await _administrationService.ChangeBanStatus(2, true);
 
         Assert.True(_user.Banned);
 
-        _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_admin);
-        Assert.Throws<BadRequestException>(
+        _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).ReturnsAsync(_admin);
+        await Assert.ThrowsAsync<BadRequestException>(
             () => _administrationService.ChangeBanStatus(1, false));
     }
 
     [Fact]
-    public void ShouldChangeRole()
+    public async Task ShouldChangeRole()
     {
-        _administrationService.ChangeRole(2, Role.Student);
+        await _administrationService.ChangeRole(2, Role.Student);
 
         Assert.Equal(Role.Student, _user.Role);
 
-        _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_admin);
-        Assert.Throws<BadRequestException>(
+        _userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).ReturnsAsync(_admin);
+        await Assert.ThrowsAsync<BadRequestException>(
             () => _administrationService.ChangeRole(1, Role.Teacher));
     }
 
     [Fact]
-    public void ShouldGetUserDetails()
+    public async Task ShouldGetUserDetails()
     {
         var response = new UserResponse
         {
@@ -96,14 +96,15 @@ public class AdministrationServiceTest
         };
 
         Assert.Equal(JsonConvert.SerializeObject(response),
-            JsonConvert.SerializeObject(_administrationService.GetUserDetails("email@prz.edu.pl", 1)));
+            JsonConvert.SerializeObject(await _administrationService.GetUserDetails("email@prz.edu.pl", 1)));
 
-        _userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
-        Assert.Throws<ForbiddenException>(() => _administrationService.GetUserDetails("email1@prz.edu.pl", 1));
+        _userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).ReturnsAsync(_user);
+        await Assert.ThrowsAsync<ForbiddenException>(
+            () => _administrationService.GetUserDetails("email1@prz.edu.pl", 1));
     }
 
     [Fact]
-    public void ShouldGetStudents()
+    public async Task ShouldGetStudents()
     {
         var response = new UserResponse
         {
@@ -117,9 +118,9 @@ public class AdministrationServiceTest
 
         Assert.Equal(
             JsonConvert.SerializeObject(response),
-            JsonConvert.SerializeObject(_administrationService.GetUsers(Role.Admin, null, null, null, null, null,
+            JsonConvert.SerializeObject((await _administrationService.GetUsers(Role.Admin, null, null, null, null, null,
                 SortDirection.Asc,
-                UserSortByFields.Id)[0])
+                UserSortByFields.Id))[0])
         );
     }
 }

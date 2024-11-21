@@ -47,7 +47,7 @@ public class GameRecordServiceTests
     }
 
     [Fact]
-    public void GetRecordsByGameAndUser_ShouldReturnGameRecords()
+    public async Task GetRecordsByGameAndUser_ShouldReturnGameRecords()
     {
         const int gameId = 1;
         const string email = "test@example.com";
@@ -74,7 +74,7 @@ public class GameRecordServiceTests
             Password = null!,
             Name = null!
         };
-        _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).Returns(user);
+        _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).ReturnsAsync(user);
         _gameRecordDaoMock.Setup(dao => dao.GetRecordsByGameAndUser(
             gameId,
             1,
@@ -82,9 +82,9 @@ public class GameRecordServiceTests
             null,
             null, SortDirection.Asc,
             GameRecordSortByFields.Id
-        )).Returns(records);
+        )).ReturnsAsync(records);
 
-        var result = _gameRecordService.GetRecordsByGameAndUser(
+        var result = await _gameRecordService.GetRecordsByGameAndUser(
             gameId,
             1,
             null,
@@ -98,7 +98,7 @@ public class GameRecordServiceTests
     }
 
     [Fact]
-    public void DownloadRecordData_ShouldReturnSerializedRecord()
+    public async Task DownloadRecordData_ShouldReturnSerializedRecord()
     {
         const int recordedGameId = 1;
         const string email = "test@example.com";
@@ -121,16 +121,16 @@ public class GameRecordServiceTests
             Values = []
         };
 
-        _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).Returns(user);
-        _gameRecordDaoMock.Setup(dao => dao.GetRecordedGameById(recordedGameId)).Returns(recordedGame);
+        _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).ReturnsAsync(user);
+        _gameRecordDaoMock.Setup(dao => dao.GetRecordedGameById(recordedGameId)).ReturnsAsync(recordedGame);
 
-        var result = _gameRecordService.DownloadRecordData(recordedGameId, email);
+        var result = await _gameRecordService.DownloadRecordData(recordedGameId, email);
 
         Assert.Equal(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(GameRecordMapper.JsonMap(recordedGame))), result);
     }
 
     [Fact]
-    public void DownloadRecordData_ShouldThrowBadRequestException_WhenPermissionDenied()
+    public async Task DownloadRecordData_ShouldThrowBadRequestException_WhenPermissionDenied()
     {
         const int recordedGameId = 1;
         const string email = "test@example.com";
@@ -155,14 +155,15 @@ public class GameRecordServiceTests
             Values = null!
         };
 
-        _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).Returns(user);
-        _gameRecordDaoMock.Setup(dao => dao.GetRecordedGameById(recordedGameId)).Returns(recordedGame);
+        _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).ReturnsAsync(user);
+        _gameRecordDaoMock.Setup(dao => dao.GetRecordedGameById(recordedGameId)).ReturnsAsync(recordedGame);
 
-        Assert.Throws<ForbiddenException>(() => _gameRecordService.DownloadRecordData(recordedGameId, email));
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            _gameRecordService.DownloadRecordData(recordedGameId, email));
     }
 
     [Fact]
-    public void RemoveGameRecord_ShouldRemoveRecord_WhenUserHasPermission()
+    public async Task RemoveGameRecord_ShouldRemoveRecord_WhenUserHasPermission()
     {
         const int gameRecordId = 1;
         const string email = "test@example.com";
@@ -183,13 +184,13 @@ public class GameRecordServiceTests
 
         _dbContextMock.Setup(ctx => ctx.GameRecords).Returns(() => new List<GameRecord> { gameRecord }
             .AsQueryable().BuildMockDbSet().Object);
-        _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).Returns(user);
-        _gameRecordDaoMock.Setup(dao => dao.GetRecordedGameById(gameRecordId)).Returns(gameRecord);
+        _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).ReturnsAsync(user);
+        _gameRecordDaoMock.Setup(dao => dao.GetRecordedGameById(gameRecordId)).ReturnsAsync(gameRecord);
 
-        _gameRecordService.RemoveGameRecord(gameRecordId, email);
+        await _gameRecordService.RemoveGameRecord(gameRecordId, email);
 
         _dbContextMock.Verify(db => db.GameRecords.Remove(gameRecord), Times.Once);
-        _dbContextMock.Verify(db => db.SaveChanges(), Times.Once);
+        _dbContextMock.Verify(db => db.SaveChangesAsync(CancellationToken.None), Times.Once);
     }
 
     [Fact]
@@ -217,9 +218,9 @@ public class GameRecordServiceTests
             Values = null!
         };
 
-        _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).Returns(user);
-        _gameRecordDaoMock.Setup(dao => dao.GetRecordedGameById(gameRecordId)).Returns(gameRecord);
+        _userDaoMock.Setup(dao => dao.GetUserByEmailOrThrow(email)).ReturnsAsync(user);
+        _gameRecordDaoMock.Setup(dao => dao.GetRecordedGameById(gameRecordId)).ReturnsAsync(gameRecord);
 
-        Assert.Throws<BadRequestException>(() => _gameRecordService.RemoveGameRecord(gameRecordId, email));
+        Assert.ThrowsAsync<BadRequestException>(() => _gameRecordService.RemoveGameRecord(gameRecordId, email));
     }
 }

@@ -64,8 +64,24 @@ public class AdministrationController(
     /// <summary>Get all users list (Admin, Teacher)</summary>
     [HttpGet("users")]
     [Authorize(Roles = "Admin, Teacher")]
-    public List<UserResponse> GetStudents()
+    public List<UserResponse> GetUsers(
+        string? email,
+        int? studyCycleYearA,
+        int? studyCycleYearB,
+        string? group,
+        string? courseName,
+        SortDirection sortDirection = SortDirection.Asc,
+        UserSortByFields sortBy = UserSortByFields.Id
+    )
     {
-        return administrationService.GetStudents();
+        return administrationService.GetUsers(
+            email,
+            studyCycleYearA,
+            studyCycleYearB,
+            group,
+            courseName,
+            sortDirection,
+            sortBy
+        );
     }
 }

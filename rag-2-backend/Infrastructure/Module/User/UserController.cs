@@ -77,9 +77,6 @@ public class UserController(UserService userService) : ControllerBase
     [Authorize]
     public async Task DeleteAccount()
     {
-        var header = HttpContext.Request.Headers.Authorization.FirstOrDefault() ??
-                     throw new UnauthorizedAccessException("Unauthorized");
-
-        await userService.DeleteAccount(AuthDao.GetPrincipalEmail(User), header);
+        await userService.DeleteAccount(AuthDao.GetPrincipalEmail(User));
     }
 }

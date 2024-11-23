@@ -16,9 +16,4 @@ public class CourseDao(DatabaseContext dbContext)
         return await dbContext.Courses.SingleOrDefaultAsync(u => u.Id == id) ??
                throw new NotFoundException("Course not found");
     }
-
-    public virtual async Task<List<Course>> GetAllCourses()
-    {
-        return await dbContext.Courses.ToListAsync();
-    }
 }

@@ -13,11 +13,11 @@ namespace rag_2_backend.Infrastructure.Module.Course;
 
 public class CourseService(DatabaseContext context, CourseDao courseDao)
 {
-    public async Task<IEnumerable<CourseResponse>> GetCourses()
+    public async Task<List<CourseResponse>> GetCourses()
     {
         var courses = await context.Courses.ToListAsync();
 
-        return courses.Select(CourseMapper.Map);
+        return courses.Select(CourseMapper.Map).ToList();
     }
 
     public async Task AddCourse(CourseRequest request)

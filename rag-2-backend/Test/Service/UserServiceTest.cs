@@ -170,7 +170,7 @@ public class UserServiceTest
     [Fact]
     public async Task ShouldDeleteAccount()
     {
-        await _userService.DeleteAccount("email@prz.edu.pl", "Bearer header");
+        await _userService.DeleteAccount("email@prz.edu.pl");
 
         _contextMock.Verify(c => c.Users.Remove(It.IsAny<User>()), Times.Once);
     }

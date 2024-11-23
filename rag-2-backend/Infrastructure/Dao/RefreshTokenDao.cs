@@ -12,6 +12,7 @@ public class RefreshTokenDao(DatabaseContext context)
 {
     public virtual async Task RemoveTokensForUser(User user)
     {
+        context.Attach(user);
         var unusedTokens = await context.RefreshTokens.Where(r => r.User.Id == user.Id).ToListAsync();
         context.RefreshTokens.RemoveRange(unusedTokens);
         await context.SaveChangesAsync();

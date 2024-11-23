@@ -128,7 +128,7 @@ public class UserService(
         await context.SaveChangesAsync();
     }
 
-    public async Task DeleteAccount(string email, string header)
+    public async Task DeleteAccount(string email)
     {
         var user = await userDao.GetUserByEmailOrThrow(email);
 
@@ -147,7 +147,6 @@ public class UserService(
 
         context.Users.Remove(user);
         await context.SaveChangesAsync();
-
         await refreshTokenDao.RemoveTokensForUser(user);
     }
 
@@ -157,6 +156,8 @@ public class UserService(
         int? studyCycleYearA, int? studyCycleYearB, int? courseId, string? group, Database.Entity.User user
     )
     {
+        context.Attach(user);
+
         if (user.Role == Role.Student && (
                 !studyCycleYearA.HasValue || !studyCycleYearB.HasValue || !courseId.HasValue ||
                 string.IsNullOrWhiteSpace(group))

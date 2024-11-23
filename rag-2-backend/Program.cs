@@ -18,7 +18,7 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
         b => { b.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null); });
-});
+}, ServiceLifetime.Transient);
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(builder.Configuration.GetSection("Redis:ConnectionString").Value ?? "")
 );

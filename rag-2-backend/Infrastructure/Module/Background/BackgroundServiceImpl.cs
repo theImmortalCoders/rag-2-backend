@@ -74,9 +74,9 @@ public class BackgroundServiceImpl(
     private async void UpdateCachedStats()
     {
         var games = await _dbContext.Games.ToListAsync();
-        foreach (var game in games) _statsUtil.UpdateCachedGameStats(game);
+        foreach (var game in games) await _statsUtil.UpdateCachedGameStats(game);
 
-        _statsUtil.UpdateCachedStats();
+        await _statsUtil.UpdateCachedStats();
 
         Console.WriteLine("Stats updated.");
     }

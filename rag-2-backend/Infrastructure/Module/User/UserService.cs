@@ -156,8 +156,6 @@ public class UserService(
         int? studyCycleYearA, int? studyCycleYearB, int? courseId, string? group, Database.Entity.User user
     )
     {
-        context.Attach(user);
-
         if (user.Role == Role.Student && (
                 !studyCycleYearA.HasValue || !studyCycleYearB.HasValue || !courseId.HasValue ||
                 string.IsNullOrWhiteSpace(group))

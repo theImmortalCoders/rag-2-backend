@@ -12,8 +12,11 @@ namespace rag_2_backend.Infrastructure.Database.Entity;
 public class GameRecord
 {
     [Key] public int Id { get; init; }
-    public required Game Game { get; init; }
-    public required User User { get; init; }
+
+    [ForeignKey("GameId")] public required Game Game { get; init; }
+
+    [ForeignKey("UserId")] public required User User { get; init; }
+
     public required List<GameRecordValue> Values { get; init; }
     public List<Player>? Players { get; init; }
     public DateTime Started { get; set; }

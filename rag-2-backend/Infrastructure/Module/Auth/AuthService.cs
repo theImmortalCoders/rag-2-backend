@@ -67,7 +67,6 @@ public class AuthService(
     private async Task<RefreshToken> GenerateRefreshToken(double refreshTokenExpirationTimeDays,
         Database.Entity.User user)
     {
-        databaseContext.Attach(user);
         var refreshToken = new RefreshToken
         {
             User = user,

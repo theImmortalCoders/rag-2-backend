@@ -61,7 +61,7 @@ public class GameServiceTest
         await _gameService.AddGame(gameRequest);
 
         _contextMock.Verify(
-            c => c.Games.Add(It.Is<Game>(g => g.Name == gameRequest.Name)),
+            c => c.Games.AddAsync(It.Is<Game>(g => g.Name == gameRequest.Name), CancellationToken.None),
             Times.Once);
     }
 

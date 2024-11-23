@@ -40,7 +40,7 @@ public class UserService(
             user
         );
 
-        context.Users.Add(user);
+        await context.Users.AddAsync(user);
         await GenerateAccountTokenAndSendConfirmationMail(user);
         await context.SaveChangesAsync();
     }

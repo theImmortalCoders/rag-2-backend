@@ -24,9 +24,9 @@ public class GameController(GameService gameService) : ControllerBase
     /// <response code="400">Game with this name already exists</response>
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public void Add([FromBody] [Required] GameRequest request)
+    public async Task Add([FromBody] [Required] GameRequest request)
     {
-        gameService.AddGame(request);
+        await gameService.AddGame(request);
     }
 
     /// <summary>Edit existing game (Admin)</summary>
@@ -34,17 +34,17 @@ public class GameController(GameService gameService) : ControllerBase
     /// <response code="400">Game with this name already exists</response>
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Admin")]
-    public void Edit([FromBody] [Required] GameRequest request, int id)
+    public async Task Edit([FromBody] [Required] GameRequest request, int id)
     {
-        gameService.EditGame(request, id);
+        await gameService.EditGame(request, id);
     }
 
     /// <summary>Remove existing game (Admin)</summary>
     /// <response code="404">Game not found</response>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "Admin")]
-    public void Remove([Required] int id)
+    public async Task Remove([Required] int id)
     {
-        gameService.RemoveGame(id);
+        await gameService.RemoveGame(id);
     }
 }

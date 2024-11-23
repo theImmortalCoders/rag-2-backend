@@ -30,7 +30,7 @@ public class CourseService(DatabaseContext context, CourseDao courseDao)
             Name = request.Name
         };
 
-        context.Courses.Add(course);
+        await context.Courses.AddAsync(course);
         await context.SaveChangesAsync();
     }
 

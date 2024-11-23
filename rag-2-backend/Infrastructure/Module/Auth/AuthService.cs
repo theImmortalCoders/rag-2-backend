@@ -32,7 +32,7 @@ public class AuthService(
         if (user.Banned)
             throw new UnauthorizedException("User banned");
 
-        var refreshToken = GenerateRefreshToken(refreshTokenExpirationTimeDays, user);
+        var refreshToken = await GenerateRefreshToken(refreshTokenExpirationTimeDays, user);
 
         return new UserLoginResponse
         {
@@ -64,7 +64,8 @@ public class AuthService(
 
     //
 
-    private RefreshToken GenerateRefreshToken(double refreshTokenExpirationTimeDays, Database.Entity.User user)
+    private async Task<RefreshToken> GenerateRefreshToken(double refreshTokenExpirationTimeDays,
+        Database.Entity.User user)
     {
         var refreshToken = new RefreshToken
         {
@@ -72,8 +73,8 @@ public class AuthService(
             Expiration = DateTime.Now.AddDays(refreshTokenExpirationTimeDays),
             Token = Guid.NewGuid().ToString()
         };
-        databaseContext.RefreshTokens.Add(refreshToken);
-        databaseContext.SaveChanges();
+        await databaseContext.RefreshTokens.AddAsync(refreshToken);
+        await databaseContext.SaveChangesAsync();
         return refreshToken;
     }
 }

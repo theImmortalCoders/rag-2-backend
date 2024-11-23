@@ -59,7 +59,7 @@ public class CourseServiceTest
         await _courseService.AddCourse(courseRequest);
 
         _contextMock.Verify(
-            c => c.Courses.Add(It.Is<Course>(course => course.Name == courseRequest.Name)),
+            c => c.Courses.AddAsync(It.Is<Course>(course => course.Name == courseRequest.Name), CancellationToken.None),
             Times.Once);
     }
 

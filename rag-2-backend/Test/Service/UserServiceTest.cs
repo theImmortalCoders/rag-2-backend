@@ -94,7 +94,7 @@ public class UserServiceTest
             }
         );
 
-        _contextMock.Verify(c => c.Users.Add(It.IsAny<User>()), Times.Once);
+        _contextMock.Verify(c => c.Users.AddAsync(It.IsAny<User>(), CancellationToken.None), Times.Once);
         _contextMock.Verify(
             c => c.AccountConfirmationTokens.AddAsync(It.IsAny<AccountConfirmationToken>(), CancellationToken.None),
             Times.Once);

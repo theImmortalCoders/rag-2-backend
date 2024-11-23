@@ -31,7 +31,7 @@ public class GameService(DatabaseContext context, GameDao gameDao)
             Description = request.Description
         };
 
-        context.Games.Add(game);
+        await context.Games.AddAsync(game);
         await context.SaveChangesAsync();
     }
 

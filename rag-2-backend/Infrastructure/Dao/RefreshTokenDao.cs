@@ -1,5 +1,6 @@
 #region
 
+using Microsoft.EntityFrameworkCore;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
 
@@ -9,17 +10,17 @@ namespace rag_2_backend.Infrastructure.Dao;
 
 public class RefreshTokenDao(DatabaseContext context)
 {
-    public virtual void RemoveTokensForUser(User user)
+    public virtual async Task RemoveTokensForUser(User user)
     {
-        var unusedTokens = context.RefreshTokens.Where(r => r.User.Id == user.Id).ToList();
+        var unusedTokens = await context.RefreshTokens.Where(r => r.User.Id == user.Id).ToListAsync();
         context.RefreshTokens.RemoveRange(unusedTokens);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
-    public virtual void RemoveTokenByToken(string token)
+    public virtual async Task RemoveTokenByToken(string token)
     {
-        var unusedTokens = context.RefreshTokens.Where(r => r.Token == token).ToList();
+        var unusedTokens = await context.RefreshTokens.Where(r => r.Token == token).ToListAsync();
         context.RefreshTokens.RemoveRange(unusedTokens);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 }

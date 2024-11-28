@@ -3,6 +3,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Dao;
 using rag_2_backend.Infrastructure.Module.GameRecord.Dto;
 
@@ -18,11 +19,28 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     /// <response code="404">User or game not found</response>
     [HttpGet]
     [Authorize]
-    public List<GameRecordResponse> GetRecordsByGame([Required] int gameId, [Required] int userId)
+    public async Task<List<GameRecordResponse>> GetRecordsByGame(
+        [Required] int gameId,
+        [Required] int userId,
+        bool? includeEmptyRecords,
+        DateTime? endDateFrom,
+        DateTime? endDateTo,
+        SortDirection sortDirection = SortDirection.Asc,
+        GameRecordSortByFields sortBy = GameRecordSortByFields.Id
+    )
     {
         var email = AuthDao.GetPrincipalEmail(User);
 
-        return gameRecordService.GetRecordsByGameAndUser(gameId, userId, email);
+        return await gameRecordService.GetRecordsByGameAndUser(
+            gameId,
+            userId,
+            includeEmptyRecords,
+            endDateFrom,
+            endDateTo,
+            sortDirection,
+            sortBy,
+            email
+        );
     }
 
     /// <summary>Download JSON file from specific game, admin and teacher can download everyone's data (Auth)</summary>
@@ -31,11 +49,11 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     /// <response code="400">Record is empty</response>
     [HttpGet("{recordedGameId:int}")]
     [Authorize]
-    public FileContentResult DownloadRecordData([Required] int recordedGameId)
+    public async Task<FileContentResult> DownloadRecordData([Required] int recordedGameId)
     {
         var email = AuthDao.GetPrincipalEmail(User);
         var fileName = "game_record_" + recordedGameId + "_" + email + ".json";
-        var fileStream = gameRecordService.DownloadRecordData(recordedGameId, email);
+        var fileStream = await gameRecordService.DownloadRecordData(recordedGameId, email);
 
         return File(fileStream, "application/json", fileName);
     }
@@ -45,9 +63,9 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     /// <response code="400">Space limit exceeded</response>
     [HttpPost]
     [Authorize]
-    public void AddGameRecord([FromBody] [Required] GameRecordRequest recordRequest)
+    public async Task AddGameRecord([FromBody] [Required] GameRecordRequest recordRequest)
     {
-        gameRecordService.AddGameRecord(recordRequest, AuthDao.GetPrincipalEmail(User));
+        await gameRecordService.AddGameRecord(recordRequest, AuthDao.GetPrincipalEmail(User));
     }
 
     /// <summary>Remove game recording (Auth)</summary>
@@ -55,8 +73,8 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     /// <response code="403">Permission denied</response>
     [HttpDelete]
     [Authorize]
-    public void RemoveGameRecord([Required] int recordedGameId)
+    public async Task RemoveGameRecord([Required] int recordedGameId)
     {
-        gameRecordService.RemoveGameRecord(recordedGameId, AuthDao.GetPrincipalEmail(User));
+        await gameRecordService.RemoveGameRecord(recordedGameId, AuthDao.GetPrincipalEmail(User));
     }
 }

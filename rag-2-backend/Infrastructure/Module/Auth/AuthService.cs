@@ -21,9 +21,9 @@ public class AuthService(
     JwtUtil jwtUtil
 )
 {
-    public UserLoginResponse LoginUser(string email, string password, double refreshTokenExpirationTimeDays)
+    public async Task<UserLoginResponse> LoginUser(string email, string password, double refreshTokenExpirationTimeDays)
     {
-        var user = userDao.GetUserByEmailOrThrow(email);
+        var user = await userDao.GetUserByEmailOrThrow(email);
 
         if (!HashUtil.VerifyPassword(password, user.Password))
             throw new UnauthorizedException("Invalid password");
@@ -32,7 +32,7 @@ public class AuthService(
         if (user.Banned)
             throw new UnauthorizedException("User banned");
 
-        var refreshToken = GenerateRefreshToken(refreshTokenExpirationTimeDays, user);
+        var refreshToken = await GenerateRefreshToken(refreshTokenExpirationTimeDays, user);
 
         return new UserLoginResponse
         {
@@ -41,30 +41,31 @@ public class AuthService(
         };
     }
 
-    public string RefreshToken(string refreshToken)
+    public async Task<string> RefreshToken(string refreshToken)
     {
-        var token = databaseContext.RefreshTokens
+        var token = await databaseContext.RefreshTokens
                         .Include(t => t.User)
-                        .SingleOrDefault(t => t.Token == refreshToken && t.Expiration > DateTime.Now)
+                        .SingleOrDefaultAsync(t => t.Token == refreshToken && t.Expiration > DateTime.Now)
                     ?? throw new UnauthorizedException("Invalid refresh token");
         var user = token.User;
 
         return jwtUtil.GenerateJwt(user.Email, user.Role.ToString());
     }
 
-    public UserResponse GetMe(string email)
+    public async Task<UserResponse> GetMe(string email)
     {
-        return UserMapper.Map(userDao.GetUserByEmailOrThrow(email));
+        return UserMapper.Map(await userDao.GetUserByEmailOrThrow(email));
     }
 
-    public void LogoutUser(string token)
+    public async Task LogoutUser(string token)
     {
-        refreshTokenDao.RemoveTokenByToken(token);
+        await refreshTokenDao.RemoveTokenByToken(token);
     }
 
     //
 
-    private RefreshToken GenerateRefreshToken(double refreshTokenExpirationTimeDays, Database.Entity.User user)
+    private async Task<RefreshToken> GenerateRefreshToken(double refreshTokenExpirationTimeDays,
+        Database.Entity.User user)
     {
         var refreshToken = new RefreshToken
         {
@@ -72,8 +73,8 @@ public class AuthService(
             Expiration = DateTime.Now.AddDays(refreshTokenExpirationTimeDays),
             Token = Guid.NewGuid().ToString()
         };
-        databaseContext.RefreshTokens.Add(refreshToken);
-        databaseContext.SaveChanges();
+        await databaseContext.RefreshTokens.AddAsync(refreshToken);
+        await databaseContext.SaveChangesAsync();
         return refreshToken;
     }
 }

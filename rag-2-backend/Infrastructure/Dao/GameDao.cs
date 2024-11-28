@@ -1,6 +1,7 @@
 #region
 
 using HttpExceptions.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
 
@@ -10,19 +11,20 @@ namespace rag_2_backend.Infrastructure.Dao;
 
 public class GameDao(DatabaseContext dbContext)
 {
-    public virtual Game GetGameByIdOrThrow(int id)
+    public virtual async Task<Game> GetGameByIdOrThrow(int id)
     {
-        return dbContext.Games.SingleOrDefault(g => g.Id == id) ?? throw new NotFoundException("Game not found");
+        return await dbContext.Games.SingleOrDefaultAsync(g => g.Id == id) ??
+               throw new NotFoundException("Game not found");
     }
 
-    public virtual Game GetGameByNameOrThrow(string gameName)
+    public virtual async Task<Game> GetGameByNameOrThrow(string gameName)
     {
-        return dbContext.Games.SingleOrDefault(g => Equals(g.Name.ToLower(), gameName.ToLower()))
+        return await dbContext.Games.SingleOrDefaultAsync(g => Equals(g.Name.ToLower(), gameName.ToLower()))
                ?? throw new NotFoundException("Game not found");
     }
 
-    public virtual List<Game> GetAllGames()
+    public virtual async Task<List<Game>> GetAllGames()
     {
-        return dbContext.Games.ToList();
+        return await dbContext.Games.ToListAsync();
     }
 }

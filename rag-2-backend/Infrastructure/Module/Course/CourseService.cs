@@ -13,16 +13,16 @@ namespace rag_2_backend.Infrastructure.Module.Course;
 
 public class CourseService(DatabaseContext context, CourseDao courseDao)
 {
-    public async Task<IEnumerable<CourseResponse>> GetCourses()
+    public async Task<List<CourseResponse>> GetCourses()
     {
         var courses = await context.Courses.ToListAsync();
 
-        return courses.Select(CourseMapper.Map);
+        return courses.Select(CourseMapper.Map).ToList();
     }
 
-    public void AddCourse(CourseRequest request)
+    public async Task AddCourse(CourseRequest request)
     {
-        if (context.Courses.Any(c => c.Name == request.Name))
+        if (await context.Courses.AnyAsync(c => c.Name == request.Name))
             throw new BadRequestException("Course with this name already exists");
 
         var course = new Database.Entity.Course
@@ -30,34 +30,34 @@ public class CourseService(DatabaseContext context, CourseDao courseDao)
             Name = request.Name
         };
 
-        context.Courses.Add(course);
-        context.SaveChanges();
+        await context.Courses.AddAsync(course);
+        await context.SaveChangesAsync();
     }
 
-    public void EditCourse(CourseRequest request, int id)
+    public async Task EditCourse(CourseRequest request, int id)
     {
-        var course = courseDao.GetCourseByIdOrThrow(id);
+        var course = await courseDao.GetCourseByIdOrThrow(id);
 
-        if (context.Courses.Any(c => c.Name == request.Name && c.Name != course.Name))
+        if (await context.Courses.AnyAsync(c => c.Name == request.Name && c.Name != course.Name))
             throw new BadRequestException("Course with this name already exists");
 
         course.Name = request.Name;
 
         context.Courses.Update(course);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
-    public void RemoveCourse(int id)
+    public async Task RemoveCourse(int id)
     {
-        var course = courseDao.GetCourseByIdOrThrow(id);
+        var course = await courseDao.GetCourseByIdOrThrow(id);
 
-        var usersWithCourses = context.Users
-            .Include(u => u.Course).Count(u => u.Course != null && u.Course.Id == id);
+        var usersWithCourses = await context.Users
+            .Include(u => u.Course).CountAsync(u => u.Course != null && u.Course.Id == id);
 
         if (usersWithCourses > 0)
             throw new BadRequestException("Cannot delete used course");
 
         context.Courses.Remove(course);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 }

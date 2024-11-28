@@ -17,69 +17,66 @@ public class UserController(UserService userService) : ControllerBase
     /// <summary>Register new user</summary>
     /// <response code="400">User already exists or wrong data</response>
     [HttpPost("register")]
-    public void Register([FromBody] [Required] UserRequest userRequest)
+    public async Task Register([FromBody] [Required] UserRequest userRequest)
     {
-        userService.RegisterUser(userRequest);
+        await userService.RegisterUser(userRequest);
     }
 
     /// <summary>Resend confirmation email to specified email</summary>
     /// <response code="404">User not found</response>
     /// <response code="400">User is already confirmed</response>
     [HttpPost("resend-confirmation-email")]
-    public void ResendConfirmationEmail([Required] string email)
+    public async Task ResendConfirmationEmail([Required] string email)
     {
-        userService.ResendConfirmationEmail(email);
+        await userService.ResendConfirmationEmail(email);
     }
 
     /// <summary>Confirm account with token from mail</summary>
     /// <response code="400">Invalid token</response>
     [HttpPost("confirm-account")]
-    public void ConfirmAccount([Required] string token)
+    public async Task ConfirmAccount([Required] string token)
     {
-        userService.ConfirmAccount(token);
+        await userService.ConfirmAccount(token);
     }
 
     /// <summary>Edit account info (Auth)</summary>
     /// <response code="400">Wrong data</response>
     [HttpPatch("update")]
     [Authorize]
-    public void UpdateAccount([Required] UserEditRequest request)
+    public async Task UpdateAccount([Required] UserEditRequest request)
     {
-        userService.UpdateAccount(request, AuthDao.GetPrincipalEmail(User));
+        await userService.UpdateAccount(request, AuthDao.GetPrincipalEmail(User));
     }
 
     /// <summary>Request password reset for given email</summary>
     [HttpPost("request-password-reset")]
-    public void RequestPasswordReset([Required] string email)
+    public async Task RequestPasswordReset([Required] string email)
     {
-        userService.RequestPasswordReset(email);
+        await userService.RequestPasswordReset(email);
     }
 
     /// <summary>Reset password with token and new password</summary>
     /// <response code="400">Invalid token</response>
     [HttpPost("reset-password")]
-    public void ResetPassword([Required] string tokenValue, [Required] string newPassword)
+    public async Task ResetPassword([Required] string tokenValue, [Required] string newPassword)
     {
-        userService.ResetPassword(tokenValue, newPassword);
+        await userService.ResetPassword(tokenValue, newPassword);
     }
 
     /// <summary>Change current user's password (Auth)</summary>
     /// <response code="400">Invalid old password or given the same password as old</response>
     [HttpPost("change-password")]
     [Authorize]
-    public void ChangePassword([Required] string oldPassword, [Required] string newPassword)
+    public async Task ChangePassword([Required] string oldPassword, [Required] string newPassword)
     {
-        userService.ChangePassword(AuthDao.GetPrincipalEmail(User), oldPassword, newPassword);
+        await userService.ChangePassword(AuthDao.GetPrincipalEmail(User), oldPassword, newPassword);
     }
 
     /// <summary>Permanently delete account and all data (Auth)</summary>
     [HttpDelete("delete-account")]
     [Authorize]
-    public void DeleteAccount()
+    public async Task DeleteAccount()
     {
-        var header = HttpContext.Request.Headers.Authorization.FirstOrDefault() ??
-                     throw new UnauthorizedAccessException("Unauthorized");
-
-        userService.DeleteAccount(AuthDao.GetPrincipalEmail(User), header);
+        await userService.DeleteAccount(AuthDao.GetPrincipalEmail(User));
     }
 }

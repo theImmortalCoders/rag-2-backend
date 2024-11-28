@@ -1,6 +1,6 @@
 namespace rag_2_backend.Infrastructure.Util;
 
-public abstract class HashUtil
+public static class HashUtil
 {
     public static string HashPassword(string password)
     {

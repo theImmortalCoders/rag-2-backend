@@ -19,23 +19,23 @@ public class StatsController(StatsService statsService) : ControllerBase
     /// <response code="403">Permission denied</response>
     [HttpGet("user")]
     [Authorize]
-    public UserStatsResponse GetStatsForUser([Required] [FromQuery] int userId)
+    public async Task<UserStatsResponse> GetStatsForUser([Required] [FromQuery] int userId)
     {
-        return statsService.GetStatsForUser(AuthDao.GetPrincipalEmail(User), userId);
+        return await statsService.GetStatsForUser(AuthDao.GetPrincipalEmail(User), userId);
     }
 
     /// <summary>Get stats for game</summary>
     /// <response code="404">Game not found</response>
     [HttpGet("game")]
-    public GameStatsResponse GetStatsForGame([Required] [FromQuery] int gameId)
+    public async Task<GameStatsResponse> GetStatsForGame([Required] [FromQuery] int gameId)
     {
-        return statsService.GetStatsForGame(gameId);
+        return await statsService.GetStatsForGame(gameId);
     }
 
     /// <summary>Get overall stats</summary>
     [HttpGet("all")]
-    public OverallStatsResponse GetOverallStats()
+    public async Task<OverallStatsResponse> GetOverallStats()
     {
-        return statsService.GetOverallStats();
+        return await statsService.GetOverallStats();
     }
 }

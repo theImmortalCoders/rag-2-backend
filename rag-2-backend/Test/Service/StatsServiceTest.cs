@@ -57,7 +57,7 @@ public class StatsServiceTests
     }
 
     [Fact]
-    public void GetStatsForUser_ShouldReturnCorrectStats_WhenUserHasPermission()
+    public async Task GetStatsForUser_ShouldReturnCorrectStats_WhenUserHasPermission()
     {
         const string userEmail = "user@example.com";
         const int userId = 123;
@@ -112,11 +112,11 @@ public class StatsServiceTests
             }
         };
 
-        _mockUserDao.Setup(u => u.GetUserByEmailOrThrow(userEmail)).Returns(principal);
-        _mockUserDao.Setup(u => u.GetUserByIdOrThrow(userId)).Returns(user);
-        _mockGameRecordDao.Setup(gr => gr.GetGameRecordsByUserWithGame(userId)).Returns(records);
+        _mockUserDao.Setup(u => u.GetUserByEmailOrThrow(userEmail)).ReturnsAsync(principal);
+        _mockUserDao.Setup(u => u.GetUserByIdOrThrow(userId)).ReturnsAsync(user);
+        _mockGameRecordDao.Setup(gr => gr.GetGameRecordsByUserWithGame(userId)).ReturnsAsync(records);
 
-        var result = _statsService.GetStatsForUser(userEmail, userId);
+        var result = await _statsService.GetStatsForUser(userEmail, userId);
 
         Assert.Equal(1, result.Games);
         Assert.Equal(2, result.Plays);
@@ -124,7 +124,7 @@ public class StatsServiceTests
     }
 
     [Fact]
-    public void GetStatsForGame_ShouldReturnCachedStats_WhenDataIsInCache()
+    public async Task GetStatsForGame_ShouldReturnCachedStats_WhenDataIsInCache()
     {
         const int gameId = 1;
         var game = new Game { Id = gameId, Name = "Game 1" };
@@ -139,18 +139,18 @@ public class StatsServiceTests
             StatsUpdatedDate = DateTime.Now
         };
 
-        _mockGameDao.Setup(g => g.GetGameByIdOrThrow(gameId)).Returns(game);
+        _mockGameDao.Setup(g => g.GetGameByIdOrThrow(gameId)).ReturnsAsync(game);
         _mockGameRecordDao.Setup(dao => dao.GetGameRecordsByGameWithUser(It.IsAny<int>()))
-            .Returns([]);
+            .ReturnsAsync([]);
 
-        var result = _statsService.GetStatsForGame(gameId);
+        var result = await _statsService.GetStatsForGame(gameId);
 
         Assert.Equal(cachedStats.Plays, result.Plays);
         Assert.Equal(cachedStats.TotalStorageMb, result.TotalStorageMb);
     }
 
     [Fact]
-    public void GetStatsForGame_ShouldUpdateCache_WhenDataIsExpired()
+    public async Task GetStatsForGame_ShouldUpdateCache_WhenDataIsExpired()
     {
         const int gameId = 1;
         var game = new Game { Id = gameId, Name = "Game 1" };
@@ -202,10 +202,10 @@ public class StatsServiceTests
             StatsUpdatedDate = DateTime.Now
         };
 
-        _mockGameRecordDao.Setup(gr => gr.GetGameRecordsByGameWithUser(gameId)).Returns(records);
-        _mockGameDao.Setup(g => g.GetGameByIdOrThrow(gameId)).Returns(game);
+        _mockGameRecordDao.Setup(gr => gr.GetGameRecordsByGameWithUser(gameId)).ReturnsAsync(records);
+        _mockGameDao.Setup(g => g.GetGameByIdOrThrow(gameId)).ReturnsAsync(game);
 
-        var result = _statsService.GetStatsForGame(gameId);
+        var result = await _statsService.GetStatsForGame(gameId);
 
         Assert.Equal(gameStatsResponse.Plays, result.Plays);
         Assert.Equal(gameStatsResponse.TotalStorageMb, result.TotalStorageMb);

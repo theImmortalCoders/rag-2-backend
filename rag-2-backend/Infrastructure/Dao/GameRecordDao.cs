@@ -5,9 +5,11 @@ using HttpExceptions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using rag_2_backend.Infrastructure.Common.Mapper;
+using rag_2_backend.Infrastructure.Common.Model;
 using rag_2_backend.Infrastructure.Database;
 using rag_2_backend.Infrastructure.Database.Entity;
 using rag_2_backend.Infrastructure.Module.GameRecord.Dto;
+using rag_2_backend.Infrastructure.Util;
 
 #endregion
 
@@ -15,54 +17,67 @@ namespace rag_2_backend.Infrastructure.Dao;
 
 public class GameRecordDao(DatabaseContext dbContext)
 {
-    public virtual List<GameRecordResponse> GetRecordsByGameAndUser(int gameId, int userId)
+    public virtual async Task<List<GameRecordResponse>> GetRecordsByGameAndUser(
+        int gameId,
+        int userId,
+        bool? includeEmptyRecords,
+        DateTime? endDateFrom,
+        DateTime? endDateTo,
+        SortDirection sortDirection,
+        GameRecordSortByFields sortBy
+    )
     {
-        return dbContext.GameRecords
+        var query = dbContext.GameRecords
             .Include(r => r.Game)
             .Include(r => r.User)
             .Where(r => r.Game.Id == gameId && r.User.Id == userId)
-            .ToList()
+            .AsQueryable();
+
+        query = FilterGameRecords(includeEmptyRecords, endDateFrom, endDateTo, query);
+        query = SortGameRecords(sortDirection, sortBy, query);
+
+        return await Task.Run(() => query.AsEnumerable()
             .Select(GameRecordMapper.Map)
-            .ToList();
+            .ToList());
     }
 
-    public virtual List<GameRecord> GetGameRecordsByUserWithGame(int userId)
+    public virtual async Task<List<GameRecord>> GetGameRecordsByUserWithGame(int userId)
     {
-        return dbContext.GameRecords
+        return await dbContext.GameRecords
             .OrderBy(r => r.Started)
             .Where(r => r.User.Id == userId)
             .Include(recordedGame => recordedGame.Game)
-            .ToList();
+            .ToListAsync();
     }
 
-    public virtual List<GameRecord> GetGameRecordsByGameWithUser(int gameId)
+    public virtual async Task<List<GameRecord>> GetGameRecordsByGameWithUser(int gameId)
     {
-        return dbContext.GameRecords
+        return await dbContext.GameRecords
             .OrderBy(r => r.Started)
             .Where(r => r.Game.Id == gameId)
             .Include(recordedGame => recordedGame.User)
-            .ToList();
+            .ToListAsync();
     }
 
-    public virtual GameRecord GetRecordedGameById(int recordedGameId)
+    public virtual async Task<GameRecord> GetRecordedGameById(int recordedGameId)
     {
-        return dbContext.GameRecords.Include(recordedGame => recordedGame.User)
+        return await dbContext.GameRecords.Include(recordedGame => recordedGame.User)
                    .Include(r => r.Game)
-                   .SingleOrDefault(g => g.Id == recordedGameId)
+                   .SingleOrDefaultAsync(g => g.Id == recordedGameId)
                ?? throw new NotFoundException("Game record not found");
     }
 
-    public virtual double CountTotalStorageMb()
+    public virtual async Task<double> CountTotalStorageMb()
     {
-        return dbContext.GameRecords
-            .Select(r => r.SizeMb)
-            .ToList()
+        return (await dbContext.GameRecords
+                .Select(r => r.SizeMb)
+                .ToListAsync())
             .Sum();
     }
 
-    public virtual int CountAllGameRecords()
+    public virtual async Task<int> CountAllGameRecords()
     {
-        return dbContext.GameRecords.Count();
+        return await dbContext.GameRecords.CountAsync();
     }
 
     public virtual void PerformGameRecordTransaction(Game game, GameRecord gameRecord,
@@ -91,5 +106,39 @@ public class GameRecordDao(DatabaseContext dbContext)
             transaction.Rollback();
             throw;
         }
+    }
+
+    //
+
+    private static IQueryable<GameRecord> FilterGameRecords(
+        bool? includeEmptyRecords,
+        DateTime? endDateFrom,
+        DateTime? endDateTo,
+        IQueryable<GameRecord> query
+    )
+    {
+        if (includeEmptyRecords is null or false)
+            query = query.Where(u => u.IsEmptyRecord == false);
+        if (endDateFrom.HasValue)
+            query = query.Where(u => u.Ended >= endDateFrom);
+        if (endDateTo.HasValue)
+            query = query.Where(u => u.Ended <= endDateTo);
+
+        return query;
+    }
+
+    private static IQueryable<GameRecord> SortGameRecords(
+        SortDirection sortDirection,
+        GameRecordSortByFields sortBy,
+        IQueryable<GameRecord> query
+    )
+    {
+        return sortBy switch
+        {
+            GameRecordSortByFields.Id => DataSortingUtil.ApplySorting(query, x => x.Id, sortDirection),
+            GameRecordSortByFields.Ended => DataSortingUtil.ApplySorting(query, x => x.Ended, sortDirection),
+            GameRecordSortByFields.SizeMb => DataSortingUtil.ApplySorting(query, x => x.SizeMb, sortDirection),
+            _ => query
+        };
     }
 }

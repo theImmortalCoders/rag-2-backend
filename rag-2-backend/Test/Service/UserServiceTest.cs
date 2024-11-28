@@ -62,13 +62,13 @@ public class UserServiceTest
         Mock<UserDao> userMock = new(_contextMock.Object);
         Mock<RefreshTokenDao> refreshTokenDaoMock = new(_contextMock.Object);
         Mock<CourseDao> courseDaoMock = new(_contextMock.Object);
-        userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).Returns(_user);
-        userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).Returns(_user);
+        userMock.Setup(u => u.GetUserByIdOrThrow(It.IsAny<int>())).ReturnsAsync(_user);
+        userMock.Setup(u => u.GetUserByEmailOrThrow(It.IsAny<string>())).ReturnsAsync(_user);
 
         _userService = new UserService(_contextMock.Object, _emailService.Object,
             userMock.Object, refreshTokenDaoMock.Object, courseDaoMock.Object);
 
-        courseDaoMock.Setup(c => c.GetCourseByIdOrThrow(It.IsAny<int>())).Returns(_user.Course);
+        courseDaoMock.Setup(c => c.GetCourseByIdOrThrow(It.IsAny<int>()))!.ReturnsAsync(_user.Course);
         _contextMock.Setup(c => c.Users).Returns(() => new List<User> { _user }
             .AsQueryable().BuildMockDbSet().Object);
         _contextMock.Setup(c => c.AccountConfirmationTokens)
@@ -85,20 +85,22 @@ public class UserServiceTest
     }
 
     [Fact]
-    public void ShouldRegisterUser()
+    public async Task ShouldRegisterUser()
     {
-        _userService.RegisterUser(new UserRequest
+        await _userService.RegisterUser(new UserRequest
             {
                 Email = "email1@prz.edu.pl", Password = "pass", StudyCycleYearA = 2022, StudyCycleYearB = 2023,
                 Name = "John"
             }
         );
 
-        _contextMock.Verify(c => c.Users.Add(It.IsAny<User>()), Times.Once);
-        _contextMock.Verify(c => c.AccountConfirmationTokens.Add(It.IsAny<AccountConfirmationToken>()), Times.Once);
+        _contextMock.Verify(c => c.Users.AddAsync(It.IsAny<User>(), CancellationToken.None), Times.Once);
+        _contextMock.Verify(
+            c => c.AccountConfirmationTokens.AddAsync(It.IsAny<AccountConfirmationToken>(), CancellationToken.None),
+            Times.Once);
         _emailService.Verify(e => e.SendConfirmationEmail(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
 
-        Assert.Throws<BadRequestException>(
+        await Assert.ThrowsAsync<BadRequestException>(
             () => _userService.RegisterUser(new UserRequest
                 {
                     Email = "email1@stud.prz.edu.pl", Password = "pass", StudyCycleYearA = 2020, StudyCycleYearB = 2023,
@@ -109,61 +111,66 @@ public class UserServiceTest
     }
 
     [Fact]
-    public void ShouldResendConfirmationMail()
+    public async Task ShouldResendConfirmationMail()
     {
-        _userService.ResendConfirmationEmail("email@prz.edu.pl");
+        await _userService.ResendConfirmationEmail("email@prz.edu.pl");
 
-        _contextMock.Verify(c => c.AccountConfirmationTokens.Add(It.IsAny<AccountConfirmationToken>()), Times.Once);
+        _contextMock.Verify(
+            c => c.AccountConfirmationTokens.AddAsync(It.IsAny<AccountConfirmationToken>(), CancellationToken.None),
+            Times.Once);
         _emailService.Verify(e => e.SendConfirmationEmail(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
 
         _user.Confirmed = true;
-        Assert.Throws<BadRequestException>(() => _userService.ResendConfirmationEmail("email@prz.edu.pl"));
+        await Assert.ThrowsAsync<BadRequestException>(() => _userService.ResendConfirmationEmail("email@prz.edu.pl"));
     }
 
     [Fact]
-    public void ShouldConfirmAccount()
+    public async Task ShouldConfirmAccount()
     {
-        _userService.ConfirmAccount(_accountToken.Token);
+        await _userService.ConfirmAccount(_accountToken.Token);
         _contextMock.Verify(c => c.AccountConfirmationTokens.Remove(It.IsAny<AccountConfirmationToken>()), Times.Once);
 
-        Assert.Throws<BadRequestException>(() => _userService.ConfirmAccount("token")); //wrong token
+        await Assert.ThrowsAsync<BadRequestException>(() => _userService.ConfirmAccount("token")); //wrong token
         _accountToken.Expiration = DateTime.Now.AddDays(-7);
-        Assert.Throws<BadRequestException>(() => _userService.ConfirmAccount(_accountToken.Token)); //invalid date
+        await Assert.ThrowsAsync<BadRequestException>(() =>
+            _userService.ConfirmAccount(_accountToken.Token)); //invalid date
     }
 
     [Fact]
-    public void ShouldRequestPasswordReset()
+    public async Task ShouldRequestPasswordReset()
     {
-        _userService.RequestPasswordReset("email@prz.edu.pl");
+        await _userService.RequestPasswordReset("email@prz.edu.pl");
 
-        _contextMock.Verify(c => c.PasswordResetTokens.Add(It.IsAny<PasswordResetToken>()), Times.Once);
+        _contextMock.Verify(c => c.PasswordResetTokens.AddAsync(It.IsAny<PasswordResetToken>(), CancellationToken.None),
+            Times.Once);
         _emailService.Verify(e => e.SendPasswordResetMail(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
     [Fact]
-    public void ShouldResetPassword()
+    public async Task ShouldResetPassword()
     {
-        _userService.ResetPassword(_passwordToken.Token, "pass");
+        await _userService.ResetPassword(_passwordToken.Token, "pass");
         _contextMock.Verify(c => c.PasswordResetTokens.Remove(It.IsAny<PasswordResetToken>()), Times.Once);
 
-        Assert.Throws<BadRequestException>(() => _userService.ResetPassword("token1", "pass")); //wrong token
+        await Assert.ThrowsAsync<BadRequestException>(() => _userService.ResetPassword("token1", "pass")); //wrong token
         _passwordToken.Expiration = DateTime.Now.AddDays(-7);
-        Assert.Throws<BadRequestException>(() =>
+        await Assert.ThrowsAsync<BadRequestException>(() =>
             _userService.ResetPassword(_passwordToken.Token, "pass")); //invalid date
     }
 
     [Fact]
-    public void ShouldChangePassword()
+    public async Task ShouldChangePassword()
     {
-        _userService.ChangePassword("email@prz.edu.pl", "password", "pass2");
+        await _userService.ChangePassword("email@prz.edu.pl", "password", "pass2");
 
-        Assert.Throws<BadRequestException>(() => _userService.ChangePassword("email@prz.edu.pl", "pa4ss2", "pas2"));
+        await Assert.ThrowsAsync<BadRequestException>(() =>
+            _userService.ChangePassword("email@prz.edu.pl", "pa4ss2", "pas2"));
     }
 
     [Fact]
-    public void ShouldDeleteAccount()
+    public async Task ShouldDeleteAccount()
     {
-        _userService.DeleteAccount("email@prz.edu.pl", "Bearer header");
+        await _userService.DeleteAccount("email@prz.edu.pl");
 
         _contextMock.Verify(c => c.Users.Remove(It.IsAny<User>()), Times.Once);
     }

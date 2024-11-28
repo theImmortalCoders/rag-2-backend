@@ -21,9 +21,9 @@ public class UserService(
     RefreshTokenDao refreshTokenDao,
     CourseDao courseDao)
 {
-    public void RegisterUser(UserRequest userRequest)
+    public async Task RegisterUser(UserRequest userRequest)
     {
-        if (context.Users.Any(u => u.Email == userRequest.Email))
+        if (await context.Users.AnyAsync(u => u.Email == userRequest.Email))
             throw new BadRequestException("User already exists");
 
         Database.Entity.User user = new(userRequest.Email)
@@ -32,7 +32,7 @@ public class UserService(
             Password = HashUtil.HashPassword(userRequest.Password)
         };
 
-        UpdateUserProperties(
+        await UpdateUserProperties(
             userRequest.StudyCycleYearA,
             userRequest.StudyCycleYearB,
             userRequest.CourseId,
@@ -40,16 +40,16 @@ public class UserService(
             user
         );
 
-        context.Users.Add(user);
-        GenerateAccountTokenAndSendConfirmationMail(user);
-        context.SaveChanges();
+        await context.Users.AddAsync(user);
+        await GenerateAccountTokenAndSendConfirmationMail(user);
+        await context.SaveChangesAsync();
     }
 
-    public void UpdateAccount(UserEditRequest request, string principalEmail)
+    public async Task UpdateAccount(UserEditRequest request, string principalEmail)
     {
-        var user = userDao.GetUserByEmailOrThrow(principalEmail);
+        var user = await userDao.GetUserByEmailOrThrow(principalEmail);
 
-        UpdateUserProperties(
+        await UpdateUserProperties(
             request.StudyCycleYearA,
             request.StudyCycleYearB,
             request.CourseId,
@@ -59,65 +59,65 @@ public class UserService(
         user.Name = request.Name;
 
         context.Users.Update(user);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
-    public void ResendConfirmationEmail(string email)
+    public async Task ResendConfirmationEmail(string email)
     {
-        var user = userDao.GetUserByEmailOrThrow(email);
+        var user = await userDao.GetUserByEmailOrThrow(email);
         if (user.Confirmed) throw new BadRequestException("User is already confirmed");
 
         context.AccountConfirmationTokens.RemoveRange(
             context.AccountConfirmationTokens.Where(a => a.User.Email == user.Email)
         );
 
-        GenerateAccountTokenAndSendConfirmationMail(user);
-        context.SaveChanges();
+        await GenerateAccountTokenAndSendConfirmationMail(user);
+        await context.SaveChangesAsync();
     }
 
-    public void ConfirmAccount(string tokenValue)
+    public async Task ConfirmAccount(string tokenValue)
     {
-        var token = context.AccountConfirmationTokens
+        var token = await context.AccountConfirmationTokens
                         .Include(t => t.User)
-                        .SingleOrDefault(t => t.Token == tokenValue)
+                        .SingleOrDefaultAsync(t => t.Token == tokenValue)
                     ?? throw new BadRequestException("Invalid token");
 
         if (token.Expiration < DateTime.Now) throw new BadRequestException("Invalid token");
 
         token.User.Confirmed = true;
         context.AccountConfirmationTokens.Remove(token);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
-    public void RequestPasswordReset(string email)
+    public async Task RequestPasswordReset(string email)
     {
-        var user = userDao.GetUserByEmailOrThrow(email);
+        var user = await userDao.GetUserByEmailOrThrow(email);
 
         context.PasswordResetTokens.RemoveRange(
             context.PasswordResetTokens.Where(a => a.User.Email == user.Email)
         );
 
-        GeneratePasswordResetTokenAndSendMail(user);
-        context.SaveChanges();
+        await GeneratePasswordResetTokenAndSendMail(user);
+        await context.SaveChangesAsync();
     }
 
-    public void ResetPassword(string tokenValue, string newPassword)
+    public async Task ResetPassword(string tokenValue, string newPassword)
     {
-        var token = context.PasswordResetTokens
+        var token = await context.PasswordResetTokens
                         .Include(t => t.User)
-                        .SingleOrDefault(t => t.Token == tokenValue)
+                        .SingleOrDefaultAsync(t => t.Token == tokenValue)
                     ?? throw new BadRequestException("Invalid token");
 
         if (token.Expiration < DateTime.Now) throw new BadRequestException("Invalid token");
 
         token.User.Password = HashUtil.HashPassword(newPassword);
         context.PasswordResetTokens.Remove(token);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
-    public void ChangePassword(string email, string oldPassword, string newPassword)
+    public async Task ChangePassword(string email, string oldPassword, string newPassword)
     {
-        var user = userDao.GetUserByEmailOrThrow(email);
+        var user = await userDao.GetUserByEmailOrThrow(email);
 
         if (!HashUtil.VerifyPassword(oldPassword, user.Password))
             throw new BadRequestException("Invalid old password");
@@ -125,12 +125,12 @@ public class UserService(
             throw new BadRequestException("Password cannot be same");
 
         user.Password = HashUtil.HashPassword(newPassword);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
-    public void DeleteAccount(string email, string header)
+    public async Task DeleteAccount(string email)
     {
-        var user = userDao.GetUserByEmailOrThrow(email);
+        var user = await userDao.GetUserByEmailOrThrow(email);
 
         context.PasswordResetTokens.RemoveRange(context.PasswordResetTokens
             .Include(p => p.User)
@@ -146,14 +146,13 @@ public class UserService(
         );
 
         context.Users.Remove(user);
-        context.SaveChanges();
-
-        refreshTokenDao.RemoveTokensForUser(user);
+        await context.SaveChangesAsync();
+        await refreshTokenDao.RemoveTokensForUser(user);
     }
 
     //
 
-    private void UpdateUserProperties(
+    private async Task UpdateUserProperties(
         int? studyCycleYearA, int? studyCycleYearB, int? courseId, string? group, Database.Entity.User user
     )
     {
@@ -172,7 +171,7 @@ public class UserService(
 
         user.StudyCycleYearA = studyCycleYearA ?? 0;
         user.StudyCycleYearB = studyCycleYearB ?? 0;
-        user.Course = courseId != null ? courseDao.GetCourseByIdOrThrow(courseId.Value) : null;
+        user.Course = courseId != null ? await courseDao.GetCourseByIdOrThrow(courseId.Value) : null;
         user.Group = group;
     }
 
@@ -182,7 +181,7 @@ public class UserService(
                studyCycleYearB - studyCycleYearA == 1;
     }
 
-    private void GenerateAccountTokenAndSendConfirmationMail(Database.Entity.User user)
+    private async Task GenerateAccountTokenAndSendConfirmationMail(Database.Entity.User user)
     {
         var token = new AccountConfirmationToken
         {
@@ -190,11 +189,11 @@ public class UserService(
             User = user,
             Expiration = DateTime.Now.AddDays(7)
         };
-        context.AccountConfirmationTokens.Add(token);
+        await context.AccountConfirmationTokens.AddAsync(token);
         emailService.SendConfirmationEmail(user.Email, token.Token);
     }
 
-    private void GeneratePasswordResetTokenAndSendMail(Database.Entity.User user)
+    private async Task GeneratePasswordResetTokenAndSendMail(Database.Entity.User user)
     {
         var token = new PasswordResetToken
         {
@@ -202,7 +201,7 @@ public class UserService(
             User = user,
             Expiration = DateTime.Now.AddDays(2)
         };
-        context.PasswordResetTokens.Add(token);
+        await context.PasswordResetTokens.AddAsync(token);
         emailService.SendPasswordResetMail(user.Email, token.Token);
     }
 }

@@ -23,9 +23,9 @@ public class AdministrationController(
     /// <response code="400">Cannot ban administrator</response>
     [HttpPost("{userId:int}/ban-status")]
     [Authorize(Roles = "Admin")]
-    public void ChangeBanStatus([Required] int userId, [Required] bool isBanned)
+    public async Task ChangeBanStatus([Required] int userId, [Required] bool isBanned)
     {
-        administrationService.ChangeBanStatus(userId, isBanned);
+        await administrationService.ChangeBanStatus(userId, isBanned);
     }
 
     /// <summary>Change role for any user by user ID despite admins (Admin)</summary>
@@ -33,18 +33,18 @@ public class AdministrationController(
     /// <response code="400">Cannot change administrator's role</response>
     [HttpPost("{userId:int}/role")]
     [Authorize(Roles = "Admin")]
-    public void ChangeRole([Required] int userId, [Required] Role role)
+    public async Task ChangeRole([Required] int userId, [Required] Role role)
     {
-        administrationService.ChangeRole(userId, role);
+        await administrationService.ChangeRole(userId, role);
     }
 
     /// <summary>Get details of any user by user ID (Admin, Teacher)</summary>
     /// <response code="403">Cannot view details</response>
     [HttpGet("{userId:int}/details")]
     [Authorize(Roles = "Admin,Teacher")]
-    public UserResponse GetUserDetails([Required] int userId)
+    public async Task<UserResponse> GetUserDetails([Required] int userId)
     {
-        return administrationService.GetUserDetails(AuthDao.GetPrincipalEmail(User), userId);
+        return await administrationService.GetUserDetails(AuthDao.GetPrincipalEmail(User), userId);
     }
 
     /// <summary>Get current limits for roles (Auth)</summary>
@@ -61,11 +61,29 @@ public class AdministrationController(
         };
     }
 
-    /// <summary>Get all users list (Admin, Teacher)</summary>
+    /// <summary>Get all users list with optional filters and sorting (Admin, Teacher)</summary>
     [HttpGet("users")]
     [Authorize(Roles = "Admin, Teacher")]
-    public List<UserResponse> GetStudents()
+    public async Task<List<UserResponse>> GetUsers(
+        [Required] Role role,
+        string? email,
+        int? studyCycleYearA,
+        int? studyCycleYearB,
+        string? group,
+        string? courseName,
+        SortDirection sortDirection = SortDirection.Asc,
+        UserSortByFields sortBy = UserSortByFields.Id
+    )
     {
-        return administrationService.GetStudents();
+        return await administrationService.GetUsers(
+            role,
+            email,
+            studyCycleYearA,
+            studyCycleYearB,
+            group,
+            courseName,
+            sortDirection,
+            sortBy
+        );
     }
 }

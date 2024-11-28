@@ -12,5 +12,6 @@ public class PasswordResetToken
 {
     [Key] [MaxLength(100)] public required string Token { get; init; }
     public required DateTime Expiration { get; set; }
-    public required User User { get; init; }
+
+    [ForeignKey("UserId")] public required User User { get; init; }
 }

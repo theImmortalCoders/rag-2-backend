@@ -23,10 +23,10 @@ public class BackgroundServiceImpl(
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            DeleteUnusedAccountTokens();
-            DeleteUnusedRefreshTokens();
-            DeleteUnusedPasswordResetTokens();
-            UpdateCachedStats();
+            await DeleteUnusedAccountTokens();
+            await DeleteUnusedRefreshTokens();
+            await DeleteUnusedPasswordResetTokens();
+            await UpdateCachedStats();
 
             await Task.Delay(TimeSpan.FromHours(3), cancellationToken);
         }
@@ -34,12 +34,12 @@ public class BackgroundServiceImpl(
 
     //
 
-    private void DeleteUnusedAccountTokens()
+    private async Task DeleteUnusedAccountTokens()
     {
         var unconfirmedUsers = new List<Database.Entity.User>();
-        var unusedTokens = _dbContext.AccountConfirmationTokens
+        var unusedTokens = await _dbContext.AccountConfirmationTokens
             .Include(t => t.User)
-            .Where(t => t.Expiration < DateTime.Now).ToList();
+            .Where(t => t.Expiration < DateTime.Now).ToListAsync();
 
         foreach (var users in unusedTokens.Select(token =>
                      new List<Database.Entity.User>(_dbContext.Users.Where(u =>
@@ -48,35 +48,35 @@ public class BackgroundServiceImpl(
 
         _dbContext.Users.RemoveRange(unconfirmedUsers);
         _dbContext.AccountConfirmationTokens.RemoveRange(unusedTokens);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
         Console.WriteLine("Deleted " + unconfirmedUsers.Count + " unconfirmed accounts with tokens");
     }
 
-    private void DeleteUnusedRefreshTokens()
+    private async Task DeleteUnusedRefreshTokens()
     {
         var unusedTokens = _dbContext.RefreshTokens.Where(b => b.Expiration < DateTime.Now).ToList();
         _dbContext.RefreshTokens.RemoveRange(unusedTokens);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
         Console.WriteLine("Deleted " + unusedTokens.Count + " expired refresh tokens");
     }
 
-    private void DeleteUnusedPasswordResetTokens()
+    private async Task DeleteUnusedPasswordResetTokens()
     {
         var unusedTokens = _dbContext.PasswordResetTokens.Where(b => b.Expiration < DateTime.Now).ToList();
         _dbContext.PasswordResetTokens.RemoveRange(unusedTokens);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
         Console.WriteLine("Deleted " + unusedTokens.Count + " expired password reset tokens");
     }
 
-    private async void UpdateCachedStats()
+    private async Task UpdateCachedStats()
     {
         var games = await _dbContext.Games.ToListAsync();
-        foreach (var game in games) _statsUtil.UpdateCachedGameStats(game);
+        foreach (var game in games) await _statsUtil.UpdateCachedGameStats(game);
 
-        _statsUtil.UpdateCachedStats();
+        await _statsUtil.UpdateCachedStats();
 
         Console.WriteLine("Stats updated.");
     }

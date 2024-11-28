@@ -11,22 +11,22 @@ namespace rag_2_backend.Infrastructure.Dao;
 
 public class UserDao(DatabaseContext context)
 {
-    public virtual User GetUserByIdOrThrow(int id)
+    public virtual async Task<User> GetUserByIdOrThrow(int id)
     {
-        return context.Users.SingleOrDefault(u => u.Id == id) ??
+        return await context.Users.SingleOrDefaultAsync(u => u.Id == id) ??
                throw new NotFoundException("User not found");
     }
 
-    public virtual User GetUserByEmailOrThrow(string email)
+    public virtual async Task<User> GetUserByEmailOrThrow(string email)
     {
-        return context.Users
+        return await context.Users
                    .Include(u => u.Course)
-                   .SingleOrDefault(u => u.Email == email) ??
+                   .SingleOrDefaultAsync(u => u.Email == email) ??
                throw new NotFoundException("User not found");
     }
 
-    public virtual int CountUsers()
+    public virtual async Task<int> CountUsers()
     {
-        return context.Users.Count();
+        return await context.Users.CountAsync();
     }
 }

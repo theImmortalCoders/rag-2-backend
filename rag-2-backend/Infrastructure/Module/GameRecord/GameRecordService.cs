@@ -26,7 +26,7 @@ public class GameRecordService(
     public async Task<List<GameRecordResponse>> GetRecordsByGameAndUser(
         int gameId,
         int userId,
-        bool? isEmptyRecord,
+        bool? includeEmptyRecords,
         DateTime? endDateFrom,
         DateTime? endDateTo,
         SortDirection sortDirection,
@@ -42,7 +42,7 @@ public class GameRecordService(
         return await gameRecordDao.GetRecordsByGameAndUser(
             gameId,
             userId,
-            isEmptyRecord,
+            includeEmptyRecords,
             endDateFrom,
             endDateTo,
             sortDirection,

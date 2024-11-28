@@ -22,7 +22,7 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
     public async Task<List<GameRecordResponse>> GetRecordsByGame(
         [Required] int gameId,
         [Required] int userId,
-        bool? isEmptyRecord,
+        bool? includeEmptyRecords,
         DateTime? endDateFrom,
         DateTime? endDateTo,
         SortDirection sortDirection = SortDirection.Asc,
@@ -34,7 +34,7 @@ public class GameRecordController(GameRecordService gameRecordService) : Control
         return await gameRecordService.GetRecordsByGameAndUser(
             gameId,
             userId,
-            isEmptyRecord,
+            includeEmptyRecords,
             endDateFrom,
             endDateTo,
             sortDirection,

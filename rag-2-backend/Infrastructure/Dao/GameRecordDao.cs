@@ -20,7 +20,7 @@ public class GameRecordDao(DatabaseContext dbContext)
     public virtual async Task<List<GameRecordResponse>> GetRecordsByGameAndUser(
         int gameId,
         int userId,
-        bool? isEmptyRecord,
+        bool? includeEmptyRecords,
         DateTime? endDateFrom,
         DateTime? endDateTo,
         SortDirection sortDirection,
@@ -33,7 +33,7 @@ public class GameRecordDao(DatabaseContext dbContext)
             .Where(r => r.Game.Id == gameId && r.User.Id == userId)
             .AsQueryable();
 
-        query = FilterGameRecords(isEmptyRecord, endDateFrom, endDateTo, query);
+        query = FilterGameRecords(includeEmptyRecords, endDateFrom, endDateTo, query);
         query = SortGameRecords(sortDirection, sortBy, query);
 
         return await Task.Run(() => query.AsEnumerable()
@@ -111,14 +111,14 @@ public class GameRecordDao(DatabaseContext dbContext)
     //
 
     private static IQueryable<GameRecord> FilterGameRecords(
-        bool? isEmptyRecord,
+        bool? includeEmptyRecords,
         DateTime? endDateFrom,
         DateTime? endDateTo,
         IQueryable<GameRecord> query
     )
     {
-        if (isEmptyRecord.HasValue)
-            query = query.Where(u => u.IsEmptyRecord == isEmptyRecord);
+        if (includeEmptyRecords is null or false)
+            query = query.Where(u => u.IsEmptyRecord == false);
         if (endDateFrom.HasValue)
             query = query.Where(u => u.Ended >= endDateFrom);
         if (endDateTo.HasValue)

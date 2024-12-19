@@ -5,11 +5,11 @@ on:
     branches: [ "main" ]
 
 jobs:
-  test:
+  build:
     uses: ./.github/workflows/test.yml
     
-  build:
-    needs: [ test ]
+  deploy:
+    needs: [ build ]
     runs-on: ubuntu-latest
     steps:
       - name: Deploy

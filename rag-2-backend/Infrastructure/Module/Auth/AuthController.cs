@@ -46,7 +46,7 @@ public class AuthController(IConfiguration config, AuthService authService) : Co
                 Expires = DateTimeOffset.UtcNow.AddDays(
                     double.Parse(config["RefreshToken:ExpireDays"] ?? "30")),
                 HttpOnly = true,
-                // IsEssential = true,
+                IsEssential = true,
                 Secure = false
                 // SameSite = SameSiteMode.None
             });

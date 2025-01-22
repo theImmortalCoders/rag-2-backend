@@ -43,8 +43,7 @@ public class AuthController(IConfiguration config, AuthService authService) : Co
         HttpContext.Response.Cookies.Append("refreshToken", response.RefreshToken,
             new CookieOptions
             {
-                Expires = DateTimeOffset.UtcNow.AddDays(
-                    double.Parse(config["RefreshToken:ExpireDays"] ?? "30")),
+                Expires = DateTimeOffset.UtcNow.AddDays(refreshTokenExpiryDays),
                 HttpOnly = true,
                 IsEssential = true,
                 Secure = false

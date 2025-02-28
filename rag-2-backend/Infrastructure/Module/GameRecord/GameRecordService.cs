@@ -142,10 +142,10 @@ public class GameRecordService(
         {
             var startTimestamp = recordRequest.Values.Count > 0
                 ? recordRequest.Values[0].Timestamp
-                : DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                : TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.Local).ToString("yyyy-MM-dd HH:mm:ss");
             var endTimestamp = recordRequest.Values.Count > 0
                 ? recordRequest.Values[^1].Timestamp
-                : DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                : TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.Local).ToString("yyyy-MM-dd HH:mm:ss");
             if (startTimestamp is not null)
                 gameRecord.Started = DateTime.Parse(startTimestamp, null, DateTimeStyles.RoundtripKind);
             if (endTimestamp is not null)

@@ -140,12 +140,15 @@ public class GameRecordService(
     {
         try
         {
+            TimeZoneInfo polishTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+            string formattedTime = TimeZoneInfo.ConvertTime(DateTime.Now, polishTimeZone).ToString("yyyy-MM-dd HH:mm:ss");
+
             var startTimestamp = recordRequest.Values.Count > 0
                 ? recordRequest.Values[0].Timestamp
-                : TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.Local).ToString("yyyy-MM-dd HH:mm:ss");
+                : formattedTime;
             var endTimestamp = recordRequest.Values.Count > 0
                 ? recordRequest.Values[^1].Timestamp
-                : TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.Local).ToString("yyyy-MM-dd HH:mm:ss");
+                : formattedTime;
             if (startTimestamp is not null)
                 gameRecord.Started = DateTime.Parse(startTimestamp, null, DateTimeStyles.RoundtripKind);
             if (endTimestamp is not null)

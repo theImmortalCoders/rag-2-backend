@@ -1,6 +1,5 @@
 ﻿services:
   db:
-    container_name: db
     image: postgres:latest
     ports:
       - "5432:5432"
@@ -12,7 +11,6 @@
       - pgdata:/var/lib/postgresql/data
   redis:
     image: redis:latest
-    container_name: redis
     ports:
       - "6379:6379"
     volumes:
